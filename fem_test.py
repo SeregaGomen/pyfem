@@ -23,21 +23,17 @@ obj = TObject()
 e = [6.5E+10]
 m = [0.3]
 try:
-#    obj.set_mesh('body1d.trpa')
-    obj.set_mesh('body.trpa')
+    obj.set_mesh('mesh/body.trpa')
     obj.set_problem_type('static')
     obj.set_solve_method('direct')
     obj.set_elasticity(e, m)
-#    obj.add_boundary_condition('0', 'x=0', DIR_X)
-#    obj.add_volume_condition('1.0E+6', '', DIR_X)
     obj.add_boundary_condition('0', 'y=0', DIR_X | DIR_Y)
     obj.add_volume_condition('1.0E+6', '', DIR_Y)
-    obj.calc()
-
-#    for i in range(0,len(obj.__global_matrix__[0])):
-#        print(obj.__global_matrix__[i])
-#    print(obj.__global_vector__)
-
+    if obj.calc():
+        obj.calc_results()
+        obj.set_width(20)
+        obj.set_precision(5)
+        obj.print_result('mesh/body.res')
 
 except TFEMException as e:
     e.print_error()

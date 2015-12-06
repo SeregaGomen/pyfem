@@ -8,7 +8,6 @@ import math
 from abc import abstractmethod
 
 
-
 # Абстрактный базовый класс значения выражения
 class TNode:
     @abstractmethod

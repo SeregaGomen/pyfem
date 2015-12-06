@@ -11,7 +11,8 @@ from fem_mesh import TMesh
 from fem_params import TFEMParams
 from fem_error import TFEMException
 from fem_parser import TParser
-from fem_fe import TFE, TFE1D2
+from fem_fe import TFE, TFE1D2, TFE2D3
+from fem_result import TResult
 
 
 class TObject:
@@ -20,6 +21,7 @@ class TObject:
         self.object_name = ''               # Название объекта
         self.params = TFEMParams()          # Параметры расчета
         self.mesh = TMesh()                 # КЭ-модель
+        self.result = []                    # Список результатов расчета для перемещений, деформаций, ...
         self.__volume_force__ = []          # Узловые объемная, поверхностная и сосредоточенная нагрузки
         self.__surface_force__ = []
         self.__concentrated_force__ = []
@@ -81,6 +83,7 @@ class TObject:
         self.params.add_concentrated_condition(e, p, d)
 
     def calc(self):
+        ret = False
         if self.params.solve_method == '':
             raise TFEMException('solve_method_err')
         if self.params.problem_type == '':
@@ -91,26 +94,29 @@ class TObject:
             if self.params.t0 == self.params.t1 or self.params.th <= 0:
                 raise TFEMException('time_err')
         if self.params.problem_type == 'static':
-            self.calc_static_problem()
+            ret = self.calc_static_problem()
         elif self.params.problem_type == 'dynamic':
-            self.calc_dynamic_problem()
+            ret = self.calc_dynamic_problem()
+        return ret
 
     # Добавление локальной матрицы жесткости (ЛМЖ) к ГМЖ
-    def __ansamble__(self, index):
+    def __assembly__(self, index):
         # Добавление матрицы
-        for i in range(0, self.__fe__.size):
+        for i in range(0, len(self.__fe__.K)):
             k = self.mesh.fe[index][i//self.mesh.freedom]*self.mesh.freedom + i % self.mesh.freedom
-            for j in range(i, self.__fe__.size):
+            for j in range(i, len(self.__fe__.K)):
                 l = self.mesh.fe[index][j//self.mesh.freedom]*self.mesh.freedom + j % self.mesh.freedom
                 self.__global_matrix__[k][l] += self.__fe__.K[i][j]
                 if k != l:
                     self.__global_matrix__[l][k] += self.__fe__.K[i][j]
-            self.__global_vector__[k] += self.__fe__.K[i][self.__fe__.size]
+            self.__global_vector__[k] += self.__fe__.K[i][len(self.__fe__.K)]
 
     # Создание нужного типа КЭ
     def create_fe(self):
         if self.mesh.fe_type == 'fe_1d_2':
             self.__fe__ = TFE1D2()
+        elif self.mesh.fe_type == 'fe_2d_3':
+            self.__fe__ = TFE2D3()
 
     # Расчет статической задачи методом конечных элементов
     def calc_static_problem(self):
@@ -129,9 +135,9 @@ class TObject:
             x = [0]*len(self.mesh.fe[i])
             y = [0]*len(self.mesh.fe[i])
             z = [0]*len(self.mesh.fe[i])
-            vx = [0]*len(self.mesh.fe[i])*self.mesh.freedom
-            vy = [0]*len(self.mesh.fe[i])*self.mesh.freedom
-            vz = [0]*len(self.mesh.fe[i])*self.mesh.freedom
+            vx = [0]*len(self.mesh.fe[i])
+            vy = [0]*len(self.mesh.fe[i])
+            vz = [0]*len(self.mesh.fe[i])
             # Настройка КЭ
             for j in range(len(self.mesh.fe[i])):
                 x[j] = self.mesh.x[self.mesh.fe[i][j]]
@@ -144,23 +150,28 @@ class TObject:
             self.__fe__.set_volume_force(vx, vy, vz)
             self.__fe__.generate()
             # Ансамблирование ЛМЖ к ГМЖ
-            self.__ansamble__(i)
+            self.__assembly__(i)
         # Учет сосредоточенной и поверхностной нагрузок
         self.use_force_condition()
         # Учет краевых условий
         self.use_boundary_condition()
+
+#        for i in range(0, len(self.__global_matrix__[0])):
+#            print(self.__global_matrix__[i])
+#        print(self.__global_vector__)
+
         # Решение СЛАУ
-        if not self.solve():
+        ret = self.solve()
+        if not ret:
             print('The system of equations is not solved!')
-        else:
-            print(self.__global_vector__)
+        return ret
 
     # Предварительное вычисление нагрузок
     def prepare_force(self):
         parser = TParser()
-        self.__volume_force__ = [0]*len(self.mesh.x)
-        self.__surface_force__ = [0]*len(self.mesh.x)
-        self.__concentrated_force__ = [0]*len(self.mesh.x)
+        self.__volume_force__ = [0]*len(self.mesh.x)*self.mesh.freedom
+        self.__surface_force__ = [0]*len(self.mesh.x)*self.mesh.freedom
+        self.__concentrated_force__ = [0]*len(self.mesh.x)*self.mesh.freedom
         for i in range(0, len(self.params.names)):
             parser.add_variable(self.params.names[i])
         for i in range(0, len(self.params.bc_list)):
@@ -182,7 +193,6 @@ class TObject:
                         continue
                 parser.set_code(self.params.bc_list[i].expression)
                 val = parser.run()
-                index = -1
                 if self.params.bc_list[i].direct & DIR_X:
                     index = j*self.mesh.freedom + 0
                     self.add_force(i, index, val)
@@ -285,15 +295,15 @@ class TObject:
 
     # Задание граничных условий
     def set_boundary_condition(self, i, j, val):
+        l = i*self.mesh.freedom + j
         for k in range(0, len(self.mesh.x)*self.mesh.freedom):
-            l = i*self.mesh.freedom + j
             if l != k:
                 self.__global_matrix__[l][k] = self.__global_matrix__[k][l] = 0
-            self.__global_vector__[l] = val*self.__global_matrix__[l][l]
+        self.__global_vector__[l] = val*self.__global_matrix__[l][l]
 
     # Расчет динамической задачи методом конечных элементов
     def calc_dynamic_problem(self):
-        pass
+        return False
 
     # Решение СЛАУ
     def solve(self):
@@ -346,3 +356,158 @@ class TObject:
     def solve_iterative(self):
         return True
 
+    # Определение кол-ва результатов в зависимости от типа и размерности задачи
+    def num_result(self):
+        res = 0
+        if self.params.problem_type == 'static':
+            if self.mesh.freedom == 1:
+                # u, Exx, Sxx
+                res = 3
+            elif self.mesh.freedom == 2:
+                # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy
+                res = 8
+            elif self.mesh.freedom == 3:
+                # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz
+                res = 15
+        elif self.params.problem_type == 'dynamic':
+            if self.mesh.freedom == 1:
+                # u, Exx, Sxx, ut, utt
+                res = 5
+            elif self.mesh.freedom == 2:
+                # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy, ut, vt, utt, vtt
+                res = 12
+            elif self.mesh.freedom == 3:
+                # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz, ut, utt, vt, vtt, wt, wtt
+                res = 21
+        return res
+
+    # Индекс функции в зависимости от типа и размерности задачи
+    def index_result(self, i):
+        ret = 0
+        # u, Exx, Sxx
+        index1 = [4, 7, 13]
+        # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy
+        index2 = [4, 5, 7, 8, 10, 13, 14, 16]
+        # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz
+        index3 = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+        # u, Exx, Sxx, ut, utt
+        index4 = [4, 7, 13, 19, 22]
+        # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy, ut, vt, utt, vtt
+        index5 = [4, 5, 7, 8, 10, 13, 14, 16, 19, 20, 22, 23]
+        # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz, ut, utt, vt, vtt, wt, wtt
+        index6 = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+        if self.params.problem_type == 'static':
+            if self.mesh.freedom == 1:
+                ret = index1[i]
+            elif self.mesh.freedom == 2:
+                ret = index2[i]
+            elif self.mesh.freedom == 3:
+                ret = index3[i]
+        elif self.params.problem_type == 'dynamic':
+            if self.mesh.freedom == 1:
+                ret = index4[i]
+            elif self.mesh.freedom == 2:
+                ret = index5[i]
+            elif self.mesh.freedom == 3:
+                ret = index6[i]
+        return ret
+
+    # Вычисление деформаций и напряжений
+    def calc_results(self):
+        # Выделяем память для хранения результатов
+        res = []
+        for i in range(0, self.num_result()):
+            r = [0]*len(self.mesh.x)
+            res.append(r)
+        uvw = [0]*len(self.mesh.fe[0])*self.mesh.freedom
+        counter = [0]*len(self.mesh.x)  # Счетчик кол-ва вхождения узлов для осреднения результатов
+        # Копируем полученные перемещения
+        for i in range(0, len(self.mesh.x)):
+            for j in range(0, self.mesh.freedom):
+                res[j][i] = self.__global_vector__[i*self.mesh.freedom + j]
+        # Вычисляем стандартные результаты по всем КЭ
+        for i in range(0, len(self.mesh.fe)):
+            x = [0]*len(self.mesh.fe[i])
+            y = [0]*len(self.mesh.fe[i])
+            z = [0]*len(self.mesh.fe[i])
+            for j in range(len(self.mesh.fe[i])):
+                x[j] = self.mesh.x[self.mesh.fe[i][j]]
+                y[j] = self.mesh.y[self.mesh.fe[i][j]] if (len(self.mesh.y)) else 0
+                z[j] = self.mesh.z[self.mesh.fe[i][j]] if (len(self.mesh.z)) else 0
+            self.__fe__.set_coord(x, y, z)
+            self.__fe__.generate()
+
+            for j in range(0, len(self.mesh.fe[i])):
+                for k in range(0, self.mesh.freedom):
+                    uvw[j*self.mesh.freedom + k] = self.__global_vector__[self.mesh.freedom*self.mesh.fe[i][j] + k]
+            for m in range(0, self.num_result() - self.mesh.freedom):
+                self.__fe__.calc(uvw, m)
+                for j in range(0, len(self.mesh.fe[i])):
+                    res[self.mesh.freedom + m][self.mesh.fe[i][j]] += uvw[j]
+                    if not m:
+                        counter[self.mesh.fe[i][j]] += 1
+        # Осредняем результаты
+        for i in range(self.mesh.freedom, self.num_result()):
+            for j in range(0, len(self.mesh.x)):
+                res[i][j] /= counter[j]
+        # Сохраняем полученные результаты в списке
+        for i in range(0, self.num_result()):
+            r = TResult()
+            r.name = self.params.names[self.index_result(i)]
+            r.results = res[i]
+            self.result.append(r)
+
+    # Вывод результатов расчета
+    def print_result(self, name):
+        try:
+            file = open(name, 'w')
+        except IOError:
+            raise TFEMException('read_file_err')
+        # Определение ширины позиции
+        l = len('%+*.*E' % (self.params.width, self.params.precision, 3.14159))
+        # Вывод заголовка
+        file.write('| %*s  (' % (len(self.mesh.x), 'N'))
+        for i in range(0, self.mesh.freedom):
+            file.write(' %*s' % (l, self.params.names[i]))
+            if i < self.mesh.freedom - 1:
+                file.write(',')
+        file.write(') |')
+        for i in range(0, len(self.result)):
+            file.write(' %*s |' % (l, self.result[i].name))
+        file.write('\n')
+        for i in range(0, len(self.mesh.x)):
+            file.write('| %*d  (' % (len(self.mesh.x), i + 1))
+            file.write(' %+*.*E' % (self.params.width, self.params.precision, self.mesh.x[i]))
+            if len(self.mesh.y):
+                file.write(', %+*.*E' % (self.params.width, self.params.precision, self.mesh.y[i]))
+            if len(self.mesh.z):
+                file.write(', %+*.*E' % (self.params.width, self.params.precision, self.mesh.z[i]))
+            file.write(') | ')
+            for k in range(0, len(self.result)):
+                file.write('%+*.*E' % (self.params.width, self.params.precision, self.result[k].results[i]))
+                file.write(' | ')
+            file.write('\n')
+        file.write('\n')
+        # Печать итогов
+        file.write('|  %*s  ' % (len(self.mesh.x), ' '))
+        for i in range(0, self.mesh.freedom):
+            file.write(' %*s' % (l, ' '))
+            if i < self.mesh.freedom - 1:
+                file.write(' ')
+        file.write('  |')
+        for i in range(0, len(self.result)):
+            file.write(' %*s |' % (l, self.result[i].name))
+        file.write('\n')
+        file.write('|   %*s  |' % (self.mesh.freedom*(l + 1) + 2 + len(self.mesh.x), 'min:'))
+        for i in range(0, len(self.result)):
+            file.write(' %+*.*E ' % (self.params.width, self.params.precision, self.result[i].min()))
+            file.write('|')
+        file.write('\n')
+        file.write('|   %*s  |' % (self.mesh.freedom*(l + 1) + 2 + len(self.mesh.x), 'max:'))
+        for i in range(0, len(self.result)):
+            file.write(' %+*.*E ' % (self.params.width, self.params.precision, self.result[i].max()))
+            file.write('|')
+        file.write('\n')
+
+
+        file.close()
