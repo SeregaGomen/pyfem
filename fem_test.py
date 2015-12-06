@@ -33,7 +33,8 @@ try:
         obj.calc_results()
         obj.set_width(20)
         obj.set_precision(5)
-        obj.print_result('mesh/body.res')
+#        obj.print_result('mesh/body.res')
+        obj.print_result()
 
 except TFEMException as e:
     e.print_error()

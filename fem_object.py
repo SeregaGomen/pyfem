@@ -5,6 +5,7 @@
 ###################################################################
 
 import os
+import sys
 import math
 from fem_defs import eps, DIR_X, DIR_Y, DIR_Z
 from fem_mesh import TMesh
@@ -458,9 +459,12 @@ class TObject:
             self.result.append(r)
 
     # Вывод результатов расчета
-    def print_result(self, name):
+    def print_result(self, *argv):
         try:
-            file = open(name, 'w')
+            if len(argv) == 0:
+                file = sys.stdout
+            elif len(argv) == 1:
+                file = open(argv[0], 'w')
         except IOError:
             raise TFEMException('read_file_err')
         # Определение ширины позиции
