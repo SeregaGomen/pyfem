@@ -31,7 +31,7 @@ try:
     obj.add_volume_condition('1.0E+6', '', DIR_Y)
     if obj.calc():
         obj.calc_results()
-        obj.set_width(20)
+        obj.set_width(10)
         obj.set_precision(5)
 #        obj.print_result('mesh/body.res')
         obj.print_result()

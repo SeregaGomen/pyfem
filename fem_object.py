@@ -5,8 +5,8 @@
 ###################################################################
 
 import os
-import sys
 import math
+import sys
 from fem_defs import eps, DIR_X, DIR_Y, DIR_Z
 from fem_mesh import TMesh
 from fem_params import TFEMParams
@@ -14,6 +14,7 @@ from fem_error import TFEMException
 from fem_parser import TParser
 from fem_fe import TFE, TFE1D2, TFE2D3
 from fem_result import TResult
+from fem_progress import TProgress
 
 
 class TObject:
@@ -29,6 +30,7 @@ class TObject:
         self.__fe__ = TFE()                 # Конечный элемент
         self.__global_matrix__ = []         # Глобальная матрица жесткости (ГМЖ)
         self.__global_vector__ = []         # Глобальная правая часть
+        self.__progress__ = TProgress()     # Индикатор прогресса расчета
 
     def set_mesh(self, name):
         self.file_name = name
@@ -136,7 +138,9 @@ class TObject:
         # Вычисление компонент нагрузки
         self.prepare_force()
         # Формирование глобальной матрицы жесткости
+        self.__progress__.set_process('Assembling global stiffness matrix...', 1, len(self.mesh.fe))
         for i in range(0, len(self.mesh.fe)):
+            self.__progress__.set_progress(i)
             x = [0]*len(self.mesh.fe[i])
             y = [0]*len(self.mesh.fe[i])
             z = [0]*len(self.mesh.fe[i])
@@ -179,11 +183,23 @@ class TObject:
         self.__concentrated_force__ = [0]*len(self.mesh.x)*self.mesh.freedom
         for i in range(0, len(self.params.names)):
             parser.add_variable(self.params.names[i])
+
+        counter = 0
+        for i in range(0, len(self.params.bc_list)):
+            if not (self.params.bc_list[i].type == 'volume' or self.params.bc_list[i].type == 'surface' or
+               self.params.bc_list[i].type == 'concentrated'):
+                continue
+            counter += 1
+
+        self.__progress__.set_process('Computation of forces...', 1, counter*len(self.mesh.x))
+        counter = 1
         for i in range(0, len(self.params.bc_list)):
             if not (self.params.bc_list[i].type == 'volume' or self.params.bc_list[i].type == 'surface' or
                self.params.bc_list[i].type == 'concentrated'):
                 continue
             for j in range(0, len(self.mesh.x)):
+                self.__progress__.set_progress(counter)
+                counter += 1
                 x = self.mesh.x[j]
                 y = self.mesh.y[j] if (len(self.mesh.y)) else 0
                 z = self.mesh.z[j] if (len(self.mesh.z)) else 0
@@ -219,8 +235,12 @@ class TObject:
 
     # Учет сосредоточенной и поверхностной нагрузок
     def use_force_condition(self):
+        self.__progress__.set_process('Building the force vector-column...', 1, len(self.__concentrated_force__) + len(self.mesh.surface))
+        counter = 1
         # Учет сосредоточенной нагрузки
         for i in range(0, len(self.__concentrated_force__)):
+            self.__progress__.set_progress(counter)
+            counter += 1
             if self.__concentrated_force__[i]:
                 self.__global_vector__[i] += self.__concentrated_force__[i]
         # Учет поверхностной нагрузки
@@ -230,6 +250,8 @@ class TObject:
         y = [0]*len(self.mesh.surface[0])
         z = [0]*len(self.mesh.surface[0])
         for i in range(0, len(self.mesh.surface)):
+            self.__progress__.set_progress(counter)
+            counter += 1
             for j in range(0, len(self.mesh.surface[0])):
                 x[j] = self.mesh.x[self.mesh.surface[i][j]]
                 y[j] = self.mesh.y[self.mesh.surface[i][j]]
@@ -275,9 +297,17 @@ class TObject:
         parser = TParser()
         for i in range(0, len(self.params.names)):
             parser.add_variable(self.params.names[i])
+        counter = 0
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type == 'boundary':
+                counter += 1
+        self.__progress__.set_process('Use of boundary conditions...', 1, counter*len(self.mesh.x))
+        counter = 1
         for i in range(0, len(self.params.bc_list)):
             if self.params.bc_list[i].type == 'boundary':
                 for j in range(0, len(self.mesh.x)):
+                    self.__progress__.set_progress(counter)
+                    counter += 1
                     x = self.mesh.x[j]
                     y = self.mesh.y[j] if (len(self.mesh.y)) else 0
                     z = self.mesh.z[j] if (len(self.mesh.z)) else 0
@@ -324,7 +354,9 @@ class TObject:
         size = len(self.__global_matrix__)
         result = [0]*size
         # Прямой ход метода Гаусса
+        self.__progress__.set_process('Solving of equation system...', 1, size - 1)
         for i in range(0, size - 1):
+            self.__progress__.set_progress(i)
             if math.fabs(self.__global_matrix__[i][i]) < eps:
                 for l in range(i + 1, size):
                     if math.fabs(self.__global_matrix__[l][i]) < eps:
@@ -446,9 +478,10 @@ class TObject:
                 for k in range(0, self.mesh.freedom):
                     uvw[j*self.mesh.freedom + k] = self.__global_vector__[self.mesh.freedom*self.mesh.fe[i][j] + k]
             for m in range(0, self.num_result() - self.mesh.freedom):
-                self.__fe__.calc(uvw, m)
+                r = list(uvw)
+                self.__fe__.calc(r, m)
                 for j in range(0, len(self.mesh.fe[i])):
-                    res[self.mesh.freedom + m][self.mesh.fe[i][j]] += uvw[j]
+                    res[self.mesh.freedom + m][self.mesh.fe[i][j]] += r[j]
                     if not m:
                         counter[self.mesh.fe[i][j]] += 1
         # Осредняем результаты
