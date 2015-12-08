@@ -228,69 +228,74 @@ class TFE2D3(TFE):
         u2 = u[4]
         v2 = u[5]
         res = 0
+        c01 = self.c[0][1]
+        c02 = self.c[0][2]
+        c11 = self.c[1][1]
+        c12 = self.c[1][2]
+        c21 = self.c[2][1]
+        c22 = self.c[2][2]
+        e = self.e[0]
+        m = self.m[0]
         if index == 0:      # Exx
-            res = u0*self.c[0][1] + u1*self.c[1][1] + u2*self.c[2][1]
+            res = u0*c01 + u1*c11 + u2*c21
         elif index == 1:    # Eyy
-            res = v0*self.c[0][2] + v1*self.c[1][2] + v2*self.c[2][2]
+            res = v0*c02 + v1*c12 + v2*c22
         elif index == 2:    # Exy
-            res = u0*self.c[0][2] + u1*self.c[1][2] + u2*self.c[2][2] + v0*self.c[0][1] + v1*self.c[1][1] + \
-                  v2*self.c[2][1]
+            res = u0*c02 + u1*c12 + u2*c22 + v0*c01 + v1*c11 + v2*c21
         elif index == 3:    # Sxx
-            res = self.e[0]/(1.0 - self.m[0]*self.m[0])*((u0*self.c[0][1] + u1*self.c[1][1] + u2*self.c[2][1]) +
-                                   self.m[0]*(v0*self.c[0][2] + v1*self.c[1][2] + v2*self.c[2][2]))
+            res = e/(1.0 - m*m)*((u0*c01 + u1*c11 + u2*c21) + self.m[0]*(v0*c02 + v1*c12 + v2*c22))
         elif index == 4:    # Syy
-            res = self.e[0]/(1.0 - self.m[0]*self.m[0])*(self.m[0]*(u0*self.c[0][1] + u1*self.c[1][1] +
-                                u2*self.c[2][1]) + (v0*self.c[0][2] + v1*self.c[1][2] + v2*self.c[2][2]))
+            res = e/(1.0 - m*m)*(self.m[0]*(u0*c01 + u1*c11 + u2*c21) + (v0*c02 + v1*c12 + v2*c22))
         elif index == 5:    # Sxy
-            res = self.e[0]/(2.0 + 2.0*self.m[0])*(u0*self.c[0][2] + u1*self.c[1][2] + u2*self.c[2][2] + v0*self.c[0][1] + v1*self.c[1][1] + v2*self.c[2][1])
+            res = e/(2.0 + 2.0*m)*(u0*c02 + u1*c12 + u2*c22 + v0*c01 + v1*c11 + v2*c21)
         u[0] = u[1] = u[2] = res
 
     def generate(self, is_static=True):
         k = self.e[0]/(1.0 - self.m[0]*self.m[0])
         g = self.e[0]/(2.0 + 2.0*self.m[0])
-        volume = self.volume()
+        vol = self.volume()
 
-        self.K[0][0] = volume*(k*self.c[0][1]*self.c[0][1] + g*self.c[0][2]*self.c[0][2])
-        self.K[0][1] = volume*(k*self.c[0][1]*self.m[0]*self.c[0][2] + g*self.c[0][2]*self.c[0][1])
-        self.K[0][2] = volume*(k*self.c[0][1]*self.c[1][1] + g*self.c[0][2]*self.c[1][2])
-        self.K[0][3] = volume*(k*self.c[0][1]*self.m[0]*self.c[1][2] + g*self.c[0][2]*self.c[1][1])
-        self.K[0][4] = volume*(k*self.c[0][1]*self.c[2][1] + g*self.c[0][2]*self.c[2][2])
-        self.K[0][5] = volume*(g*self.c[0][2]*self.c[2][1] + k*self.c[0][1]*self.m[0]*self.c[2][2])
+        self.K[0][0] = vol*(k*self.c[0][1]*self.c[0][1] + g*self.c[0][2]*self.c[0][2])
+        self.K[0][1] = vol*(k*self.c[0][1]*self.m[0]*self.c[0][2] + g*self.c[0][2]*self.c[0][1])
+        self.K[0][2] = vol*(k*self.c[0][1]*self.c[1][1] + g*self.c[0][2]*self.c[1][2])
+        self.K[0][3] = vol*(k*self.c[0][1]*self.m[0]*self.c[1][2] + g*self.c[0][2]*self.c[1][1])
+        self.K[0][4] = vol*(k*self.c[0][1]*self.c[2][1] + g*self.c[0][2]*self.c[2][2])
+        self.K[0][5] = vol*(g*self.c[0][2]*self.c[2][1] + k*self.c[0][1]*self.m[0]*self.c[2][2])
 
-        self.K[1][1] = volume*(k*self.c[0][2]*self.c[0][2] + g*self.c[0][1]*self.c[0][1])
-        self.K[1][2] = volume*(g*self.c[1][2]*self.c[0][1] + k*self.c[1][1]*self.m[0]*self.c[0][2])
-        self.K[1][3] = volume*(g*self.c[0][1]*self.c[1][1] + k*self.c[0][2]*self.c[1][2])
-        self.K[1][4] = volume*(k*self.c[2][1]*self.m[0]*self.c[0][2] + g*self.c[2][2]*self.c[0][1])
-        self.K[1][5] = volume*(g*self.c[0][1]*self.c[2][1] + k*self.c[0][2]*self.c[2][2])
+        self.K[1][1] = vol*(k*self.c[0][2]*self.c[0][2] + g*self.c[0][1]*self.c[0][1])
+        self.K[1][2] = vol*(g*self.c[1][2]*self.c[0][1] + k*self.c[1][1]*self.m[0]*self.c[0][2])
+        self.K[1][3] = vol*(g*self.c[0][1]*self.c[1][1] + k*self.c[0][2]*self.c[1][2])
+        self.K[1][4] = vol*(k*self.c[2][1]*self.m[0]*self.c[0][2] + g*self.c[2][2]*self.c[0][1])
+        self.K[1][5] = vol*(g*self.c[0][1]*self.c[2][1] + k*self.c[0][2]*self.c[2][2])
 
-        self.K[2][2] = volume*(k*self.c[1][1]*self.c[1][1] + g*self.c[1][2]*self.c[1][2])
-        self.K[2][3] = volume*(g*self.c[1][2]*self.c[1][1] + k*self.c[1][1]*self.m[0]*self.c[1][2])
-        self.K[2][4] = volume*(g*self.c[1][2]*self.c[2][2] + k*self.c[1][1]*self.c[2][1])
-        self.K[2][5] = volume*(g*self.c[1][2]*self.c[2][1] + k*self.c[1][1]*self.m[0]*self.c[2][2])
+        self.K[2][2] = vol*(k*self.c[1][1]*self.c[1][1] + g*self.c[1][2]*self.c[1][2])
+        self.K[2][3] = vol*(g*self.c[1][2]*self.c[1][1] + k*self.c[1][1]*self.m[0]*self.c[1][2])
+        self.K[2][4] = vol*(g*self.c[1][2]*self.c[2][2] + k*self.c[1][1]*self.c[2][1])
+        self.K[2][5] = vol*(g*self.c[1][2]*self.c[2][1] + k*self.c[1][1]*self.m[0]*self.c[2][2])
 
-        self.K[3][3] = volume*(g*self.c[1][1]*self.c[1][1] + k*self.c[1][2]*self.c[1][2])
-        self.K[3][4] = volume*(g*self.c[2][2]*self.c[1][1] + k*self.c[2][1]*self.m[0]*self.c[1][2])
-        self.K[3][5] = volume*(k*self.c[1][2]*self.c[2][2] + g*self.c[1][1]*self.c[2][1])
+        self.K[3][3] = vol*(g*self.c[1][1]*self.c[1][1] + k*self.c[1][2]*self.c[1][2])
+        self.K[3][4] = vol*(g*self.c[2][2]*self.c[1][1] + k*self.c[2][1]*self.m[0]*self.c[1][2])
+        self.K[3][5] = vol*(k*self.c[1][2]*self.c[2][2] + g*self.c[1][1]*self.c[2][1])
 
-        self.K[4][4] = volume*(g*self.c[2][2]*self.c[2][2] + k*self.c[2][1]*self.c[2][1])
-        self.K[4][5] = volume*(g*self.c[2][2]*self.c[2][1] + k*self.c[2][1]*self.m[0]*self.c[2][2])
+        self.K[4][4] = vol*(g*self.c[2][2]*self.c[2][2] + k*self.c[2][1]*self.c[2][1])
+        self.K[4][5] = vol*(g*self.c[2][2]*self.c[2][1] + k*self.c[2][1]*self.m[0]*self.c[2][2])
 
-        self.K[5][5] = volume*(g*self.c[2][1]*self.c[2][1] + k*self.c[2][2]*self.c[2][2])
+        self.K[5][5] = vol*(g*self.c[2][1]*self.c[2][1] + k*self.c[2][2]*self.c[2][2])
 
         # Вычисление интеграла для объемных сил
         self.K[0][6] = self.K[1][6] = self.K[2][6] = self.K[3][6] = self.K[4][6] = self.K[5][6] = 0
         if len(self.vx) or len(self.vy):
-            self.K[0][6] += self.vx[0]*volume/6.0
-            self.K[2][6] += self.vx[1]*volume/6.0
-            self.K[4][6] += self.vx[2]*volume/6.0
-            self.K[1][6] += self.vy[0]*volume/6.0
-            self.K[3][6] += self.vy[1]*volume/6.0
-            self.K[5][6] += self.vy[2]*volume/6.0
+            self.K[0][6] += self.vx[0]*vol/6.0
+            self.K[2][6] += self.vx[1]*vol/6.0
+            self.K[4][6] += self.vx[2]*vol/6.0
+            self.K[1][6] += self.vy[0]*vol/6.0
+            self.K[3][6] += self.vy[1]*vol/6.0
+            self.K[5][6] += self.vy[2]*vol/6.0
 
         if not is_static:
             # Формирование матриц массы и демпфирования
-            k00 = volume/12.0
-            k01 = volume/6.0
+            k00 = vol/12.0
+            k01 = vol/6.0
             self.M = [
                 [0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0],
@@ -323,3 +328,43 @@ class TFE2D3(TFE):
                 for j in range(0, len(self.M)):
                     self.M[i][j] *= self.density
                     self.D[i][j] *= self.damping
+
+
+# Линейный (четырехузловой) тетраэдральный КЭ
+class TFE3D4(TFE):
+    def __init__(self):
+        super().__init__()
+        self.size = 4
+        self.K = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ]
+        self.c = [
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+        ]
+
+    def volume(self):
+        a = (self.x[1] - self.x[0])*(self.y[2] - self.y[0])*(self.z[3] - self.z[0]) + \
+            (self.x[3] - self.x[0])*(self.y[1] - self.y[0])*(self.z[2] - self.z[0]) + \
+            (self.x[2] - self.x[0])*(self.y[3] - self.y[0])*(self.z[1] - self.z[0])
+        b = (self.x[3] - self.x[0])*(self.y[2] - self.y[0])*(self.z[1] - self.z[0]) + \
+            (self.x[2] - self.x[0])*(self.y[1] - self.y[0])*(self.z[3] - self.z[0]) + \
+            (self.x[1] - self.x[0])*(self.y[3] - self.y[0])*(self.z[2] - self.z[0])
+        return math.fabs(a - b)/6.0
+
+    def __create__(self):
+        if self.volume() == 0.0:
+            raise TFEMException('incorrect_fe_err')
