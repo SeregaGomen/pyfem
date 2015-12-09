@@ -12,7 +12,7 @@ from fem_mesh import TMesh
 from fem_params import TFEMParams
 from fem_error import TFEMException
 from fem_parser import TParser
-from fem_fe import TFE, TFE1D2, TFE2D3
+from fem_fe import TFE, TFE1D2, TFE2D3, TFE3D4
 from fem_result import TResult
 from fem_progress import TProgress
 
@@ -124,6 +124,8 @@ class TObject:
             self.__fe__ = TFE1D2()
         elif self.mesh.fe_type == 'fe_2d_3':
             self.__fe__ = TFE2D3()
+        elif self.mesh.fe_type == 'fe_3d_4':
+            self.__fe__ = TFE3D4()
 
     # Расчет статической задачи методом конечных элементов
     def calc_static_problem(self):

@@ -23,12 +23,12 @@ obj = TObject()
 e = [6.5E+10]
 m = [0.3]
 try:
-    obj.set_mesh('mesh/consol.trpa')
+    obj.set_mesh('mesh/balka.trpa')
     obj.set_problem_type('static')
     obj.set_solve_method('direct')
     obj.set_elasticity(e, m)
-    obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y)
-    obj.add_volume_condition('1.0E+6', '', DIR_Y)
+    obj.add_boundary_condition('0', 'y=0', DIR_X | DIR_Y | DIR_Z)
+    obj.add_volume_condition('-1.0E+5', '', DIR_Y)
     if obj.calc():
         obj.calc_results()
         obj.set_width(10)

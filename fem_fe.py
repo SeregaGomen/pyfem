@@ -8,7 +8,8 @@ import math
 from abc import abstractmethod
 from fem_error import TFEMException
 from fem_defs import eps
-
+from numpy.linalg import solve
+from numpy import array
 
 # Абстрактный базовый класс, описывающий конечный элемент (КЭ)
 class TFE:
@@ -323,7 +324,7 @@ class TFE2D3(TFE):
             self.M[5][3] = k01
             self.M[5][5] = k00
 
-            self.D = self.M
+            self.D = list(self.M)
             for i in range(0, len(self.M)):
                 for j in range(0, len(self.M)):
                     self.M[i][j] *= self.density
@@ -368,3 +369,280 @@ class TFE3D4(TFE):
     def __create__(self):
         if self.volume() == 0.0:
             raise TFEMException('incorrect_fe_err')
+        a = array([[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]])
+        x = array([0.0, 0.0, 0.0, 0.0])
+        for j in range(0, self.size):
+            b = array([0.0, 0.0, 0.0, 0.0])
+            for i in range(0, self.size):
+                a[i][0] = 1.0
+                a[i][1] = self.x[i]
+                a[i][2] = self.y[i]
+                a[i][3] = self.z[i]
+            b[j] = 1.0
+            x = solve(a, b)
+            self.c[j] = list(x)
+
+    def calc(self, u, index):
+        e = self.e[0]
+        m = self.m[0]
+        g = e/(2.0 + 2.0*m)
+        l = 2.0*m*g/(1.0 - 2.0*m)
+        u0 = u[0]
+        v0 = u[1]
+        w0 = u[2]
+        u1 = u[3]
+        v1 = u[4]
+        w1 = u[5]
+        u2 = u[6]
+        v2 = u[7]
+        w2 = u[8]
+        u3 = u[9]
+        v3 = u[10]
+        w3 = u[11]
+        c01 = self.c[0][1]
+        c02 = self.c[0][2]
+        c03 = self.c[0][3]
+        c11 = self.c[1][1]
+        c12 = self.c[1][2]
+        c13 = self.c[1][3]
+        c21 = self.c[2][1]
+        c22 = self.c[2][2]
+        c23 = self.c[2][3]
+        c31 = self.c[3][1]
+        c32 = self.c[3][2]
+        c33 = self.c[3][3]
+        res = 0
+        if index == 0:      # Exx
+            res = u0*c01 + u1*c11 + u2*c21 + u3*c31
+        elif index == 1:    # Eyy
+            res = v0*c02 + v1*c12 + v2*c22 + v3*c32
+        elif index == 2:    # Ezz
+            res = w0*c03 + w1*c13 + w2*c23 + w3*c33
+        elif index == 3:    # Exy
+            res = u0*c02 + u1*c12 + u2*c22 + u3*c32 + v0*c01 + v1*c11 + v2*c21 + v3*c31
+        elif index == 4:    # Exz
+            res = u0*c03 + u1*c13 + u2*c23 + u3*c33 + w0*c01 + w1*c11 + w2*c21 + w3*c31
+        elif index == 5:    # Eyz
+            res = v0*c03 + v1*c13 + v2*c23 + v3*c33 + w0*c02 + w1*c12 + w2*c22 + w3*c32
+        elif index == 6:    # Sxx
+            res = 2.0*g*u0*c01 + 2.0*g*u1*c11 + 2.0*g*u2*c21 + 2.0*g*u3*c31 + l*u0*c01 + l*u1*c11 + l*u2*c21 + \
+                  l*u3*c31 + l*v0*c02 + l*v1*c12 + l*v2*c22 + l*v3*c32 + l*w0*c03 + l*w1*c13 + l*w2*c23 + l*w3*c33
+        elif index == 7:    # Syy
+            res = 2.0*g*v0*c02 + 2.0*g*v1*c12 + 2.0*g*v2*c22 + 2.0*g*v3*c32 + l*u0*c01 + l*u1*c11 + l*u2*c21 + \
+                  l*u3*c31 + l*v0*c02 + l*v1*c12 + l*v2*c22 + l*v3*c32 + l*w0*c03 + l*w1*c13 + l*w2*c23 + l*w3*c33
+        elif index == 8:    # Szz
+            res = 2.0*g*w0*c03 + 2.0*g*w1*c13 + 2.0*g*w2*c23 + 2.0*g*w3*c33 + l*u0*c01 + l*u1*c11 + l*u2*c21 + \
+                  l*u3*c31 + l*v0*c02 + l*v1*c12 + l*v2*c22 + l*v3*c32 + l*w0*c03 + l*w1*c13 + l*w2*c23 + l*w3*c33
+        elif index == 9:    # Sxy
+            res = g*(u0*c02 + u1*c12 + u2*c22 + u3*c32 + v0*c01 + v1*c11 + v2*c21 + v3*c31)
+        elif index == 10:   # Sxz
+            res = g*(u0*c03 + u1*c13 + u2*c23 + u3*c33 + w0*c01 + w1*c11 + w2*c21 + w3*c31)
+        elif index == 11:   # Syz
+            res = g*(v0*c03 + v1*c13 + v2*c23 + v3*c33 + w0*c02 + w1*c12 + w2*c22 + w3*c32)
+        u[0] = u[1] = u[2] = u[3] = u[4] = res
+
+    def generate(self, is_static=True):
+        vol = self.volume()
+        g = self.e[0]/(2.0 + 2.0*self.m[0])
+        l = 2.0*self.m[0]*g/(1.0 - 2.0*self.m[0])
+        c01 = self.c[0][1]
+        c02 = self.c[0][2]
+        c03 = self.c[0][3]
+        c11 = self.c[1][1]
+        c12 = self.c[1][2]
+        c13 = self.c[1][3]
+        c21 = self.c[2][1]
+        c22 = self.c[2][2]
+        c23 = self.c[2][3]
+        c31 = self.c[3][1]
+        c32 = self.c[3][2]
+        c33 = self.c[3][3]
+        k1 = 0.1*self.volume()
+        k2 = 0.05*self.volume()
+
+        self.K[0][0] = vol*0.5*(2.0*(2.0*g*c01 + l*c01)*c01 + 2.0*g*c02*c02 + 2.0*g*c03*c03)
+        self.K[0][1] = vol*0.5*(2.0*l*c02*c01 + 2.0*g*c01*c02)
+        self.K[0][2] = vol*0.5*(2.0*l*c01*c03 + 2.0*g*c01*c03)
+        self.K[0][3] = vol*0.5*((2.0*g*c01 + l*c01)*c11 + (2.0*g*c11 + l*c11)*c01 + 2.0*g*c12*c02 + 2.0*g*c13*c03)
+        self.K[0][4] = vol*0.5*(2.0*g*c11*c02 + 2.0*l*c12*c01)
+        self.K[0][5] = vol*0.5*(2.0*l*c13*c01 + 2.0*g*c11*c03)
+        self.K[0][6] = vol*0.5*((2.0*g*c01 + l*c01)*c21 + 2.0*g*c23*c03 + (2.0*g*c21 + l*c21)*c01 + 2.0*g*c22*c02)
+        self.K[0][7] = vol*0.5*(2.0*l*c22*c01 + 2.0*g*c21*c02)
+        self.K[0][8] = vol*0.5*(2.0*l*c23*c01 + 2.0*g*c21*c03)
+        self.K[0][9] = vol*0.5*(2.0*g*c32*c02 + (2.0*g*c31 + l*c31)*c01 + 2.0*g*c33*c03 + (2.0*g*c01 + l*c01)*c31)
+        self.K[0][10] = vol*0.5*(2.0*l*c32*c01 + 2.0*g*c31*c02)
+        self.K[0][11] = vol*0.5*(2.0*l*c33*c01 + 2.0*g*c31*c03)
+
+        self.K[1][1] = vol*0.5*(2.0*(2.0*g*c02 + l*c02)*c02 + 2.0*g*c03*c03 + 2.0*g*c01*c01)
+        self.K[1][2] = vol*0.5*(2.0*l*c03*c02 + 2.0*g*c03*c02)
+        self.K[1][3] = vol*0.5*(2.0*l*c02*c11 + 2.0*g*c12*c01)
+        self.K[1][4] = vol*0.5*(2.0*g*c13*c03 + (2.0*g*c12 + l*c12)*c02 + (2.0*g*c02 + l*c02)*c12 + 2.0*g*c01*c11)
+        self.K[1][5] = vol*0.5*(2.0*g*c03*c12 + 2.0*l*c13*c02)
+        self.K[1][6] = vol*0.5*(2.0*l*c02*c21 + 2.0*g*c22*c01)
+        self.K[1][7] = vol*0.5*((2.0*g*c02 + l*c02)*c22 + (2.0*g*c22 + l*c22)*c02 + 2.0*g*c01*c21 + 2.0*g*c23*c03)
+        self.K[1][8] = vol*0.5*(2.0*l*c23*c02 + 2.0*g*c03*c22)
+        self.K[1][9] = vol*0.5*(2.0*l*c02*c31 + 2.0*g*c32*c01)
+        self.K[1][10] = vol*0.5*((2.0*g*c02 + l*c02)*c32 + (2.0*g*c32 + l*c32)*c02 + 2.0*g*c33*c03 + 2.0*g*c01*c31)
+        self.K[1][11] = vol*0.5*(2.0*g*c03*c32 + 2.0*l*c33*c02)
+    
+        self.K[2][2] = vol*0.5*(2.0*g*c01*c01 + 2*(2.0*g*c03 + l*c03)*c03 + 2.0*g*c02*c02)
+        self.K[2][3] = vol*0.5*(2.0*g*c13*c01 + 2.0*l*c03*c11)
+        self.K[2][4] = vol*0.5*(2.0*l*c03*c12 + 2.0*g*c13*c02)
+        self.K[2][5] = vol*0.5*((2.0*g*c13 + l*c13)*c03 + (2.0*g*c03 + l*c03)*c13 + 2.0*g*c01*c11 + 2.0*g*c12*c02)
+        self.K[2][6] = vol*0.5*(2.0*l*c03*c21 + 2.0*g*c23*c01)
+        self.K[2][7] = vol*0.5*(2.0*l*c03*c22 + 2.0*g*c23*c02)
+        self.K[2][8] = vol*0.5*((2.0*g*c03 + l*c03)*c23 + 2.0*g*c01*c21 + 2.0*g*c22*c02 + (2.0*g*c23 + l*c23)*c03)
+        self.K[2][9] = vol*0.5*(2.0*g*c33*c01 + 2.0*l*c03*c31)
+        self.K[2][10] = vol*0.5*(2.0*g*c33*c02 + 2.0*l*c03*c32)
+        self.K[2][11] = vol*0.5*((2.0*g*c03 + l*c03)*c33 + 2.0*g*c01*c31 + 2.0*g*c32*c02 + (2.0*g*c33 + l*c33)*c03)
+    
+        self.K[3][3] = vol*0.5*(2.0*(2.0*g*c11 + l*c11)*c11 + 2.0*g*c12*c12 + 2.0*g*c13*c13)
+        self.K[3][4] = vol*0.5*(2.0*l*c12*c11 + 2.0*g*c12*c11)
+        self.K[3][5] = vol*0.5*(2.0*g*c13*c11 + 2.0*l*c13*c11)
+        self.K[3][6] = vol*0.5*((2.0*g*c11 + l*c11)*c21 + 2.0*g*c13*c23 + (2.0*g*c21 + l*c21)*c11 + 2.0*g*c12*c22)
+        self.K[3][7] = vol*0.5*(2.0*g*c12*c21 + 2.0*l*c22*c11)
+        self.K[3][8] = vol*0.5*(2.0*l*c23*c11 + 2.0*g*c13*c21)
+        self.K[3][9] = vol*0.5*(2.0*g*c12*c32 + (2.0*g*c31 + l*c31)*c11 + 2.0*g*c13*c33 + (2.0*g*c11 + l*c11)*c31)
+        self.K[3][10] = vol*0.5*(2.0*l*c32*c11 + 2.0*g*c12*c31)
+        self.K[3][11] = vol*0.5*(2.0*l*c33*c11 + 2.0*g*c13*c31)
+    
+        self.K[4][4] = vol*0.5*(2.0*g*c13*c13 + 2*(2.0*g*c12 + l*c12)*c12 + 2.0*g*c11*c11)
+        self.K[4][5] = vol*0.5*(2.0*g*c13*c12 + 2.0*l*c13*c12)
+        self.K[4][6] = vol*0.5*(2.0*l*c12*c21 + 2.0*g*c22*c11)
+        self.K[4][7] = vol*0.5*((2.0*g*c12 + l*c12)*c22 + (2.0*g*c22 + l*c22)*c12 + 2.0*g*c11*c21 + 2.0*g*c13*c23)
+        self.K[4][8] = vol*0.5*(2.0*l*c23*c12 + 2.0*g*c13*c22)
+        self.K[4][9] = vol*0.5*(2.0*g*c32*c11 + 2.0*l*c12*c31)
+        self.K[4][10] = vol*0.5*((2.0*g*c12 + l*c12)*c32 + (2.0*g*c32 + l*c32)*c12 + 2.0*g*c13*c33 + 2.0*g*c11*c31)
+        self.K[4][11] = vol*0.5*(2.0*g*c13*c32 + 2.0*l*c33*c12)
+    
+        self.K[5][5] = vol*0.5*(2.0*(2.0*g*c13 + l*c13)*c13 + 2.0*g*c11*c11 + 2.0*g*c12*c12)
+        self.K[5][6] = vol*0.5*(2.0*g*c23*c11 + 2.0*l*c13*c21)
+        self.K[5][7] = vol*0.5*(2.0*l*c13*c22 + 2.0*g*c23*c12)
+        self.K[5][8] = vol*0.5*((2.0*g*c13 + l*c13)*c23 + 2.0*g*c11*c21 + 2.0*g*c12*c22 + (2.0*g*c23 + l*c23)*c13)
+        self.K[5][9] = vol*0.5*(2.0*l*c13*c31 + 2.0*g*c33*c11)
+        self.K[5][10] = vol*0.5*(2.0*l*c13*c32 + 2.0*g*c33*c12)
+        self.K[5][11] = vol*0.5*((2.0*g*c13 + l*c13)*c33 + 2.0*g*c11*c31 + 2.0*g*c12*c32 + (2.0*g*c33 + l*c33)*c13)
+    
+        self.K[6][6] = vol*0.5*(2.0*(2.0*g*c21 + l*c21)*c21 + 2.0*g*c23*c23 + 2.0*g*c22*c22)
+        self.K[6][7] = vol*0.5*(2.0*l*c22*c21 + 2.0*g*c22*c21)
+        self.K[6][8] = vol*0.5*(2.0*l*c23*c21 + 2.0*g*c23*c21)
+        self.K[6][9] = vol*0.5*(2.0*g*c22*c32 + (2.0*g*c31 + l*c31)*c21 + 2.0*g*c23*c33 + (2.0*g*c21 + l*c21)*c31)
+        self.K[6][10] = vol*0.5*(2.0*g*c22*c31 + 2.0*l*c32*c21)
+        self.K[6][11] = vol*0.5*(2.0*g*c23*c31 + 2.0*l*c33*c21)
+    
+        self.K[7][7] = vol*0.5*(2.0*(2.0*g*c22 + l*c22)*c22 + 2.0*g*c21*c21 + 2.0*g*c23*c23)
+        self.K[7][8] = vol*0.5*(2.0*l*c23*c22 + 2.0*g*c23*c22)
+        self.K[7][9] = vol*0.5*(2.0*g*c32*c21 + 2.0*l*c22*c31)
+        self.K[7][10] = vol*0.5*((2.0*g*c22 + l*c22)*c32 + (2.0*g*c32 + l*c32)*c22 + 2.0*g*c23*c33 + 2.0*g*c21*c31)
+        self.K[7][11] = vol*0.5*(2.0*g*c23*c32 + 2.0*l*c33*c22)
+    
+        self.K[8][8] = vol*0.5*(2.0*(2.0*g*c23 + l*c23)*c23 + 2.0*g*c21*c21 + 2.0*g*c22*c22) 
+        self.K[8][9] = vol*0.5*(2.0*l*c23*c31 + 2.0*g*c33*c21)
+        self.K[8][10] = vol*0.5*(2.0*l*c23*c32 + 2.0*g*c33*c22)
+        self.K[8][11] = vol*0.5*((2.0*g*c23 + l*c23)*c33 + 2.0*g*c21*c31 + 2.0*g*c22*c32 + (2.0*g*c33 + l*c33)*c23)
+    
+        self.K[9][9] = vol*0.5*(2.0*g*c32*c32 + 2*(2.0*g*c31 + l*c31)*c31 + 2.0*g*c33*c33)
+        self.K[9][10] = vol*0.5*(2.0*l*c32*c31 + 2.0*g*c32*c31)
+        self.K[9][11] = vol*0.5*(2.0*l*c33*c31 + 2.0*g*c33*c31)
+    
+        self.K[10][10] = vol*0.5*(2.0*(2.0*g*c32 + l*c32)*c32 + 2.0*g*c33*c33 + 2.0*g*c31*c31) 
+        self.K[10][11] = vol*0.5*(2.0*g*c33*c32 + 2.0*l*c33*c32)
+    
+        self.K[11][11] = vol*0.5*(2.0*(2.0*g*c33 + l*c33)*c33 + 2.0*g*c31*c31 + 2.0*g*c32*c32)
+
+        for i in range(0, 12):
+            self.K[i][12] = 0
+        if len(self.vx) or len(self.vy) or len(self.vz):
+            self.K[0][12] += 0.25*self.vx[0]*vol
+            self.K[1][12] += 0.25*self.vy[0]*vol
+            self.K[2][12] += 0.25*self.vz[0]*vol
+            self.K[3][12] += 0.25*self.vx[1]*vol
+            self.K[4][12] += 0.25*self.vy[1]*vol
+            self.K[5][12] += 0.25*self.vz[1]*vol
+            self.K[6][12] += 0.25*self.vx[2]*vol
+            self.K[7][12] += 0.25*self.vy[2]*vol
+            self.K[8][12] += 0.25*self.vz[2]*vol
+            self.K[9][12] += 0.25*self.vx[3]*vol
+            self.K[10][12] += 0.25*self.vy[3]*vol
+            self.K[11][12] += 0.25*self.vz[3]*vol
+        if not is_static:
+            self.M = [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            ]
+            self.M[0][0] = k1
+            self.M[0][3] = k2
+            self.M[0][6] = k2
+            self.M[0][9] = k2
+    
+            self.M[1][1] = k1
+            self.M[1][4] = k2
+            self.M[1][7] = k2
+            self.M[1][10] = k2
+    
+            self.M[2][2] = k1
+            self.M[2][5] = k2
+            self.M[2][8] = k2
+            self.M[2][11] = k2
+    
+            self.M[3][0] = k2
+            self.M[3][3] = k1
+            self.M[3][6] = k2
+            self.M[3][9] = k2
+    
+            self.M[4][1] = k2
+            self.M[4][4] = k1
+            self.M[4][7] = k2
+            self.M[4][10] = k2
+    
+            self.M[5][2] = k2
+            self.M[5][5] = k1
+            self.M[5][8] = k2
+            self.M[5][11] = k2
+    
+            self.M[6][0] = k2
+            self.M[6][3] = k2
+            self.M[6][6] = k1
+            self.M[6][9] = k2
+    
+            self.M[7][1] = k2
+            self.M[7][4] = k2
+            self.M[7][7] = k1
+            self.M[7][10] = k2
+    
+            self.M[8][2] = k2
+            self.M[8][5] = k2
+            self.M[8][8] = k1
+            self.M[8][11] = k2
+    
+            self.M[9][0] = k2
+            self.M[9][3] = k2
+            self.M[9][6] = k2
+            self.M[9][9] = k1
+    
+            self.M[10][1] = k2
+            self.M[10][4] = k2
+            self.M[10][7] = k2
+            self.M[10][10] = k1
+    
+            self.M[11][2] = k2
+            self.M[11][5] = k2
+            self.M[11][8] = k2
+            self.M[11][11] = k1
+            
+            self.D = list(self.M)
+
+            for i in range(0, len(self.M)):
+                for j in range(0, len(self.M)):
+                    self.M[i][j] *= self.density
+                    self.D[i][j] *= self.damping
