@@ -11,6 +11,7 @@ from fem_defs import eps
 from numpy.linalg import solve
 from numpy import array
 
+
 # Абстрактный базовый класс, описывающий конечный элемент (КЭ)
 class TFE:
     def __init__(self):
@@ -370,7 +371,6 @@ class TFE3D4(TFE):
         if self.volume() == 0.0:
             raise TFEMException('incorrect_fe_err')
         a = array([[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]])
-        x = array([0.0, 0.0, 0.0, 0.0])
         for j in range(0, self.size):
             b = array([0.0, 0.0, 0.0, 0.0])
             for i in range(0, self.size):
@@ -457,8 +457,6 @@ class TFE3D4(TFE):
         c31 = self.c[3][1]
         c32 = self.c[3][2]
         c33 = self.c[3][3]
-        k1 = 0.1*self.volume()
-        k2 = 0.05*self.volume()
 
         self.K[0][0] = vol*0.5*(2.0*(2.0*g*c01 + l*c01)*c01 + 2.0*g*c02*c02 + 2.0*g*c03*c03)
         self.K[0][1] = vol*0.5*(2.0*l*c02*c01 + 2.0*g*c01*c02)
@@ -580,6 +578,10 @@ class TFE3D4(TFE):
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             ]
+
+            k1 = 0.1*vol
+            k2 = 0.05*vol
+
             self.M[0][0] = k1
             self.M[0][3] = k2
             self.M[0][6] = k2

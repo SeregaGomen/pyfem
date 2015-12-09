@@ -541,12 +541,12 @@ class TObject:
         for i in range(0, len(self.result)):
             file.write(' %*s |' % (len1, self.result[i].name))
         file.write('\n')
-        file.write('|   %*s  |' % (self.mesh.freedom*(len1 + 1) + 2 + len2, 'min:'))
+        file.write('|   %*s  |' % (self.mesh.freedom*(len1 + 1) + self.mesh.freedom + len2, 'min:'))
         for i in range(0, len(self.result)):
             file.write(' %+*.*E ' % (self.params.width, self.params.precision, self.result[i].min()))
             file.write('|')
         file.write('\n')
-        file.write('|   %*s  |' % (self.mesh.freedom*(len1 + 1) + 2 + len2, 'max:'))
+        file.write('|   %*s  |' % (self.mesh.freedom*(len1 + 1) + self.mesh.freedom + len2, 'max:'))
         for i in range(0, len(self.result)):
             file.write(' %+*.*E ' % (self.params.width, self.params.precision, self.result[i].max()))
             file.write('|')
