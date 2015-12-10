@@ -74,7 +74,7 @@ def console():
 
 try:
     # body1d()
-    cube()
-    # console()
+    # cube()
+    console()
 except TFEMException as err:
     err.print_error()

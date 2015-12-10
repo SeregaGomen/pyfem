@@ -19,8 +19,6 @@ from fem_progress import TProgress
 
 class TObject:
     def __init__(self):
-        self.file_name = ''                 # Имя файла с данными о геометрической модели
-        self.object_name = ''               # Название объекта
         self.params = TFEMParams()          # Параметры расчета
         self.mesh = TMesh()                 # КЭ-модель
         self.result = []                    # Список результатов расчета для перемещений, деформаций, ...
@@ -40,6 +38,10 @@ class TObject:
         print('Points: %d' % len(self.mesh.x))
         print('FE: %d' % len(self.mesh.fe))
         print('FE type: %s' % self.mesh.fe_type)
+
+    # Название объекта
+    def object_name(self):
+        return os.path.splitext(os.path.basename(self.mesh.mesh_file))[0]
 
     def set_problem_type(self, problem_type):
         self.params.problem_type = problem_type
