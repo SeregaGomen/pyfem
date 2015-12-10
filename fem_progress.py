@@ -21,16 +21,16 @@ class TProgress:
         self.__process_stop__ = stop
         if start < stop:
             sys.stdout.write(self.__process_id__ + '\n')
-            sys.stdout.write('0%')
+            sys.stdout.write('0% ')
             sys.stdout.flush()
 
     def set_progress(self, current):
         self.__process_current__ = current
-        pos = int((100.0*float(self.__process_current__))/float(self.__process_stop__ - self.__process_start__))
+        pos = int((100.0*float(self.__process_current__))/float(self.__process_stop__ - self.__process_start__ + 1))
         if pos == self.__process_old__ or not pos:
             return
         if pos % 25 == 0:
-            sys.stdout.write(' ' + str(pos) + '%')
+            sys.stdout.write(' ' + str(pos) + '% ')
             if pos == 100:
                 sys.stdout.write('\n')
         elif pos % 2 == 0:

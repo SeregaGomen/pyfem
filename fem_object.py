@@ -142,7 +142,7 @@ class TObject:
         # Формирование глобальной матрицы жесткости
         self.__progress__.set_process('Assembling global stiffness matrix...', 1, len(self.mesh.fe))
         for i in range(0, len(self.mesh.fe)):
-            self.__progress__.set_progress(i)
+            self.__progress__.set_progress(i + 1)
             x = [0]*len(self.mesh.fe[i])
             y = [0]*len(self.mesh.fe[i])
             z = [0]*len(self.mesh.fe[i])
@@ -175,6 +175,7 @@ class TObject:
         ret = self.solve()
         if not ret:
             print('The system of equations is not solved!')
+        print('Success :-)')
         return ret
 
     # Предварительное вычисление нагрузок
@@ -237,7 +238,8 @@ class TObject:
 
     # Учет сосредоточенной и поверхностной нагрузок
     def use_force_condition(self):
-        self.__progress__.set_process('Building the force vector-column...', 1, len(self.__concentrated_force__) + len(self.mesh.surface))
+        self.__progress__.set_process('Building the force vector-column...', 1,
+                                      len(self.__concentrated_force__) + len(self.mesh.surface))
         counter = 1
         # Учет сосредоточенной нагрузки
         for i in range(0, len(self.__concentrated_force__)):
@@ -358,7 +360,7 @@ class TObject:
         # Прямой ход метода Гаусса
         self.__progress__.set_process('Solving of equation system...', 1, size - 1)
         for i in range(0, size - 1):
-            self.__progress__.set_progress(i)
+            self.__progress__.set_progress(i + 1)
             if math.fabs(self.__global_matrix__[i][i]) < eps:
                 for l in range(i + 1, size):
                     if math.fabs(self.__global_matrix__[l][i]) < eps:

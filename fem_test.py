@@ -73,8 +73,8 @@ def console():
         obj.print_result()
 
 try:
-#    body1d()
-    cube()
-#    console()
+    # body1d()
+    # cube()
+    console()
 except TFEMException as err:
     err.print_error()
