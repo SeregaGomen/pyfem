@@ -80,13 +80,13 @@ class TObject:
     def add_initial_condition(self, e, p, d):
         self.params.add_initial_condition(e, p, d)
 
-    def add_volume_condition(self, e, p, d):
+    def add_volume_load(self, e, p, d):
         self.params.add_volume_condition(e, p, d)
 
-    def add_surface_condition(self, e, p, d):
+    def add_surface_load(self, e, p, d):
         self.params.add_surface_condition(e, p, d)
 
-    def add_concentrated_condition(self, e, p, d):
+    def add_concentrated_load(self, e, p, d):
         self.params.add_concentrated_condition(e, p, d)
 
     def calc(self):

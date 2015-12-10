@@ -31,7 +31,7 @@ def cube():
     obj.set_solve_method('direct')
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'z=0', DIR_X | DIR_Y | DIR_Z)
-    obj.add_volume_condition('-1.0E+5', '', DIR_Z)
+    obj.add_volume_load('-1.0E+5', '', DIR_Z)
     if obj.calc():
         obj.calc_results()
         obj.set_width(10)
@@ -48,7 +48,7 @@ def beam():
     obj.set_solve_method('direct')
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'y=0', DIR_X | DIR_Y | DIR_Z)
-    obj.add_volume_condition('-1.0E+5', '', DIR_Y)
+    obj.add_volume_load('-1.0E+5', '', DIR_Y)
     if obj.calc():
         obj.calc_results()
         obj.set_width(10)
@@ -65,7 +65,7 @@ def console():
     obj.set_solve_method('direct')
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y)
-    obj.add_volume_condition('-1.0E+5', '', DIR_X)
+    obj.add_volume_load('-1.0E+5', '', DIR_X)
     if obj.calc():
         obj.calc_results()
         obj.set_width(10)
