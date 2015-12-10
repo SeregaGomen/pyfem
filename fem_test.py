@@ -15,7 +15,7 @@ def body1d():
     obj.set_solve_method('direct')
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'x=0', DIR_X)
-    obj.add_volume_condition('-1.0E+5', '', DIR_X)
+    obj.add_volume_load('-1.0E+5', '', DIR_X)
     if obj.calc():
         obj.calc_results()
         obj.set_width(10)
