@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 ###################################################################
-#            Реализация расчета задачи с помощью МКЭ
+#                       Описание объекта расчета
 ###################################################################
 
 import os
 import math
 import sys
+from scipy.sparse import lil_matrix
+from scipy.sparse.linalg import spsolve
 from fem_defs import eps, DIR_X, DIR_Y, DIR_Z
 from fem_mesh import TMesh
 from fem_params import TFEMParams
@@ -19,22 +21,20 @@ from fem_progress import TProgress
 
 class TObject:
     def __init__(self):
-        self.params = TFEMParams()          # Параметры расчета
-        self.mesh = TMesh()                 # КЭ-модель
-        self.result = []                    # Список результатов расчета для перемещений, деформаций, ...
-        self.__volume_force__ = []          # Узловые объемная, поверхностная и сосредоточенная нагрузки
+        self.params = TFEMParams()                      # Параметры расчета
+        self.mesh = TMesh()                             # КЭ-модель
+        self.result = []                                # Список результатов расчета для перемещений, деформаций, ...
+        self.__volume_force__ = []                      # Узловые объемная, поверхностная и сосредоточенная нагрузки
         self.__surface_force__ = []
         self.__concentrated_force__ = []
-        self.__fe__ = TFE()                 # Конечный элемент
-        self.__global_matrix__ = []         # Глобальная матрица жесткости (ГМЖ)
-        self.__global_vector__ = []         # Глобальная правая часть
-        self.__progress__ = TProgress()     # Индикатор прогресса расчета
+        self.__fe__ = TFE()                             # Конечный элемент
+        self.__global_matrix__ = lil_matrix((0, 0))     # Глобальная матрица жесткости (ГМЖ)
+        self.__global_vector__ = []                     # Глобальная правая часть
+        self.__progress__ = TProgress()                 # Индикатор прогресса расчета
 
     def set_mesh(self, name):
-        self.file_name = name
-        self.object_name = os.path.splitext(os.path.basename(name))[0]
         self.mesh.load(name)
-        print('Object: %s' % self.object_name)
+        print('Object: %s' % self.object_name())
         print('Points: %d' % len(self.mesh.x))
         print('FE: %d' % len(self.mesh.fe))
         print('FE type: %s' % self.mesh.fe_type)
@@ -115,9 +115,9 @@ class TObject:
             k = self.mesh.fe[index][i//self.mesh.freedom]*self.mesh.freedom + i % self.mesh.freedom
             for j in range(i, len(self.__fe__.K)):
                 l = self.mesh.fe[index][j//self.mesh.freedom]*self.mesh.freedom + j % self.mesh.freedom
-                self.__global_matrix__[k][l] += self.__fe__.K[i][j]
+                self.__global_matrix__[k, l] += self.__fe__.K[i][j]
                 if k != l:
-                    self.__global_matrix__[l][k] += self.__fe__.K[i][j]
+                    self.__global_matrix__[l, k] += self.__fe__.K[i][j]
             self.__global_vector__[k] += self.__fe__.K[i][len(self.__fe__.K)]
 
     # Создание нужного типа КЭ
@@ -132,9 +132,7 @@ class TObject:
     # Расчет статической задачи методом конечных элементов
     def calc_static_problem(self):
         # Создание ГМЖ
-        for i in range(0, len(self.mesh.x)*self.mesh.freedom):
-            row = [0]*len(self.mesh.x)*self.mesh.freedom
-            self.__global_matrix__.append(row)
+        self.__global_matrix__ = lil_matrix((len(self.mesh.x)*self.mesh.freedom, len(self.mesh.x)*self.mesh.freedom))
         self.__global_vector__ = [0]*len(self.mesh.x)*self.mesh.freedom
 
         self.create_fe()
@@ -168,11 +166,6 @@ class TObject:
         self.use_force_condition()
         # Учет краевых условий
         self.use_boundary_condition()
-
-#        for i in range(0, len(self.__global_matrix__[0])):
-#            print(self.__global_matrix__[i])
-#        print(self.__global_vector__)
-
         # Решение СЛАУ
         ret = self.solve()
         if not ret:
@@ -339,8 +332,8 @@ class TObject:
         l = i*self.mesh.freedom + j
         for k in range(0, len(self.mesh.x)*self.mesh.freedom):
             if l != k:
-                self.__global_matrix__[l][k] = self.__global_matrix__[k][l] = 0
-        self.__global_vector__[l] = val*self.__global_matrix__[l][l]
+                self.__global_matrix__[l, k] = self.__global_matrix__[k, l] = 0
+        self.__global_vector__[l] = val*self.__global_matrix__[l, l]
 
     # Расчет динамической задачи методом конечных элементов
     def calc_dynamic_problem(self):
@@ -357,6 +350,13 @@ class TObject:
 
     # Решение СЛАУ методом Гаусса
     def solve_direct(self):
+        print('Solving of equation system...')
+        self.__global_matrix__ = self.__global_matrix__.tocsr()
+        self.__global_vector__ = spsolve(self.__global_matrix__, self.__global_vector__)
+        return True
+
+    # Решение СЛАУ методом Гаусса
+    def solve_gauss(self):
         size = len(self.__global_matrix__)
         result = [0]*size
         # Прямой ход метода Гаусса

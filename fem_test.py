@@ -76,5 +76,6 @@ try:
     # body1d()
     # cube()
     console()
+    # beam()
 except TFEMException as err:
     err.print_error()
