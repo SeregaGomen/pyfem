@@ -170,7 +170,7 @@ class TObject:
         ret = self.solve()
         if not ret:
             print('The system of equations is not solved!')
-        print('Success :-)')
+        print('Success')
         return ret
 
     # Предварительное вычисление нагрузок
