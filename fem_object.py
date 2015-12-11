@@ -331,7 +331,7 @@ class TObject:
     def set_boundary_condition(self, i, j, val):
         l = i*self.mesh.freedom + j
         for k in range(0, len(self.mesh.x)*self.mesh.freedom):
-            if l != k:
+            if l != k and self.__global_matrix__[l, k] != 0.0:
                 self.__global_matrix__[l, k] = self.__global_matrix__[k, l] = 0
         self.__global_vector__[l] = val*self.__global_matrix__[l, l]
 
@@ -350,9 +350,11 @@ class TObject:
 
     # Решение СЛАУ методом Гаусса
     def solve_direct(self):
-        print('Solving of equation system...')
+        self.__progress__.set_process('Solving of equation system...', 1, 1)
+#        print('Solving of equation system...')
         self.__global_matrix__ = self.__global_matrix__.tocsr()
         self.__global_vector__ = spsolve(self.__global_matrix__, self.__global_vector__)
+        self.__progress__.set_progress(1)
         return True
 
     # Решение СЛАУ методом Гаусса

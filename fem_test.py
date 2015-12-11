@@ -75,7 +75,7 @@ def console():
 try:
     # body1d()
     # cube()
-    console()
-    # beam()
+    # console()
+    beam()
 except TFEMException as err:
     err.print_error()
