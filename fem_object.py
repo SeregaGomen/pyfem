@@ -83,13 +83,16 @@ class TObject:
         self.params.add_initial_condition(e, p, d)
 
     def add_volume_load(self, e, p, d):
-        self.params.add_volume_condition(e, p, d)
+        self.params.add_volume_load(e, p, d)
 
     def add_surface_load(self, e, p, d):
-        self.params.add_surface_condition(e, p, d)
+        self.params.add_surface_load(e, p, d)
 
     def add_concentrated_load(self, e, p, d):
-        self.params.add_concentrated_condition(e, p, d)
+        self.params.add_concentrated_load(e, p, d)
+
+    def add_variable(self, var, val):
+        self.params.add_variable(var, val)
 
     def calc(self):
         ret = False
@@ -182,6 +185,8 @@ class TObject:
         self.__concentrated_force__ = [0]*len(self.mesh.x)*self.mesh.freedom
         for i in range(0, len(self.params.names)):
             parser.add_variable(self.params.names[i])
+        for key, value in self.params.var_list.items():
+            parser.add_variable(key, value)
 
         counter = 0
         for i in range(0, len(self.params.bc_list)):
@@ -297,6 +302,8 @@ class TObject:
         parser = TParser()
         for i in range(0, len(self.params.names)):
             parser.add_variable(self.params.names[i])
+        for key, value in self.params.var_list.items():
+            parser.add_variable(key, value)
         counter = 0
         for i in range(0, len(self.params.bc_list)):
             if self.params.bc_list[i].type == 'boundary':
@@ -398,7 +405,7 @@ class TObject:
         self.__global_vector__ = result
         return True
 
-    # Решение СЛАУ методом простой итерации
+    # Приближенное решение СЛАУ
     def solve_iterative(self):
         self.__progress__.set_process('Solving of equation system...', 1, 1)
         self.__global_matrix__ = self.__global_matrix__.tocsr()

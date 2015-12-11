@@ -81,6 +81,7 @@ class TFEMParams:
         self.m = []             # Коэффициент Пуассона
         self.names = StdName    # Список имен функций и их аргументов
         self.bc_list = []       # Список краевых условий
+        self.var_list = {}      # Список вспомогательных переменных и их значений
 
     def __add_condition__(self, t, e, p, d):
         c = TBoundaryCondition()
@@ -96,11 +97,14 @@ class TFEMParams:
     def add_initial_condition(self, e, p, d):
         self.__add_condition__('initial', e, p, d)
 
-    def add_volume_condition(self, e, p, d):
+    def add_volume_load(self, e, p, d):
         self.__add_condition__('volume', e, p, d)
 
-    def add_surface_condition(self, e, p, d):
+    def add_surface_load(self, e, p, d):
         self.__add_condition__('surface', e, p, d)
 
-    def add_concentrated_condition(self, e, p, d):
+    def add_concentrated_load(self, e, p, d):
         self.__add_condition__('concentrated', e, p, d)
+
+    def add_variable(self, var, val):
+        self.var_list.setdefault(var, val)
