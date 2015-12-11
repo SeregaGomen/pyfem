@@ -8,7 +8,7 @@ import os
 import math
 import sys
 from scipy.sparse import lil_matrix
-from scipy.sparse.linalg import spsolve
+from scipy.sparse.linalg import spsolve, bicgstab
 from fem_defs import eps, DIR_X, DIR_Y, DIR_Z
 from fem_mesh import TMesh
 from fem_params import TFEMParams
@@ -399,7 +399,12 @@ class TObject:
 
     # Решение СЛАУ методом простой итерации
     def solve_iterative(self):
-        return True
+        self.__progress__.set_process('Solving of equation system...', 1, 1)
+        self.__global_matrix__ = self.__global_matrix__.tocsr()
+        self.__global_vector__, info = bicgstab(self.__global_matrix__, self.__global_vector__, self.__global_vector__,
+                                                self.params.eps)
+        self.__progress__.set_progress(1)
+        return True if not info else False
 
     # Определение кол-ва результатов в зависимости от типа и размерности задачи
     def num_result(self):

@@ -45,7 +45,8 @@ def beam():
     m = [0.3]
     obj.set_mesh('mesh/beam.trpa')
     obj.set_problem_type('static')
-    obj.set_solve_method('direct')
+    obj.set_solve_method('iterative')
+#    obj.set_solve_method('direct')
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'y=0', DIR_X | DIR_Y | DIR_Z)
     obj.add_volume_load('-1.0E+5', '', DIR_Y)
@@ -62,7 +63,8 @@ def console():
     m = [0.3]
     obj.set_mesh('mesh/console.trpa')
     obj.set_problem_type('static')
-    obj.set_solve_method('direct')
+#    obj.set_solve_method('direct')
+    obj.set_solve_method('iterative')
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y)
     obj.add_volume_load('-1.0E+5', '', DIR_X)
