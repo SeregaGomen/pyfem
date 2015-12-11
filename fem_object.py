@@ -131,6 +131,7 @@ class TObject:
 
     # Расчет статической задачи методом конечных элементов
     def calc_static_problem(self):
+        print('*********************** start ***********************')
         # Создание ГМЖ
         self.__global_matrix__ = lil_matrix((len(self.mesh.x)*self.mesh.freedom, len(self.mesh.x)*self.mesh.freedom))
         self.__global_vector__ = [0]*len(self.mesh.x)*self.mesh.freedom
@@ -170,7 +171,7 @@ class TObject:
         ret = self.solve()
         if not ret:
             print('The system of equations is not solved!')
-        print('Success')
+        print('*********************** stop ************************')
         return ret
 
     # Предварительное вычисление нагрузок
