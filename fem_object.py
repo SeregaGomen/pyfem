@@ -266,7 +266,7 @@ class TObject:
                 for k in range(0, self.mesh.freedom):
                     l = self.mesh.surface[i][j]*self.mesh.freedom + k
                     if self.__surface_force__[l]:
-                        if self.mesh.fe_type == 'fe_3d_10':
+                        if self.mesh.fe_type != 'fe_3d_10':
                             self.__global_vector__[l] += self.__surface_force__[k]*se/float(len(self.mesh.surface[0]))
                         elif j > 2:
                             self.__global_vector__[l] += self.__surface_force__[k]*se/3.0

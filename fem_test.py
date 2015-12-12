@@ -22,6 +22,7 @@ def body1d():
         obj.set_precision(5)
         obj.print_result()
 
+
 def cube():
     obj = TObject()
     e = [6.5E+10]
@@ -31,7 +32,8 @@ def cube():
     obj.set_solve_method('direct')
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'z=0', DIR_X | DIR_Y | DIR_Z)
-    obj.add_volume_load('-1.0E+5', '', DIR_Z)
+#    obj.add_volume_load('-1.0E+5', '', DIR_Z)
+    obj.add_surface_load('-1.0E+5', '', DIR_Z)
     if obj.calc():
         obj.calc_results()
         obj.set_width(10)
