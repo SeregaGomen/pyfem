@@ -9,7 +9,7 @@ import math
 import sys
 from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve, bicgstab
-from fem_defs import eps, DIR_X, DIR_Y, DIR_Z
+from fem_defs import DIR_X, DIR_Y, DIR_Z
 from fem_mesh import TMesh
 from fem_params import TFEMParams
 from fem_error import TFEMException
