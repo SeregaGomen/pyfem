@@ -83,8 +83,8 @@ def cylinder():
     m = [0.3]
     obj.set_mesh('mesh/cyl.trpa')
     obj.set_problem_type('static')
-#    obj.set_solve_method('direct')
-    obj.set_solve_method('iterative')
+    obj.set_solve_method('direct')
+#    obj.set_solve_method('iterative')
     obj.set_elasticity(e, m)
     obj.add_variable('eps', 1.0E-6)
     obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y | DIR_Z)
