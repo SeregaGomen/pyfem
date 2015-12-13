@@ -88,3 +88,19 @@ class TMesh:
                 row.append(int(lines[index].split()[j]))
             self.surface.append(row)
             index += 1
+
+    def fe_name(self, t):
+        if self.fe_type == 'fe_1d_2':
+            return 'one-dimensional linear element (2 nodes)'
+        elif self.fe_type == 'fe_2d_3':
+            return 'linear triangular element (3 nodes)'
+        elif self.fe_type == 'fe_2d_4':
+            return 'quadrilateral element (4 nodes)'
+        elif self.fe_type == 'fe_2d_6':
+            return 'quadratic triangular element (6 nodes)'
+        elif self.fe_type == 'fe_3d_4':
+            return 'linear tetrahedron (4 nodes)'
+        elif self.fe_type == 'fe_3d_8':
+            return 'cube element (8 nodes)'
+        elif self.fe_type == 'fe_3d_10':
+            return 'quadratic tetrahedron (10 nodes)'

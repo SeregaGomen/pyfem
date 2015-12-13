@@ -36,8 +36,8 @@ class TObject:
         self.mesh.load(name)
         print('Object: %s' % self.object_name())
         print('Points: %d' % len(self.mesh.x))
-        print('FE: %d' % len(self.mesh.fe))
-        print('FE type: %s' % self.mesh.fe_type)
+        print('FE: %d - %s' % (len(self.mesh.fe), self.mesh.fe_name(self.mesh.fe_type)))
+#        print('FE type: %s' % self.mesh.fe_type)
 
     # Название объекта
     def object_name(self):
@@ -134,7 +134,6 @@ class TObject:
 
     # Расчет статической задачи методом конечных элементов
     def calc_static_problem(self):
-        print('*********************** start ***********************')
         # Создание ГМЖ
         self.__global_matrix__ = lil_matrix((len(self.mesh.x)*self.mesh.freedom, len(self.mesh.x)*self.mesh.freedom))
         self.__global_vector__ = [0]*len(self.mesh.x)*self.mesh.freedom
@@ -174,7 +173,8 @@ class TObject:
         ret = self.solve()
         if not ret:
             print('The system of equations is not solved!')
-        print('*********************** stop ************************')
+        else:
+            print('**************** Success! ****************')
         return ret
 
     # Предварительное вычисление нагрузок

@@ -12,7 +12,7 @@ class TFEMException(Exception):
         self.error = e
 
     def print_error(self):
-        sys.stderr.write('Error: ')
+        sys.stderr.write('\nError: ')
         if self.error == 'brackets_err':
             sys.stderr.write('unbalanced or unexpected bracket\n')
         elif self.error == 'syntax_err':

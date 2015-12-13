@@ -76,10 +76,11 @@ class TParser:
         # Удаление пробелов ...
         # self.code = re.sub(r'\s', '', c)
         self.code = c
-        try:
-            self.compile()
-        except TFEMException as e:
-            e.print_error()
+        self.compile()
+#        try:
+#            self.compile()
+#        except TFEMException as e:
+#            e.print_error()
 
     def get_exp(self, result):
         self.get_token()
