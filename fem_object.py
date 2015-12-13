@@ -24,9 +24,9 @@ class TObject:
         self.params = TFEMParams()                      # Параметры расчета
         self.mesh = TMesh()                             # КЭ-модель
         self.result = []                                # Список результатов расчета для перемещений, деформаций, ...
-        self.__volume_force__ = []                      # Узловые объемная, поверхностная и сосредоточенная нагрузки
-        self.__surface_force__ = []
-        self.__concentrated_force__ = []
+        self.__volume_load__ = []                       # Узловые объемная, поверхностная и сосредоточенная нагрузки
+        self.__surface_load__ = []
+        self.__concentrated_load__ = []
         self.__fe__ = TFE()                             # Конечный элемент
         self.__global_matrix__ = lil_matrix((0, 0))     # Глобальная матрица жесткости (ГМЖ)
         self.__global_vector__ = []                     # Глобальная правая часть
@@ -142,7 +142,7 @@ class TObject:
         self.create_fe()
         self.__fe__.set_elasticity(self.params.e, self.params.m)
         # Вычисление компонент нагрузки
-        self.prepare_force()
+        self.prepare_load()
         # Формирование глобальной матрицы жесткости
         self.__progress__.set_process('Assembling global stiffness matrix...', 1, len(self.mesh.fe))
         for i in range(0, len(self.mesh.fe)):
@@ -158,16 +158,16 @@ class TObject:
                 x[j] = self.mesh.x[self.mesh.fe[i][j]]
                 y[j] = self.mesh.y[self.mesh.fe[i][j]] if (len(self.mesh.y)) else 0
                 z[j] = self.mesh.z[self.mesh.fe[i][j]] if (len(self.mesh.z)) else 0
-                vx[j] = self.__volume_force__[self.mesh.fe[i][j]*self.mesh.freedom + 0]
-                vy[j] = self.__volume_force__[self.mesh.fe[i][j]*self.mesh.freedom + 1] if (len(self.mesh.y)) else 0
-                vz[j] = self.__volume_force__[self.mesh.fe[i][j]*self.mesh.freedom + 2] if (len(self.mesh.z)) else 0
+                vx[j] = self.__volume_load__[self.mesh.fe[i][j]*self.mesh.freedom + 0]
+                vy[j] = self.__volume_load__[self.mesh.fe[i][j]*self.mesh.freedom + 1] if (len(self.mesh.y)) else 0
+                vz[j] = self.__volume_load__[self.mesh.fe[i][j]*self.mesh.freedom + 2] if (len(self.mesh.z)) else 0
             self.__fe__.set_coord(x, y, z)
-            self.__fe__.set_volume_force(vx, vy, vz)
+            self.__fe__.set_volume_load(vx, vy, vz)
             self.__fe__.generate()
             # Ансамблирование ЛМЖ к ГМЖ
             self.__assembly__(i)
         # Учет сосредоточенной и поверхностной нагрузок
-        self.use_force_condition()
+        self.use_load_condition()
         # Учет краевых условий
         self.use_boundary_condition()
         # Решение СЛАУ
@@ -178,11 +178,11 @@ class TObject:
         return ret
 
     # Предварительное вычисление нагрузок
-    def prepare_force(self):
+    def prepare_load(self):
         parser = TParser()
-        self.__volume_force__ = [0]*len(self.mesh.x)*self.mesh.freedom
-        self.__surface_force__ = [0]*len(self.mesh.x)*self.mesh.freedom
-        self.__concentrated_force__ = [0]*len(self.mesh.x)*self.mesh.freedom
+        self.__volume_load__ = [0]*len(self.mesh.x)*self.mesh.freedom
+        self.__surface_load__ = [0]*len(self.mesh.x)*self.mesh.freedom
+        self.__concentrated_load__ = [0]*len(self.mesh.x)*self.mesh.freedom
         for i in range(0, len(self.params.names)):
             parser.add_variable(self.params.names[i])
         for key, value in self.params.var_list.items():
@@ -195,7 +195,7 @@ class TObject:
                 continue
             counter += 1
 
-        self.__progress__.set_process('Computation of forces...', 1, counter*len(self.mesh.x))
+        self.__progress__.set_process('Computation of load...', 1, counter*len(self.mesh.x))
         counter = 1
         for i in range(0, len(self.params.bc_list)):
             if not (self.params.bc_list[i].type == 'volume' or self.params.bc_list[i].type == 'surface' or
@@ -222,34 +222,34 @@ class TObject:
                 val = parser.run()
                 if self.params.bc_list[i].direct & DIR_X:
                     index = j*self.mesh.freedom + 0
-                    self.add_force(i, index, val)
+                    self.add_load(i, index, val)
                 if self.params.bc_list[i].direct & DIR_Y:
                     index = j*self.mesh.freedom + 1
-                    self.add_force(i, index, val)
+                    self.add_load(i, index, val)
                 if self.params.bc_list[i].direct & DIR_Z:
                     index = j*self.mesh.freedom + 2
-                    self.add_force(i, index, val)
+                    self.add_load(i, index, val)
 
     # Учет соответствующей нагрузки
-    def add_force(self, i, j, value):
+    def add_load(self, i, j, value):
         if self.params.bc_list[i].type == 'volume':
-            self.__volume_force__[j] += value
+            self.__volume_load__[j] += value
         elif self.params.bc_list[i].type == 'surface':
-            self.__surface_force__[j] += value
+            self.__surface_load__[j] += value
         elif self.params.bc_list[i].type == 'concentrated':
-            self.__concentrated_force__[j] += value
+            self.__concentrated_load__[j] += value
 
     # Учет сосредоточенной и поверхностной нагрузок
-    def use_force_condition(self):
-        self.__progress__.set_process('Building the force vector-column...', 1,
-                                      len(self.__concentrated_force__) + len(self.mesh.surface))
+    def use_load_condition(self):
+        self.__progress__.set_process('Building the load vector-column...', 1,
+                                      len(self.__concentrated_load__) + len(self.mesh.surface))
         counter = 1
         # Учет сосредоточенной нагрузки
-        for i in range(0, len(self.__concentrated_force__)):
+        for i in range(0, len(self.__concentrated_load__)):
             self.__progress__.set_progress(counter)
             counter += 1
-            if self.__concentrated_force__[i]:
-                self.__global_vector__[i] += self.__concentrated_force__[i]
+            if self.__concentrated_load__[i]:
+                self.__global_vector__[i] += self.__concentrated_load__[i]
         # Учет поверхностной нагрузки
         if self.mesh.freedom == 1:
             return
@@ -267,11 +267,11 @@ class TObject:
             for j in range(0, len(self.mesh.surface[0])):
                 for k in range(0, self.mesh.freedom):
                     l = self.mesh.surface[i][j]*self.mesh.freedom + k
-                    if self.__surface_force__[l]:
+                    if self.__surface_load__[l]:
                         if self.mesh.fe_type != 'fe_3d_10':
-                            self.__global_vector__[l] += self.__surface_force__[k]*se/float(len(self.mesh.surface[0]))
+                            self.__global_vector__[l] += self.__surface_load__[l]*se/float(len(self.mesh.surface[0]))
                         elif j > 2:
-                            self.__global_vector__[l] += self.__surface_force__[k]*se/3.0
+                            self.__global_vector__[l] += self.__surface_load__[l]*se/3.0
 
     # Вычисление длины (площади) граничного элемента
     @staticmethod
@@ -362,52 +362,12 @@ class TObject:
             ret = self.solve_iterative()
         return ret
 
-    # Решение СЛАУ методом Гаусса
+    # Прямое решение СЛАУ
     def solve_direct(self):
         self.__progress__.set_process('Solving of equation system...', 1, 1)
         self.__global_matrix__ = self.__global_matrix__.tocsr()
         self.__global_vector__ = spsolve(self.__global_matrix__, self.__global_vector__)
         self.__progress__.set_progress(1)
-        return True
-
-    # Решение СЛАУ методом Гаусса
-    def solve_gauss(self):
-        size = len(self.__global_matrix__)
-        result = [0]*size
-        # Прямой ход метода Гаусса
-        self.__progress__.set_process('Solving of equation system...', 1, size - 1)
-        for i in range(0, size - 1):
-            self.__progress__.set_progress(i + 1)
-            if math.fabs(self.__global_matrix__[i][i]) < eps:
-                for l in range(i + 1, size):
-                    if math.fabs(self.__global_matrix__[l][i]) < eps:
-                        continue
-                    for j in range(0, size):
-                        self.__global_matrix__[l][j], self.__global_matrix__[i][j] = \
-                            self.__global_matrix__[i][j], self.__global_matrix__[l][j]
-                    self.__global_vector__[l], self.__global_vector__[i] = \
-                        self.__global_vector__[i], self.__global_vector__[l]
-            val1 = self.__global_matrix__[i][i]
-            for j in range(i + 1, size):
-                val2 = self.__global_matrix__[j][i]
-                if math.fabs(val2) < eps:
-                    continue
-                for k in range(i, size):
-                    self.__global_matrix__[j][k] -= val2*self.__global_matrix__[i][k]/val1
-                self.__global_vector__[j] -= val2*self.__global_vector__[i]/val1
-            if math.fabs(self.__global_matrix__[size - 1][size - 1]) < eps:
-                return False
-        # Обратный ход метода Гаусса
-        result[size - 1] = self.__global_vector__[size - 1]/self.__global_matrix__[size - 1][size - 1]
-        for k in range(0, size - 1):
-            i = size - k - 2
-            s = self.__global_vector__[i]
-            for j in range(i + 1, size):
-                s -= result[j]*self.__global_matrix__[i][j]
-                if math.fabs(self.__global_matrix__[i][i]) < eps:
-                    return False
-                result[i] = s/self.__global_matrix__[i][i]
-        self.__global_vector__ = result
         return True
 
     # Приближенное решение СЛАУ

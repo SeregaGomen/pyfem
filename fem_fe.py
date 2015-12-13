@@ -44,7 +44,7 @@ class TFE:
         self.__create__()
 
     # Задание объемной нагрузки
-    def set_volume_force(self, *args):
+    def set_volume_load(self, *args):
         if len(args) == 1:
             self.vx = args[0]
         elif len(args) == 2:
