@@ -217,6 +217,8 @@ class TObject:
                     if parser.run() == 0:
                         continue
                 parser.set_code(self.params.bc_list[i].expression)
+                if parser.error != '':
+                    return
                 val = parser.run()
                 if self.params.bc_list[i].direct & DIR_X:
                     index = j*self.mesh.freedom + 0
@@ -323,9 +325,13 @@ class TObject:
                     parser.set_variable(self.params.names[2], z)
                     if len(self.params.bc_list[i].predicate):
                         parser.set_code(self.params.bc_list[i].predicate)
-                        if parser.error != '' or parser.run() == 0:
+                        if parser.error != '':
+                            return
+                        if parser.run() == 0:
                             continue
                     parser.set_code(self.params.bc_list[i].expression)
+                    if parser.error != '':
+                        return
                     val = parser.run()
                     direct = self.params.bc_list[i].direct
                     if direct & DIR_X:

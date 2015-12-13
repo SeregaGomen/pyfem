@@ -68,8 +68,30 @@ def console():
     obj.set_solve_method('direct')
 #    obj.set_solve_method('iterative')
     obj.set_elasticity(e, m)
-#    obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y)
+    obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y)
     obj.add_volume_load('-1.0E+5', '', DIR_X)
+    if obj.calc():
+        obj.calc_results()
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.print_result()
+
+
+def cylinder():
+    obj = TObject()
+    e = [6.5E+10]
+    m = [0.3]
+    obj.set_mesh('mesh/cyl.trpa')
+    obj.set_problem_type('static')
+    obj.set_solve_method('direct')
+    obj.set_elasticity(e, m)
+    obj.add_variable('eps', 1.0E-6)
+    obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y | DIR_Z)
+    obj.add_boundary_condition('0', 'x=2', DIR_X | DIR_Y | DIR_Z)
+    obj.add_volume_load('-1.0e+4*cos(atan2(y,z))', 'abs(y^2 + z^2 - 0.5^2) <= eps', DIR_Z)
+    obj.add_surface_load('-1.0e+4*sin(atan2(y,z))', 'abs(y^2 + z^2 - 0.5^2) <= eps', DIR_Y)
+    obj.add_surface_load('1.0e+4*cos(atan2(y,z))', 'abs(y^2 + z^2 - 0.25^2) <= eps', DIR_Z)
+    obj.add_surface_load('1.0e+4*sin(atan2(y,z))', 'abs(y^2 + z^2 - 0.25^2) <= eps',DIR_Y)
     if obj.calc():
         obj.calc_results()
         obj.set_width(10)
@@ -121,13 +143,14 @@ def tank3():
         obj.calc_results()
         obj.set_width(10)
         obj.set_precision(5)
-        obj.print_result()
+        obj.print_result('mesh/' + obj.object_name() + '.res')
 
 try:
     # body1d()
     # cube()
     # console()
     # beam()
-    tank3()
+    # tank3()
+    cylinder()
 except TFEMException as err:
     err.print_error()
