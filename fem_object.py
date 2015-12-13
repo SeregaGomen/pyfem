@@ -359,7 +359,6 @@ class TObject:
     # Решение СЛАУ методом Гаусса
     def solve_direct(self):
         self.__progress__.set_process('Solving of equation system...', 1, 1)
-#        print('Solving of equation system...')
         self.__global_matrix__ = self.__global_matrix__.tocsr()
         self.__global_vector__ = spsolve(self.__global_matrix__, self.__global_vector__)
         self.__progress__.set_progress(1)
