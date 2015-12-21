@@ -342,10 +342,17 @@ class TObject:
                         self.set_boundary_condition(j, 2, val)
 
     # Задание граничных условий
+#    def set_boundary_condition(self, i, j, val):
+#        size = len(self.mesh.x)*self.mesh.freedom
+#        l = i*self.mesh.freedom + j
+#        for k in range(0, size):
+#            if l != k and self.__global_matrix__[l, k] != 0.0:
+#                self.__global_matrix__[l, k] = self.__global_matrix__[k, l] = 0
+#        self.__global_vector__[l] = val*self.__global_matrix__[l, l]
     def set_boundary_condition(self, i, j, val):
         l = i*self.mesh.freedom + j
-        for k in range(0, len(self.mesh.x)*self.mesh.freedom):
-            if l != k and self.__global_matrix__[l, k] != 0.0:
+        for k in self.__global_matrix__[l].nonzero()[1]:
+            if l != k:
                 self.__global_matrix__[l, k] = self.__global_matrix__[k, l] = 0
         self.__global_vector__[l] = val*self.__global_matrix__[l, l]
 

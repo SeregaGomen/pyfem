@@ -6,6 +6,8 @@ from fem_error import TFEMException
 from fem_object import TObject
 
 
+from scipy.sparse import csr_matrix, lil_matrix
+
 def body1d():
     obj = TObject()
     e = [6.5E+10]
@@ -150,7 +152,51 @@ try:
     # cube()
     # console()
     # beam()
-    # tank3()
-    cylinder()
+    tank3()
+    # cylinder()
+
+    #A = lil_matrix([[1, 2, 0, 0, 0, 5.2],
+    #                [0, 0, 3, 3, 3, 1],
+    #                [4, 0, 5, 0, 1, 0],
+    #                [4, 0, 5, 0, 1, 0],
+    #                [4, 0, 5, 0, 1, 0],
+    #                [4, 0, 5, 0, 1, 0]
+    #                ])
+
+    #print(A.nonzero())
+    #for i in range(0, 6):
+    #    for k in range(0, len(A[i].nonzero()[1])):
+    #        row = i
+    #        col = A[i].nonzero()[1][k]
+    #        print('(', row, col, ')', A[row, col])
+
+    #A = lil_matrix([[1, 2, 0, 0, 0, 5],
+    #                [2, 0, 3, 3, 3, 1],
+    #                [0, 3, 5, 0, 1, 0],
+    #                [0, 3, 0, 4, 1, 0],
+    #                [0, 3, 1, 1, 1, 1],
+    #                [5, 1, 0, 0, 1, 9]
+    #                ])
+
+    #print(A.nonzero())
+    #for i in range(0, 6):
+    #    for k in A[i].nonzero()[1]:
+    #        row = i
+    #        col = k
+    #        print('(', row, col, ')', A[row, col])
+
+    #l = 2
+    #for k in A[l].nonzero()[1]:
+    #    row = l
+    #    col = k
+    #    if row != col:
+    #        A[row, col] = A[col, row] = 0
+
+    #for i in range(0, 6):
+    #    print(A[i,0], A[i,1], A[i,2], A[i,3], A[i,4], A[i,5])
+
+
+
 except TFEMException as err:
     err.print_error()
+
