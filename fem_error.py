@@ -12,28 +12,29 @@ class TFEMException(Exception):
         self.error = e
 
     def print_error(self):
-        sys.stderr.write('\nError: ')
+        err_msg = '\nError: '
         if self.error == 'brackets_err':
-            sys.stderr.write('unbalanced or unexpected bracket\n')
+            err_msg += 'unbalanced or unexpected bracket'
         elif self.error == 'syntax_err':
-            sys.stderr.write('syntax error\n')
+            err_msg += 'syntax error'
         elif self.error == 'undef_err':
-            sys.stderr.write('undefined variable or function\n')
+            err_msg += 'undefined variable or function'
         elif self.error == 'redefinition_err':
-            sys.stderr.write('redefinition variable\n')
+            err_msg += 'redefinition variable'
         elif self.error == 'incorrect_fe_err':
-            sys.stderr.write('incorrect finite element\n')
+            err_msg += 'incorrect finite element'
         elif self.error == 'read_file_err':
-            sys.stderr.write('read file error\n')
+            err_msg += 'read file error'
         elif self.error == 'unknown_fe_err':
-            sys.stderr.write('unknown finite element type\n')
+            err_msg += 'unknown finite element type'
         elif self.error == 'solve_method_err':
-            sys.stderr.write('not specified method for solving linear systems\n')
+            err_msg += 'not specified method for solving linear systems'
         elif self.error == 'problem_type_err':
-            sys.stderr.write('unknown problem type (static or dynamic)\n')
+            err_msg += 'unknown problem type (static or dynamic)'
         elif self.error == 'elasticity_err':
-            sys.stderr.write('not specified the parameters of elasticity\n')
+            err_msg += 'not specified the parameters of elasticity'
         elif self.error == 'time_err':
-            sys.stderr.write('incorrectly specified time parameters\n')
+            err_msg += 'incorrectly specified time parameters'
         else:
-            sys.stderr.write(self.error + '\n')
+            err_msg += self.error
+        print('\033[1;31m%s\033[1;m' % err_msg)
