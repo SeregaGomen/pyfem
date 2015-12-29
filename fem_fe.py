@@ -6,10 +6,13 @@
 
 import math
 from abc import abstractmethod
-from fem_error import TFEMException
-from fem_defs import eps
 from numpy.linalg import solve
 from numpy import array
+from numpy import zeros
+from numpy.linalg import det
+from numpy.linalg import inv
+from fem_error import TFEMException
+from fem_defs import eps
 
 
 # Абстрактный базовый класс, описывающий конечный элемент (КЭ)
@@ -127,7 +130,6 @@ class TFE1D2(TFE):
         self.K[1][1] = 2.0*self.e[0]*self.c[1][1]*self.c[1][1]
 
         # Вычисление интеграла для объемных сил
-        self.K[0][2] = self.K[1][2] = 0.0
         if len(self.vx):
             self.K[0][2] += self.vx[0]*(self.c[0][1]*(self.x[1]*self.x[1] - self.x[0]*self.x[0])*0.5 +
                                         self.c[0][0]*(self.x[1] - self.x[0]))
@@ -285,7 +287,6 @@ class TFE2D3(TFE):
         self.K[5][5] = vol*(g*self.c[2][1]*self.c[2][1] + k*self.c[2][2]*self.c[2][2])
 
         # Вычисление интеграла для объемных сил
-        self.K[0][6] = self.K[1][6] = self.K[2][6] = self.K[3][6] = self.K[4][6] = self.K[5][6] = 0
         if len(self.vx) or len(self.vy):
             self.K[0][6] += self.vx[0]*vol/6.0
             self.K[2][6] += self.vx[1]*vol/6.0
@@ -337,26 +338,8 @@ class TFE3D4(TFE):
     def __init__(self):
         super().__init__()
         self.size = 4
-        self.K = [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        ]
-        self.c = [
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ]
+        self.K = [[0]*13]*12
+        self.c = [[0]*4]*4
 
     def volume(self):
         a = (self.x[1] - self.x[0])*(self.y[2] - self.y[0])*(self.z[3] - self.z[0]) + \
@@ -548,8 +531,6 @@ class TFE3D4(TFE):
     
         self.K[11][11] = vol*0.5*(2.0*(2.0*g*c33 + l*c33)*c33 + 2.0*g*c31*c31 + 2.0*g*c32*c32)
 
-        for i in range(0, 12):
-            self.K[i][12] = 0
         if len(self.vx) or len(self.vy) or len(self.vz):
             self.K[0][12] += 0.25*self.vx[0]*vol
             self.K[1][12] += 0.25*self.vy[0]*vol
@@ -648,3 +629,161 @@ class TFE3D4(TFE):
                 for j in range(0, len(self.M)):
                     self.M[i][j] *= self.density
                     self.D[i][j] *= self.damping
+
+
+# Четырехузловой двумерный КЭ
+class TFE2D4(TFE):
+    def __init__(self):
+        super().__init__()
+        self.size = 4
+#        self.K = [[0]*9]*8
+#        self.c = [[0]*4]*4
+        self.K = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ]
+        self.c = [
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+        ]
+
+    def volume(self):
+        return math.sqrt((self.x[0] - self.x[1])**2 + (self.y[0] - self.y[1])**2)
+
+    def __create__(self):
+        if self.volume() == 0.0:
+            raise TFEMException('incorrect_fe_err')
+        a = array([[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]])
+        for j in range(0, self.size):
+            b = array([0.0, 0.0, 0.0, 0.0])
+            for i in range(0, self.size):
+                a[i][0] = 1.0
+                a[i][1] = self.x[i]
+                a[i][2] = self.y[i]
+                a[i][3] = self.x[i]*self.y[i]
+            b[j] = 1.0
+            x = solve(a, b)
+            self.c[j] = list(x)
+
+    def generate(self, is_static=True):
+        # Параметры квадратур Гаусса
+        xi = [-0.57735027, -0.57735027,  0.57735027,  0.57735027]
+        eta = [-0.57735027,  0.57735027, -0.57735027,  0.57735027]
+        w = [1.0,  1.0,  1.0,  1.0]
+        # Матрица упругих свойст
+        d = array([
+            [1.0 - self.m[0], self.m[0], 0.0],
+            [self.m[0], 1.0 - self.m[0], 0.0],
+            [0.0, 0.0, (1.0 - 2.0*self.m[0])/2.0]
+            ])*self.e[0]/((1.0 + self.m[0])*(1.0 - 2.0*self.m[0]))
+        # Формирование локальных матриц жесткости, масс и демпфирования
+        local_k = zeros((8, 8))
+        volume_load = zeros(8)
+        # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
+        for i in range(len(w)):
+            for j in range(len(w)):
+                # Изопараметрические функции формы и их производные
+                shape = array([
+                    (1.0 - xi[i])*(1.0 - eta[j])/4.0,
+                    (1.0 + xi[i])*(1.0 - eta[j])/4.0,
+                    (1.0 + xi[i])*(1.0 + eta[j])/4.0,
+                    (1.0 - xi[i])*(1.0 + eta[j])/4.0
+                    ])
+                shape_dxi = array([
+                    -(1.0 - eta[j])/4.0,
+                    (1.0 - eta[j])/4.0,
+                    (1.0 + eta[j])/4.0,
+                    -(1.0 + eta[j])/4.0
+                    ])
+                shape_deta = array([
+                    -(1.0 - xi[i])/4.0,
+                    -(1.0 + xi[i])/4.0,
+                     (1.0 + xi[i])/4.0,
+                     (1.0 - xi[i])/4.0
+                    ])
+                # Матрица Якоби
+                jacobi = array([
+                    [sum(shape_dxi*self.x), sum(shape_dxi*self.y)],
+                    [sum(shape_deta*self.x), sum(shape_deta*self.y)]
+                    ])
+                # Якобиан
+                jacobian = det(jacobi)
+                inverted_jacobi = inv(jacobi)
+                shape_dx = inverted_jacobi[0, 0]*shape_dxi + inverted_jacobi[0, 1]*shape_deta
+                shape_dy = inverted_jacobi[1, 0]*shape_dxi + inverted_jacobi[1, 1]*shape_deta
+                # Матрица градиентов
+                b = array([
+                    [shape_dx[0], 0.0, shape_dx[1], 0.0, shape_dx[2], 0.0, shape_dx[3], 0.0],
+                    [0.0, shape_dy[0], 0.0, shape_dy[1], 0.0, shape_dy[2], 0.0, shape_dy[3]],
+                    [shape_dy[0], shape_dx[0], shape_dy[1], shape_dx[1], shape_dy[2], shape_dx[2], shape_dy[3], shape_dx[3]]
+                    ])
+                bt = b.conj().transpose()
+                local_k += bt.dot(d).dot(b)*jacobian*w[i]
+                # Учет объемной нагрузки
+                if len(self.vx) or len(self.vy):
+                    for k in range (0, 4):
+                        volume_load[2*k] = self.vx[k]*shape[k]
+                        volume_load[2*k + 1] = self.vy[k]*shape[k]
+
+        for i in range(0, 8):
+            for j in range(i, 8):
+                self.K[i][j] = local_k[i][j]
+            self.K[i][8] = volume_load[i]
+#        import sys
+#        print('*******************************')
+#        for i in range(0, len(self.K)):
+#            for j in range(0, len(self.K[0])):
+#                sys.stdout.write('%f' % self.K[i][j])
+#                sys.stdout.write(' ')
+#            sys.stdout.write('\n')
+#        print('*******************************')
+
+    def calc(self, u, index):
+        l = self.e[0]/(1.0 - self.m[0]*self.m[0])
+        g = self.e[0]/(2.0 + 2.0*self.m[0])
+        u0 = u[0]
+        v0 = u[1]
+        u1 = u[2]
+        v1 = u[3]
+        u2 = u[4]
+        v2 = u[5]
+        u3 = u[6]
+        v3 = u[7]
+
+        for i in range(0, self.size):
+            if index == 0:      # Exx
+                u[i] = u0*self.c[0][1] + u0*self.c[0][3]*self.y[i] + u1*self.c[1][1] + u1*self.c[1][3]*self.y[i] + \
+                       u2*self.c[2][1] + u2*self.c[2][3]*self.y[i] + u3*self.c[3][1] + u3*self.c[3][3]*self.y[i]
+            elif index == 1:    # Eyy
+                u[i] = v0*self.c[0][2] + v0*self.c[0][3]*self.x[i] + v1*self.c[1][2] + v1*self.c[1][3]*self.x[i] + \
+                       v2*self.c[2][2] + v2*self.c[2][3]*self.x[i] + v3*self.c[3][2] + v3*self.c[3][3]*self.x[i]
+            elif index == 2:    # Exy
+                u[i] = u0*self.c[0][2] + u0*self.c[0][3]*self.x[i] + u1*self.c[1][2] + u1*self.c[1][3]*self.x[i] + \
+                       u2*self.c[2][2] + u2*self.c[2][3]*self.x[i] + u3*self.c[3][2] + u3*self.c[3][3]*self.x[i] + \
+                       v0*self.c[0][1] + v0*self.c[0][3]*self.y[i] + v1*self.c[1][1] + v1*self.c[1][3]*self.y[i] + \
+                       v2*self.c[2][1] + v2*self.c[2][3]*self.y[i] + v3*self.c[3][1] + v3*self.c[3][3]*self.y[i]
+            elif index == 3:    # Sxx
+                u[i] = l*(u0*(self.c[0][1] + self.c[0][3]*self.y[i]) + u1*(self.c[1][1] + self.c[1][3]*self.y[i]) +
+                          u2*(self.c[2][1] + self.c[2][3]*self.y[i]) + u3*(self.c[3][1] + self.c[3][3]*self.y[i]) +
+                          self.m[0]*(v0*(self.c[0][2] + self.c[0][3]*self.x[i]) + v1*(self.c[1][2] +
+                          self.c[1][3]*self.x[i]) + v2*(self.c[2][2] + self.c[2][3]*self.x[i]) + v3*(self.c[3][2] +
+                          self.c[3][3]*self.x[i])))
+            elif index == 4:    # Syy
+                u[i] = l*(self.m[0]*(u0*(self.c[0][1] + self.c[0][3]*self.y[i]) + u1*(self.c[1][1] +
+                                         self.c[1][3]*self.y[i]) + u2*(self.c[2][1] + self.c[2][3]*self.y[i]) +
+                                     u3*(self.c[3][1] + self.c[3][3]*self.y[i])) +
+                          v0*(self.c[0][2] + self.c[0][3]*self.x[i]) + v1*(self.c[1][2] + self.c[1][3]*self.x[i]) +
+                          v2*(self.c[2][2] + self.c[2][3]*self.x[i]) + v3*(self.c[3][2] + self.c[3][3]*self.x[i]))
+            elif index == 5:    # Sxy
+                u[i] = g*(u0*(self.c[0][2] + self.c[0][3]*self.x[i]) + u1*(self.c[1][2] + self.c[1][3]*self.x[i]) +
+                          u2*(self.c[2][2] + self.c[2][3]*self.x[i]) + u3*(self.c[3][2] + self.c[3][3]*self.x[i]) +
+                          v0*(self.c[0][1] + self.c[0][3]*self.y[i]) + v1*(self.c[1][1] + self.c[1][3]*self.y[i]) +
+                          v2*(self.c[2][1] + self.c[2][3]*self.y[i]) + v3*(self.c[3][1] + self.c[3][3]*self.y[i]))
