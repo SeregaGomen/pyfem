@@ -196,33 +196,33 @@ class TFE2D3(TFE):
         return math.sqrt(p*(p - a)*(p - b)*(p - c))
 
     def __create__(self):
-        det = self.y[2]*self.x[1] - self.y[2]*self.x[0] - self.y[0]*self.x[1] - self.y[1]*self.x[2] + \
-              self.y[1]*self.x[0] + self.y[0]*self.x[2]
-        det0 = self.y[2]*self.x[1] - self.y[1]*self.x[2]
-        det1 = self.y[1] - self.y[2]
-        det2 = self.x[2] - self.x[1]
+        det0 = self.y[2]*self.x[1] - self.y[2]*self.x[0] - self.y[0]*self.x[1] - self.y[1]*self.x[2] + \
+               self.y[1]*self.x[0] + self.y[0]*self.x[2]
+        det1 = self.y[2]*self.x[1] - self.y[1]*self.x[2]
+        det2 = self.y[1] - self.y[2]
+        det3 = self.x[2] - self.x[1]
 
         if math.fabs(det) < eps:
             raise TFEMException('incorrect_fe_err')
-        self.c[0][0] = det0/det
-        self.c[0][1] = det1/det
-        self.c[0][2] = det2/det
+        self.c[0][0] = det1/det0
+        self.c[0][1] = det2/det0
+        self.c[0][2] = det3/det0
 
         det0 = -self.y[2]*self.x[0] + self.y[0]*self.x[2]
         det1 = self.y[2] - self.y[0]
         det2 = -self.x[2] + self.x[0]
 
-        self.c[1][0] = det0/det
-        self.c[1][1] = det1/det
-        self.c[1][2] = det2/det
+        self.c[1][0] = det1/det0
+        self.c[1][1] = det2/det0
+        self.c[1][2] = det3/det0
 
         det0 = -self.y[0]*self.x[1] + self.y[1]*self.x[0]
         det1 = -self.y[1] + self.y[0]
         det2 = self.x[1] - self.x[0]
 
-        self.c[2][0] = det0/det
-        self.c[2][1] = det1/det
-        self.c[2][2] = det2/det
+        self.c[2][0] = det1/det
+        self.c[2][1] = det2/det
+        self.c[2][2] = det3/det
 
     def calc(self, u, index):
         u0 = u[0]
@@ -686,6 +686,8 @@ class TFE2D4(TFE):
             ])*self.e[0]/((1.0 + self.m[0])*(1.0 - 2.0*self.m[0]))
         # Формирование локальных матриц жесткости, масс и демпфирования
         local_k = zeros((8, 8))
+        if not is_static:
+            local_m = local_k
         volume_load = zeros(8)
         # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(w)):
@@ -725,17 +727,28 @@ class TFE2D4(TFE):
                     [0.0, shape_dy[0], 0.0, shape_dy[1], 0.0, shape_dy[2], 0.0, shape_dy[3]],
                     [shape_dy[0], shape_dx[0], shape_dy[1], shape_dx[1], shape_dy[2], shape_dx[2], shape_dy[3], shape_dx[3]]
                     ])
+                # Вспомогательная матрица для построения матриц масс и демпфирования
+                c = array([
+                    [0.0, shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[2]],
+                    [shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[2], 0.0]
+                ])
                 bt = b.conj().transpose()
+                ct = c.conj().transpose()
                 local_k += bt.dot(d).dot(b)*jacobian*w[i]
+                if not is_static:
+                    local_m += ct.dot(c)*jacobian*w[i]
                 # Учет объемной нагрузки
                 if len(self.vx) or len(self.vy):
-                    for k in range (0, 4):
+                    for k in range(0, 4):
                         volume_load[2*k] = self.vx[k]*shape[k]
                         volume_load[2*k + 1] = self.vy[k]*shape[k]
 
         for i in range(0, 8):
             for j in range(i, 8):
                 self.K[i][j] = local_k[i][j]
+                if not is_static:
+                    self.M[i][j] = self.density*local_m[i][j]
+                    self.D[i][j] = self.damping*local_m[i][j]
             self.K[i][8] = volume_load[i]
 #        import sys
 #        print('*******************************')
@@ -773,12 +786,12 @@ class TFE2D4(TFE):
             elif index == 3:    # Sxx
                 u[i] = l*(u0*(self.c[0][1] + self.c[0][3]*self.y[i]) + u1*(self.c[1][1] + self.c[1][3]*self.y[i]) +
                           u2*(self.c[2][1] + self.c[2][3]*self.y[i]) + u3*(self.c[3][1] + self.c[3][3]*self.y[i]) +
-                          self.m[0]*(v0*(self.c[0][2] + self.c[0][3]*self.x[i]) + v1*(self.c[1][2] +
-                          self.c[1][3]*self.x[i]) + v2*(self.c[2][2] + self.c[2][3]*self.x[i]) + v3*(self.c[3][2] +
-                          self.c[3][3]*self.x[i])))
+                          (self.m[0]*(v0*(self.c[0][2] + self.c[0][3]*self.x[i])) +
+                           (v1*(self.c[1][2] + self.c[1][3]*self.x[i])) + v2*(self.c[2][2] + self.c[2][3]*self.x[i]) +
+                            v3*(self.c[3][2] + self.c[3][3]*self.x[i])))
             elif index == 4:    # Syy
                 u[i] = l*(self.m[0]*(u0*(self.c[0][1] + self.c[0][3]*self.y[i]) + u1*(self.c[1][1] +
-                                         self.c[1][3]*self.y[i]) + u2*(self.c[2][1] + self.c[2][3]*self.y[i]) +
+                          self.c[1][3]*self.y[i]) + u2*(self.c[2][1] + self.c[2][3]*self.y[i]) +
                                      u3*(self.c[3][1] + self.c[3][3]*self.y[i])) +
                           v0*(self.c[0][2] + self.c[0][3]*self.x[i]) + v1*(self.c[1][2] + self.c[1][3]*self.x[i]) +
                           v2*(self.c[2][2] + self.c[2][3]*self.x[i]) + v3*(self.c[3][2] + self.c[3][3]*self.x[i]))
