@@ -83,8 +83,8 @@ def console4():
 #    obj.set_solve_method('iterative')
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y)
-#    obj.add_concentrated_load('-1.0E+5', 'x=10', DIR_Y)
-    obj.add_volume_load('-1.0E+5', '', DIR_Y)
+    obj.add_concentrated_load('-1.0E+5', 'x=10', DIR_Y)
+#    obj.add_volume_load('-1.0E+5', '', DIR_Y)
     if obj.calc():
         obj.print_result()
 
