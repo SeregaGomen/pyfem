@@ -6,7 +6,7 @@
 
 import math
 from abc import abstractmethod
-from numpy.linalg import solve
+from numpy.linalg import solve, LinAlgError
 from numpy import array
 from numpy import zeros
 from numpy.linalg import det
@@ -77,14 +77,12 @@ class TFE:
         pass
 
     # Формирование матриц жесткости, масс и демпфирования
+    @abstractmethod
     def generate(self, is_static=True):
         pass
 
-    # Вычисление объема (площади) КЭ
-    def volume(self):
-        pass
-
     # Вычисления стандартных результатов КЭ
+    @abstractmethod
     def calc(self, u, index):
         pass
 
@@ -103,11 +101,11 @@ class TFE1D2(TFE):
             [0, 0]
         ]
 
-    def volume(self):
+    def __volume__(self):
         return math.fabs(self.x[1] - self.x[0])
 
     def __create__(self):
-        if self.volume() == 0.0:
+        if self.__volume__() == 0.0:
             raise TFEMException('incorrect_fe_err')
         vol = self.x[1] - self.x[0]
         self.c[0][0] = self.x[1]/vol
@@ -125,8 +123,8 @@ class TFE1D2(TFE):
         u[0] = u[1] = res
 
     def generate(self, is_static=True):
-        self.K[0][0] = self.volume()*2.0*self.e[0]*self.c[0][1]*self.c[0][1]
-        self.K[0][1] = self.volume()*2.0*self.e[0]*self.c[0][1]*self.c[1][1]
+        self.K[0][0] = self.__volume__()*2.0*self.e[0]*self.c[0][1]*self.c[0][1]
+        self.K[0][1] = self.__volume__()*2.0*self.e[0]*self.c[0][1]*self.c[1][1]
         self.K[1][1] = 2.0*self.e[0]*self.c[1][1]*self.c[1][1]
 
         # Вычисление интеграла для объемных сил
@@ -137,19 +135,19 @@ class TFE1D2(TFE):
                                         self.c[1][0]*(self.x[1] - self.x[0]))
         if not is_static:
             # Формирование матрицы массы
-            k00 = self.volume()*(-2.0/3.0*self.c[0][1]*self.c[0][1]*self.x[0]*self.x[0]*self.x[0] +
+            k00 = self.__volume__()*(-2.0/3.0*self.c[0][1]*self.c[0][1]*self.x[0]*self.x[0]*self.x[0] +
                                  2.0/3.0*self.c[0][1]*self.c[0][1]*self.x[1]*self.x[1]*self.x[1] -
                                  2.0*self.c[0][0]*self.c[0][0]*self.x[0] + 2.0*self.c[0][0]*self.c[0][0]*self.x[1] -
                                  2.0*self.c[0][0]*self.c[0][1]*self.x[0]*self.x[0] +
                                  2.0*self.c[0][0]*self.c[0][1]*self.x[1]*self.x[1])
-            k01 = self.volume()*(-2.0/3.0*self.c[0][1]*self.c[1][1]*self.x[0]*self.x[0]*self.x[0] +
+            k01 = self.__volume__()*(-2.0/3.0*self.c[0][1]*self.c[1][1]*self.x[0]*self.x[0]*self.x[0] +
                                  2.0/3.0*self.c[0][1]*self.c[1][1]*self.x[1]*self.x[1]*self.x[1] -
                                  self.c[0][1]*self.c[1][0]*self.x[0]*self.x[0] +
                                  self.c[0][1]*self.c[1][0]*self.x[1]*self.x[1] -
                                  self.c[0][0]*self.c[1][1]*self.x[0]*self.x[0] +
                                  self.c[0][0]*self.c[1][1]*self.x[1]*self.x[1] -
                                  2.0*self.c[0][0]*self.c[1][0]*self.x[0] + 2.0*self.c[0][0]*self.c[1][0]*self.x[1])
-            k11 = self.volume()*(2.0*self.c[1][0]*self.c[1][1]*self.x[1]*self.x[1] -
+            k11 = self.__volume__()*(2.0*self.c[1][0]*self.c[1][1]*self.x[1]*self.x[1] -
                                  2.0*self.c[1][0]*self.c[1][1]*self.x[0]*self.x[0] +
                                  2.0/3.0*self.c[1][1]*self.c[1][1]*self.x[1]*self.x[1]*self.x[1] -
                                  2.0/3.0*self.c[1][1]*self.c[1][1]*self.x[0]*self.x[0]*self.x[0] +
@@ -174,21 +172,10 @@ class TFE2D3(TFE):
     def __init__(self):
         super().__init__()
         self.size = 3
-        self.K = [
-            [0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0]
-        ]
-        self.c = [
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0]
-        ]
+        self.K = zeros((6, 7))
+        self.c = zeros((3, 3))
 
-    def volume(self):
+    def __volume__(self):
         a = math.sqrt((self.x[0] - self.x[1])*(self.x[0] - self.x[1]) + (self.y[0] - self.y[1])*(self.y[0] - self.y[1]))
         b = math.sqrt((self.x[0] - self.x[2])*(self.x[0] - self.x[2]) + (self.y[0] - self.y[2])*(self.y[0] - self.y[2]))
         c = math.sqrt((self.x[2] - self.x[1])*(self.x[2] - self.x[1]) + (self.y[2] - self.y[1])*(self.y[2] - self.y[1]))
@@ -257,7 +244,7 @@ class TFE2D3(TFE):
     def generate(self, is_static=True):
         k = self.e[0]/(1.0 - self.m[0]*self.m[0])
         g = self.e[0]/(2.0 + 2.0*self.m[0])
-        vol = self.volume()
+        vol = self.__volume__()
 
         self.K[0][0] = vol*(k*self.c[0][1]*self.c[0][1] + g*self.c[0][2]*self.c[0][2])
         self.K[0][1] = vol*(k*self.c[0][1]*self.m[0]*self.c[0][2] + g*self.c[0][2]*self.c[0][1])
@@ -338,10 +325,10 @@ class TFE3D4(TFE):
     def __init__(self):
         super().__init__()
         self.size = 4
-        self.K = [[0]*13]*12
-        self.c = [[0]*4]*4
+        self.K = zeros((12, 13))
+        self.c = zeros((4, 4))
 
-    def volume(self):
+    def __volume__(self):
         a = (self.x[1] - self.x[0])*(self.y[2] - self.y[0])*(self.z[3] - self.z[0]) + \
             (self.x[3] - self.x[0])*(self.y[1] - self.y[0])*(self.z[2] - self.z[0]) + \
             (self.x[2] - self.x[0])*(self.y[3] - self.y[0])*(self.z[1] - self.z[0])
@@ -351,7 +338,7 @@ class TFE3D4(TFE):
         return math.fabs(a - b)/6.0
 
     def __create__(self):
-        if self.volume() == 0.0:
+        if self.__volume__() == 0.0:
             raise TFEMException('incorrect_fe_err')
         a = array([[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]])
         for j in range(0, self.size):
@@ -425,7 +412,7 @@ class TFE3D4(TFE):
         u[0] = u[1] = u[2] = u[3] = u[4] = res
 
     def generate(self, is_static=True):
-        vol = self.volume()
+        vol = self.__volume__()
         g = self.e[0]/(2.0 + 2.0*self.m[0])
         l = 2.0*self.m[0]*g/(1.0 - 2.0*self.m[0])
         c01 = self.c[0][1]
@@ -545,20 +532,7 @@ class TFE3D4(TFE):
             self.K[10][12] += 0.25*self.vy[3]*vol
             self.K[11][12] += 0.25*self.vz[3]*vol
         if not is_static:
-            self.M = [
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            ]
+            self.M = zeros((12, 12))
 
             k1 = 0.1*vol
             k2 = 0.05*vol
@@ -631,35 +605,19 @@ class TFE3D4(TFE):
                     self.D[i][j] *= self.damping
 
 
-# Четырехузловой двумерный КЭ
+# Билинейный четырехузловой двумерный КЭ
 class TFE2D4(TFE):
     def __init__(self):
         super().__init__()
         self.size = 4
-#        self.K = [[0]*9]*8
-#        self.c = [[0]*4]*4
-        self.K = [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0]
-        ]
-        self.c = [
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ]
+        self.K = zeros((8, 9))
+        self.c = zeros((4, 4))
 
-    def volume(self):
+    def __volume__(self):
         return math.sqrt((self.x[0] - self.x[1])**2 + (self.y[0] - self.y[1])**2)
 
     def __create__(self):
-        if self.volume() == 0.0:
+        if self.__volume__() == 0.0:
             raise TFEMException('incorrect_fe_err')
         a = array([[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]])
         for j in range(0, self.size):
@@ -685,7 +643,8 @@ class TFE2D4(TFE):
             [0.0, 0.0, (1.0 - 2.0*self.m[0])/2.0]
             ])*self.e[0]/((1.0 + self.m[0])*(1.0 - 2.0*self.m[0]))
         # Формирование локальных матриц жесткости, масс и демпфирования
-        local_k = local_m = zeros((8, 8))
+        local_k = zeros((8, 8))
+        local_m = zeros((8, 8))
         volume_load = zeros(8)
         # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(w)):
@@ -728,8 +687,8 @@ class TFE2D4(TFE):
                     ])
                 # Вспомогательная матрица для построения матриц масс и демпфирования
                 c = array([
-                    [0.0, shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[2]],
-                    [shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[2], 0.0]
+                    [shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[2], 0.0],
+                    [0.0, shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[2]]
                 ])
                 bt = b.conj().transpose()
                 ct = c.conj().transpose()
@@ -799,3 +758,150 @@ class TFE2D4(TFE):
                           u2*(self.c[2][2] + self.c[2][3]*self.x[i]) + u3*(self.c[3][2] + self.c[3][3]*self.x[i]) +
                           v0*(self.c[0][1] + self.c[0][3]*self.y[i]) + v1*(self.c[1][1] + self.c[1][3]*self.y[i]) +
                           v2*(self.c[2][1] + self.c[2][3]*self.y[i]) + v3*(self.c[3][1] + self.c[3][3]*self.y[i]))
+
+
+# Восьмиузловой призматический КЭ
+class TFE3D8(TFE):
+    def __init__(self):
+        super().__init__()
+        self.size = 8
+        self.K = zeros((24, 25))
+        self.c = zeros((8, 8))
+
+    def __create__(self):
+#        if self.__volume__() == 0.0:
+#            raise TFEMException('incorrect_fe_err')
+        a = zeros((self.size, self.size))
+        for j in range(0, self.size):
+            b = array([0.0]*self.size)
+            for i in range(0, self.size):
+                a[i][0] = 1.0
+                a[i][1] = self.x[i]
+                a[i][2] = self.y[i]
+                a[i][3] = self.z[i]
+                a[i][4] = self.x[i]*self.y[i]
+                a[i][5] = self.x[i]*self.z[i]
+                a[i][6] = self.y[i]*self.z[i]
+                a[i][7] = self.x[i]*self.y[i]*self.z[i]
+            b[j] = 1.0
+            try:
+                x = solve(a, b)
+            except LinAlgError:
+                raise TFEMException('incorrect_fe_err')
+            self.c[j] = list(x)
+
+    def generate(self, is_static=True):
+        # Параметры квадратур Гаусса
+        xi = [-0.774596669, 0.0, 0.774596669]
+        eta = [-0.774596669, 0.0, 0.774596669]
+        psi = [-0.774596669, 0.0, 0.774596669]
+        w = [0.555555556, 0.888888889, 0.555555556]
+        # Матрица упругих свойст
+        d = array([
+            [1.0, self.m[0]/(1.0 - self.m[0]), self.m[0]/(1.0 - self.m[0]), 0.0, 0.0, 0.0],
+            [self.m[0]/(1.0 - self.m[0]), 1.0, self.m[0]/(1.0 - self.m[0]), 0.0, 0.0, 0.0],
+            [self.m[0]/(1.0 - self.m[0]), self.m[0]/(1.0 - self.m[0]), 1.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.5*(1.0 - 2.0*self.m[0])/(1.0 - self.m[0]), 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.5*(1.0 - 2.0*self.m[0])/(1.0 - self.m[0]), 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.5*(1.0 - 2.0*self.m[0])/(1.0 - self.m[0])],
+            ])*self.e[0]*(1.0 - self.m[0])/(1.0 + self.m[0])/(1.0 - 2.0*self.m[0])
+        # Формирование локальных матриц жесткости, масс и демпфирования
+        local_k = zeros((24, 24))
+        local_m = zeros((24, 24))
+        volume_load = zeros(24)
+        # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
+        for i in range(len(w)):
+            for j in range(len(w)):
+                for k in range(len(w)):
+                    # Изопараметрические функции формы и их производные
+                    shape = array([
+                        0.125*(1.0 - xi[i])*(1.0 - eta[j])*(1.0 - psi[k]),
+                        0.125*(1.0 + xi[i])*(1.0 - eta[j])*(1.0 - psi[k]),
+                        0.125*(1.0 + xi[i])*(1.0 + eta[j])*(1.0 - psi[k]),
+                        0.125*(1.0 - xi[i])*(1.0 + eta[j])*(1.0 - psi[k]),
+                        0.125*(1.0 - xi[i])*(1.0 - eta[j])*(1.0 + psi[k]),
+                        0.125*(1.0 + xi[i])*(1.0 - eta[j])*(1.0 + psi[k]),
+                        0.125*(1.0 + xi[i])*(1.0 + eta[j])*(1.0 + psi[k]),
+                        0.125*(1.0 - xi[i])*(1.0 + eta[j])*(1.0 + psi[k])
+                        ])
+                    shape_dxi = array([
+                        -0.25*(1.0 - eta[j])*(1.0 - psi[k]),
+                        0.25*(1.0 - eta[j])*(1.0 - psi[k]),
+                        0.25*(1.0 + eta[j])*(1.0 - psi[k]),
+                        -0.25*(1.0 + eta[j])*(1.0 - psi[k]),
+                        -0.125*(1.0 - eta[j])*(1.0 + psi[k]),
+                        0.125*(1.0 - eta[j])*(1.0 + psi[k]),
+                        0.125*(1.0 + eta[j])*(1.0 + psi[k]),
+                        -0.125*(1.0 + eta[j])*(1.0 + psi[k])
+                        ])
+                    shape_deta = array([
+                        -0.25*(1.0 - xi[i])*(1.0 - psi[k]),
+                        -0.25*(1.0 + xi[i])*(1.0 - psi[k]),
+                        0.25*(1.0 + xi[i])*(1.0 - psi[k]),
+                        0.25*(1.0 - xi[i])*(1.0 - psi[k]),
+                        -0.125*(1.0 - xi[i])*(1.0 + psi[k]),
+                        -0.125*(1.0 + xi[i])*(1.0 + psi[k]),
+                        0.125*(1.0 + xi[i])*(1.0 + psi[k]),
+                        0.125*(1.0 - xi[i])*(1.0 + psi[k])
+                        ])
+                    shape_psi = array([
+                        -0.125*(1.0 - xi[i])*(1.0 - eta[j]),
+                        -0.125*(1.0 + xi[i])*(1.0 - eta[j]),
+                        -0.125*(1.0 + xi[i])*(1.0 + eta[j]),
+                        -0.125*(1.0 - xi[i])*(1.0 + eta[j]),
+                        0.125*(1.0 - xi[i])*(1.0 - eta[j]),
+                        0.125*(1.0 + xi[i])*(1.0 - eta[j]),
+                        0.125*(1.0 + xi[i])*(1.0 + eta[j]),
+                        0.125*(1.0 - xi[i])*(1.0 + eta[j])
+                        ])
+                    # Матрица Якоби
+                    jacobi = array([
+                        [sum(shape_dxi*self.x), sum(shape_dxi*self.y), sum(shape_dxi*self.z)],
+                        [sum(shape_deta*self.x), sum(shape_deta*self.y), sum(shape_deta*self.z)],
+                        [sum(shape_psi*self.x), sum(shape_psi*self.y), sum(shape_psi*self.z)]
+                        ])
+                    # Якобиан
+                    jacobian = det(jacobi)
+                    inverted_jacobi = inv(jacobi)
+                    shape_dx = inverted_jacobi[0, 0]*shape_dxi + inverted_jacobi[0, 1]*shape_deta + \
+                               inverted_jacobi[0, 2]*shape_psi
+                    shape_dy = inverted_jacobi[1, 0]*shape_dxi + inverted_jacobi[1, 1]*shape_deta + \
+                               inverted_jacobi[1, 2]*shape_psi
+                    shape_dz = inverted_jacobi[2, 0]*shape_dxi + inverted_jacobi[2, 1]*shape_deta + \
+                               inverted_jacobi[2, 2]*shape_psi
+                    # Матрица градиентов
+                    b = array([
+                        [shape_dx[0], 0.0, 0.0, shape_dx[1], 0.0, 0.0, shape_dx[2], 0.0, 0.0, shape_dx[3], 0.0, 0.0, shape_dx[4], 0.0, 0.0, shape_dx[5], 0.0, 0.0, shape_dx[6], 0.0, 0.0, shape_dx[7], 0.0, 0.0],
+                        [0.0, shape_dy[0], 0.0, 0.0, shape_dy[1], 0.0, 0.0, shape_dy[2], 0.0, 0.0, shape_dy[3], 0.0, 0.0, shape_dy[4], 0.0, 0.0, shape_dy[5], 0.0, 0.0, shape_dy[6], 0.0, 0.0, shape_dy[7], 0.0],
+                        [0.0, 0.0, shape_dz[0], 0.0, 0.0, shape_dz[1], 0.0, 0.0, shape_dz[2], 0.0, 0.0, shape_dz[3], 0.0, 0.0, shape_dz[4], 0.0, 0.0, shape_dz[5], 0.0, 0.0, shape_dz[6], 0.0, 0.0, shape_dz[7]],
+                        [shape_dy[0], shape_dx[0], 0.0, shape_dy[1], shape_dx[1], 0.0, shape_dy[2], shape_dx[2], 0.0, shape_dy[3], shape_dx[3], 0.0, shape_dy[4], shape_dx[4], 0.0, shape_dy[5], shape_dx[5], 0.0, shape_dy[6], shape_dx[6], 0.0, shape_dy[7], shape_dx[7], 0.0],
+                        [0.0, shape_dz[0], shape_dy[0], 0.0, shape_dz[1], shape_dy[1], 0.0, shape_dz[2], shape_dy[2], 0.0, shape_dz[3], shape_dy[3], 0.0, shape_dz[4], shape_dy[4], 0.0, shape_dz[5], shape_dy[5], 0.0, shape_dz[6], shape_dy[6], 0.0, shape_dz[7], shape_dy[7]],
+                        [shape_dz[0], 0.0, shape_dx[0], shape_dz[1], 0.0, shape_dx[1], shape_dz[2], 0.0, shape_dx[2], shape_dz[3], 0.0, shape_dx[3], shape_dz[4], 0.0, shape_dx[4], shape_dz[5], 0.0, shape_dx[5], shape_dz[6], 0.0, shape_dx[6], shape_dz[7], 0.0, shape_dx[7]],
+                        ])
+                    # Вспомогательная матрица для построения матриц масс и демпфирования
+                    c = array([
+                        [shape[0], 0.0, 0.0, shape[1], 0.0, 0.0, shape[2], 0.0, 0.0, shape[2], 0.0, 0.0, shape[3], 0.0, 0.0, shape[4], 0.0, 0.0, shape[5], 0.0, 0.0, shape[6], 0.0, 0.0, shape[7], 0.0, 0.0],
+                        [0.0, shape[0], 0.0, 0.0, shape[1], 0.0, 0.0, shape[2], 0.0, 0.0, shape[2], 0.0, 0.0, shape[3], 0.0, 0.0, shape[4], 0.0, 0.0, shape[5], 0.0, 0.0, shape[6], 0.0, 0.0, shape[7], 0.0],
+                        [0.0, 0.0, shape[0], 0.0, 0.0, shape[1], 0.0, 0.0, shape[2], 0.0, 0.0, shape[2], 0.0, 0.0, shape[3], 0.0, 0.0, shape[4], 0.0, 0.0, shape[5], 0.0, 0.0, shape[6], 0.0, 0.0, shape[7]]
+                    ])
+                    bt = b.conj().transpose()
+                    ct = c.conj().transpose()
+                    local_k += bt.dot(d).dot(b)*jacobian*w[k]
+                    if not is_static:
+                        local_m += ct.dot(c)*jacobian*w[k]
+                    # Учет объемной нагрузки
+                    if len(self.vx) or len(self.vy) or len(self.vz):
+                        for m in range(0, self.size):
+                            volume_load[3*m + 0] = self.vx[m]*shape[m]
+                            volume_load[3*m + 1] = self.vy[m]*shape[m]
+                            volume_load[3*m + 2] = self.vz[m]*shape[m]
+        for i in range(0, 24):
+            for j in range(i, 24):
+                self.K[i][j] = local_k[i][j]
+                if not is_static:
+                    self.M[i][j] = self.density*local_m[i][j]
+                    self.D[i][j] = self.damping*local_m[i][j]
+            self.K[i][8] = volume_load[i]
+
+    def calc(self, u, index):
+        pass

@@ -25,7 +25,7 @@ def cube():
     obj = TObject()
     e = [6.5E+10]
     m = [0.3]
-    obj.set_mesh('mesh/cube.trpa')
+    obj.set_mesh('mesh/cube8.trpa')
     obj.set_problem_type('static')
     obj.set_solve_method('direct')
     obj.set_width(10)
@@ -172,10 +172,10 @@ def tank3():
         obj.print_result('mesh/' + obj.object_name() + '.res')
 
 # body1d()
-# cube()
+cube()
 # console()
 # beam()
 # tank3()
 # cylinder()
 # quad()
-console4()
+# console4()

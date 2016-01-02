@@ -11,7 +11,7 @@ from abc import abstractmethod
 from fem_mesh import TMesh
 from fem_params import TFEMParams
 from fem_progress import TProgress
-from fem_fe import TFE, TFE1D2, TFE2D3, TFE2D4, TFE3D4
+from fem_fe import TFE, TFE1D2, TFE2D3, TFE2D4, TFE3D4, TFE3D8
 from fem_parser import TParser
 from fem_defs import DIR_X, DIR_Y, DIR_Z
 from fem_result import TResult
@@ -124,6 +124,8 @@ class TFEM:
             self.__fe__ = TFE2D4()
         elif self.__mesh__.fe_type == 'fe_3d_4':
             self.__fe__ = TFE3D4()
+        elif self.__mesh__.fe_type == 'fe_3d_8':
+            self.__fe__ = TFE3D8()
 
     # Учет нагрузки
     def add_load(self, i, j, value):
