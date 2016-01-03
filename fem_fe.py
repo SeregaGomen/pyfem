@@ -860,13 +860,12 @@ class TFE3D8(TFE):
             # Якобиан
             jacobian = det(jacobi)
             inverted_jacobi = inv(jacobi)
-            shape_dx = inverted_jacobi[0, 0]*shape_dxi + \
-                       inverted_jacobi[0, 1]*shape_deta + \
-                       inverted_jacobi[0, 2]*shape_dpsi
-            shape_dy = inverted_jacobi[1, 0]*shape_dxi + inverted_jacobi[1, 1]*shape_deta + \
-                       inverted_jacobi[1, 2]*shape_dpsi
-            shape_dz = inverted_jacobi[2, 0]*shape_dxi + inverted_jacobi[2, 1]*shape_deta + \
-                       inverted_jacobi[2, 2]*shape_dpsi
+            shape_dx = (inverted_jacobi[0, 0]*shape_dxi + inverted_jacobi[0, 1]*shape_deta) + \
+                       (inverted_jacobi[0, 2]*shape_dpsi)
+            shape_dy = (inverted_jacobi[1, 0]*shape_dxi + inverted_jacobi[1, 1]*shape_deta) + \
+                       (inverted_jacobi[1, 2]*shape_dpsi)
+            shape_dz = (inverted_jacobi[2, 0]*shape_dxi + inverted_jacobi[2, 1]*shape_deta) + \
+                       (inverted_jacobi[2, 2]*shape_dpsi)
             # Матрица градиентов
             b = array([
                 [shape_dx[0], 0.0, 0.0, shape_dx[1], 0.0, 0.0, shape_dx[2], 0.0, 0.0, shape_dx[3], 0.0, 0.0,
@@ -931,9 +930,12 @@ class TFE3D8(TFE):
         res = zeros(self.size)
         for i in range(0, self.size):
             for j in range(0, self.size):
-                dx[i][j] = self.c[j][1] + self.c[j][4]*self.y[i] + self.c[j][5]*self.z[i] + self.c[j][7]*self.y[i]*self.z[i]
-                dy[i][j] = self.c[j][2] + self.c[j][4]*self.x[i] + self.c[j][6]*self.z[i] + self.c[j][7]*self.x[i]*self.z[i]
-                dz[i][j] = self.c[j][3] + self.c[j][5]*self.x[i] + self.c[j][6]*self.y[i] + self.c[j][7]*self.x[i]*self.y[i]
+                dx[i][j] = (self.c[j][1] + self.c[j][4]*self.y[i]) + \
+                           (self.c[j][5]*self.z[i] + self.c[j][7]*self.y[i]*self.z[i])
+                dy[i][j] = (self.c[j][2] + self.c[j][4]*self.x[i]) + \
+                           (self.c[j][6]*self.z[i] + self.c[j][7]*self.x[i]*self.z[i])
+                dz[i][j] = (self.c[j][3] + self.c[j][5]*self.x[i]) + \
+                           (self.c[j][6]*self.y[i] + self.c[j][7]*self.x[i]*self.y[i])
                 if index == 0:      # Exx
                     res[i] += u[3*j]*dx[i][j]
                 elif index == 1:    # Eyy
