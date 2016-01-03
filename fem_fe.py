@@ -934,9 +934,6 @@ class TFE3D8(TFE):
                 dx[i][j] = self.c[j][1] + self.c[j][4]*self.y[i] + self.c[j][5]*self.z[i] + self.c[j][7]*self.y[i]*self.z[i]
                 dy[i][j] = self.c[j][2] + self.c[j][4]*self.x[i] + self.c[j][6]*self.z[i] + self.c[j][7]*self.x[i]*self.z[i]
                 dz[i][j] = self.c[j][3] + self.c[j][5]*self.x[i] + self.c[j][6]*self.y[i] + self.c[j][7]*self.x[i]*self.y[i]
-
-        for i in range(0, self.size):
-            for j in range(0, self.size):
                 if index == 0:      # Exx
                     res[i] += u[3*j]*dx[i][j]
                 elif index == 1:    # Eyy
