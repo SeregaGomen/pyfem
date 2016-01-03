@@ -923,23 +923,47 @@ class TFE3D8(TFE):
 #        print('******************************************')
 
     def calc(self, u, index):
-        dx = [0.0]*self.size
-        dy = [0.0]*self.size
-        dz = [0.0]*self.size
-        res = [0.0]*self.size
+        g = self.e[0]/(2.0 + 2.0*self.m[0])
+        l = 2.0*self.m[0]*g/(1.0 - 2.0*self.m[0])
+        dx = zeros((self.size, self.size))
+        dy = zeros((self.size, self.size))
+        dz = zeros((self.size, self.size))
+        res = zeros(self.size)
         for i in range(0, self.size):
-            dx[i] = self.c[1] + self.c[4]*self.y[i] + self.c[5]*self.z[i] + self.c[7]*self.y[i]*self.z[i]
-            dy[i] = self.c[2] + self.c[4]*self.x[i] + self.c[6]*self.z[i] + self.c[7]*self.x[i]*self.z[i]
-            dz[i] = self.c[3] + self.c[5]*self.x[i] + self.c[6]*self.y[i] + self.c[7]*self.x[i]*self.y[i]
+            for j in range(0, self.size):
+                dx[i][j] = self.c[j][1] + self.c[j][4]*self.y[i] + self.c[j][5]*self.z[i] + self.c[j][7]*self.y[i]*self.z[i]
+                dy[i][j] = self.c[j][2] + self.c[j][4]*self.x[i] + self.c[j][6]*self.z[i] + self.c[j][7]*self.x[i]*self.z[i]
+                dz[i][j] = self.c[j][3] + self.c[j][5]*self.x[i] + self.c[j][6]*self.y[i] + self.c[j][7]*self.x[i]*self.y[i]
 
         for i in range(0, self.size):
             for j in range(0, self.size):
                 if index == 0:      # Exx
-                    res[i] += u[3*j]*dx[j]
+                    res[i] += u[3*j]*dx[i][j]
                 elif index == 1:    # Eyy
-                    res[i] += u[3*j + 1]*dy[j]
+                    res[i] += u[3*j + 1]*dy[i][j]
                 elif index == 2:    # Ezz
-                    res[i] += u[3*j + 2]*dy[j]
+                    res[i] += u[3*j + 2]*dz[i][j]
+                elif index == 3:    # Exy
+                    res[i] += u[3*j]*dy[i][j] + u[3*j + 1]*dx[i][j]
+                elif index == 4:    # Exz
+                    res[i] += u[3*j]*dz[i][j] + u[3*j + 2]*dx[i][j]
+                elif index == 5:    # Eyz
+                    res[i] += u[3*j + 1]*dz[i][j] + u[3*j + 2]*dy[i][j]
+                elif index == 6:    # Sxx
+                    res[i] += 2.0*g*u[3*j]*dx[i][j] + \
+                              l*(u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
+                elif index == 7:    # Syy
+                    res[i] += 2.0*g*u[3*j + 1]*dy[i][j] + \
+                              l*(u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
+                elif index == 8:    # Szz
+                    res[i] += 2.0*g*u[3*j + 2]*dz[i][j] + \
+                              l*(u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
+                elif index == 9:    # Sxy
+                    res[i] += g*(u[3*j]*dy[i][j] + u[3*j + 1]*dx[i][j])
+                elif index == 10:   # Sxz
+                    res[i] += g*(u[3*j]*dz[i][j] + u[3*j + 2]*dx[i][j])
+                elif index == 11:   # Syz
+                    res[i] += g*(u[3*j + 1]*dz[i][j] + u[3*j + 2]*dy[i][j])
 
         for i in range(0, self.size):
             u[i] = res[i]
