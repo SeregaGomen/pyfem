@@ -23,17 +23,18 @@ def body1d():
 
 def cube():
     obj = TObject()
-    e = [6.5E+10]
-    m = [0.3]
-    obj.set_mesh('mesh/cube8.trpa')
+    e = [203200]
+    m = [0.27]
+    obj.set_mesh('mesh/cube.trpa')
     obj.set_problem_type('static')
     obj.set_solve_method('direct')
     obj.set_width(10)
     obj.set_precision(5)
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'z=0', DIR_X | DIR_Y | DIR_Z)
-#    obj.add_volume_load('-1.0E+5', '', DIR_Z)
-    obj.add_surface_load('-1.0E+5', '', DIR_Z)
+    obj.add_volume_load('-1000', '', DIR_Z)
+#    obj.add_surface_load('-1.0E+5', '', DIR_Z)
+#    obj.add_concentrated_load('-1000', 'z=1', DIR_Z)
     if obj.calc():
         obj.print_result()
 

@@ -6,7 +6,7 @@
 
 import math
 from scipy.sparse import lil_matrix
-from scipy.sparse.linalg import spsolve, bicgstab
+from scipy.sparse.linalg import spsolve, bicgstab, ArpackError
 from abc import abstractmethod
 from fem_mesh import TMesh
 from fem_params import TFEMParams
@@ -101,7 +101,10 @@ class TFEM:
     def solve_direct(self):
         self.__progress__.set_process('Solving of equation system...', 1, 1)
         self.__global_matrix__ = self.__global_matrix__.tocsr()
-        self.__global_vector__ = spsolve(self.__global_matrix__, self.__global_vector__)
+        try:
+            self.__global_vector__ = spsolve(self.__global_matrix__, self.__global_vector__)
+        except ArpackError:
+            return False
         self.__progress__.set_progress(1)
         return True
 

@@ -136,22 +136,23 @@ class TFE1D2(TFE):
         if not is_static:
             # Формирование матрицы массы
             k00 = self.__volume__()*(-2.0/3.0*self.c[0][1]*self.c[0][1]*self.x[0]*self.x[0]*self.x[0] +
-                                 2.0/3.0*self.c[0][1]*self.c[0][1]*self.x[1]*self.x[1]*self.x[1] -
-                                 2.0*self.c[0][0]*self.c[0][0]*self.x[0] + 2.0*self.c[0][0]*self.c[0][0]*self.x[1] -
-                                 2.0*self.c[0][0]*self.c[0][1]*self.x[0]*self.x[0] +
-                                 2.0*self.c[0][0]*self.c[0][1]*self.x[1]*self.x[1])
+                                     2.0/3.0*self.c[0][1]*self.c[0][1]*self.x[1]*self.x[1]*self.x[1] -
+                                     2.0*self.c[0][0]*self.c[0][0]*self.x[0] + 2.0*self.c[0][0]*self.c[0][0]*self.x[1] -
+                                     2.0*self.c[0][0]*self.c[0][1]*self.x[0]*self.x[0] +
+                                     2.0*self.c[0][0]*self.c[0][1]*self.x[1]*self.x[1])
             k01 = self.__volume__()*(-2.0/3.0*self.c[0][1]*self.c[1][1]*self.x[0]*self.x[0]*self.x[0] +
-                                 2.0/3.0*self.c[0][1]*self.c[1][1]*self.x[1]*self.x[1]*self.x[1] -
-                                 self.c[0][1]*self.c[1][0]*self.x[0]*self.x[0] +
-                                 self.c[0][1]*self.c[1][0]*self.x[1]*self.x[1] -
-                                 self.c[0][0]*self.c[1][1]*self.x[0]*self.x[0] +
-                                 self.c[0][0]*self.c[1][1]*self.x[1]*self.x[1] -
-                                 2.0*self.c[0][0]*self.c[1][0]*self.x[0] + 2.0*self.c[0][0]*self.c[1][0]*self.x[1])
+                                     2.0/3.0*(self.c[0][1]*self.c[1][1]*self.x[1]*self.x[1]*self.x[1] -
+                                              self.c[0][1]*self.c[1][0]*self.x[0]*self.x[0] +
+                                              self.c[0][1]*self.c[1][0]*self.x[1]*self.x[1] -
+                                              self.c[0][0]*self.c[1][1]*self.x[0]*self.x[0] +
+                                              self.c[0][0]*self.c[1][1]*self.x[1]*self.x[1] -
+                                              (2.0*self.c[0][0]*self.c[1][0]*self.x[0] +
+                                               2.0*self.c[0][0]*self.c[1][0]*self.x[1])))
             k11 = self.__volume__()*(2.0*self.c[1][0]*self.c[1][1]*self.x[1]*self.x[1] -
-                                 2.0*self.c[1][0]*self.c[1][1]*self.x[0]*self.x[0] +
-                                 2.0/3.0*self.c[1][1]*self.c[1][1]*self.x[1]*self.x[1]*self.x[1] -
-                                 2.0/3.0*self.c[1][1]*self.c[1][1]*self.x[0]*self.x[0]*self.x[0] +
-                                 2.0*self.c[1][0]*self.c[1][0]*self.x[1] - 2.0*self.c[1][0]*self.c[1][0]*self.x[0])
+                                     2.0*self.c[1][0]*self.c[1][1]*self.x[0]*self.x[0] +
+                                     2.0/3.0*self.c[1][1]*self.c[1][1]*self.x[1]*self.x[1]*self.x[1] -
+                                     2.0/3.0*self.c[1][1]*self.c[1][1]*self.x[0]*self.x[0]*self.x[0] +
+                                     2.0*self.c[1][0]*self.c[1][0]*self.x[1] - 2.0*self.c[1][0]*self.c[1][0]*self.x[0])
 
             self.M = [[0, 0], [0, 0]]
             self.M[0][0] = self.density*k00
@@ -769,8 +770,6 @@ class TFE3D8(TFE):
         self.c = zeros((8, 8))
 
     def __create__(self):
-#        if self.__volume__() == 0.0:
-#            raise TFEMException('incorrect_fe_err')
         a = zeros((self.size, self.size))
         for j in range(0, self.size):
             b = array([0.0]*self.size)
@@ -792,10 +791,10 @@ class TFE3D8(TFE):
 
     def generate(self, is_static=True):
         # Параметры квадратур Гаусса
-        xi = [-0.774596669, 0.0, 0.774596669]
-        eta = [-0.774596669, 0.0, 0.774596669]
-        psi = [-0.774596669, 0.0, 0.774596669]
-        w = [0.555555556, 0.888888889, 0.555555556]
+        xi = [-0.57735027, -0.57735027, -0.57735027, -0.57735027,  0.57735027, 0.57735027, 0.57735027, 0.57735027]
+        eta = [-0.57735027, -0.57735027, 0.57735027, 0.57735027, -0.57735027, -0.57735027, 0.57735027, 0.57735027]
+        psi = [-0.57735027, 0.57735027, -0.57735027, 0.57735027, -0.57735027, 0.57735027, -0.57735027, 0.57735027]
+        w = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         # Матрица упругих свойст
         d = array([
             [1.0, self.m[0]/(1.0 - self.m[0]), self.m[0]/(1.0 - self.m[0]), 0.0, 0.0, 0.0],
@@ -809,99 +808,138 @@ class TFE3D8(TFE):
         local_k = zeros((24, 24))
         local_m = zeros((24, 24))
         volume_load = zeros(24)
-        # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
+        # Интегрирование по кубу [-1; 1] x [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(w)):
-            for j in range(len(w)):
-                for k in range(len(w)):
-                    # Изопараметрические функции формы и их производные
-                    shape = array([
-                        0.125*(1.0 - xi[i])*(1.0 - eta[j])*(1.0 - psi[k]),
-                        0.125*(1.0 + xi[i])*(1.0 - eta[j])*(1.0 - psi[k]),
-                        0.125*(1.0 + xi[i])*(1.0 + eta[j])*(1.0 - psi[k]),
-                        0.125*(1.0 - xi[i])*(1.0 + eta[j])*(1.0 - psi[k]),
-                        0.125*(1.0 - xi[i])*(1.0 - eta[j])*(1.0 + psi[k]),
-                        0.125*(1.0 + xi[i])*(1.0 - eta[j])*(1.0 + psi[k]),
-                        0.125*(1.0 + xi[i])*(1.0 + eta[j])*(1.0 + psi[k]),
-                        0.125*(1.0 - xi[i])*(1.0 + eta[j])*(1.0 + psi[k])
-                        ])
-                    shape_dxi = array([
-                        -0.25*(1.0 - eta[j])*(1.0 - psi[k]),
-                        0.25*(1.0 - eta[j])*(1.0 - psi[k]),
-                        0.25*(1.0 + eta[j])*(1.0 - psi[k]),
-                        -0.25*(1.0 + eta[j])*(1.0 - psi[k]),
-                        -0.125*(1.0 - eta[j])*(1.0 + psi[k]),
-                        0.125*(1.0 - eta[j])*(1.0 + psi[k]),
-                        0.125*(1.0 + eta[j])*(1.0 + psi[k]),
-                        -0.125*(1.0 + eta[j])*(1.0 + psi[k])
-                        ])
-                    shape_deta = array([
-                        -0.25*(1.0 - xi[i])*(1.0 - psi[k]),
-                        -0.25*(1.0 + xi[i])*(1.0 - psi[k]),
-                        0.25*(1.0 + xi[i])*(1.0 - psi[k]),
-                        0.25*(1.0 - xi[i])*(1.0 - psi[k]),
-                        -0.125*(1.0 - xi[i])*(1.0 + psi[k]),
-                        -0.125*(1.0 + xi[i])*(1.0 + psi[k]),
-                        0.125*(1.0 + xi[i])*(1.0 + psi[k]),
-                        0.125*(1.0 - xi[i])*(1.0 + psi[k])
-                        ])
-                    shape_psi = array([
-                        -0.125*(1.0 - xi[i])*(1.0 - eta[j]),
-                        -0.125*(1.0 + xi[i])*(1.0 - eta[j]),
-                        -0.125*(1.0 + xi[i])*(1.0 + eta[j]),
-                        -0.125*(1.0 - xi[i])*(1.0 + eta[j]),
-                        0.125*(1.0 - xi[i])*(1.0 - eta[j]),
-                        0.125*(1.0 + xi[i])*(1.0 - eta[j]),
-                        0.125*(1.0 + xi[i])*(1.0 + eta[j]),
-                        0.125*(1.0 - xi[i])*(1.0 + eta[j])
-                        ])
-                    # Матрица Якоби
-                    jacobi = array([
-                        [sum(shape_dxi*self.x), sum(shape_dxi*self.y), sum(shape_dxi*self.z)],
-                        [sum(shape_deta*self.x), sum(shape_deta*self.y), sum(shape_deta*self.z)],
-                        [sum(shape_psi*self.x), sum(shape_psi*self.y), sum(shape_psi*self.z)]
-                        ])
-                    # Якобиан
-                    jacobian = det(jacobi)
-                    inverted_jacobi = inv(jacobi)
-                    shape_dx = inverted_jacobi[0, 0]*shape_dxi + inverted_jacobi[0, 1]*shape_deta + \
-                               inverted_jacobi[0, 2]*shape_psi
-                    shape_dy = inverted_jacobi[1, 0]*shape_dxi + inverted_jacobi[1, 1]*shape_deta + \
-                               inverted_jacobi[1, 2]*shape_psi
-                    shape_dz = inverted_jacobi[2, 0]*shape_dxi + inverted_jacobi[2, 1]*shape_deta + \
-                               inverted_jacobi[2, 2]*shape_psi
-                    # Матрица градиентов
-                    b = array([
-                        [shape_dx[0], 0.0, 0.0, shape_dx[1], 0.0, 0.0, shape_dx[2], 0.0, 0.0, shape_dx[3], 0.0, 0.0, shape_dx[4], 0.0, 0.0, shape_dx[5], 0.0, 0.0, shape_dx[6], 0.0, 0.0, shape_dx[7], 0.0, 0.0],
-                        [0.0, shape_dy[0], 0.0, 0.0, shape_dy[1], 0.0, 0.0, shape_dy[2], 0.0, 0.0, shape_dy[3], 0.0, 0.0, shape_dy[4], 0.0, 0.0, shape_dy[5], 0.0, 0.0, shape_dy[6], 0.0, 0.0, shape_dy[7], 0.0],
-                        [0.0, 0.0, shape_dz[0], 0.0, 0.0, shape_dz[1], 0.0, 0.0, shape_dz[2], 0.0, 0.0, shape_dz[3], 0.0, 0.0, shape_dz[4], 0.0, 0.0, shape_dz[5], 0.0, 0.0, shape_dz[6], 0.0, 0.0, shape_dz[7]],
-                        [shape_dy[0], shape_dx[0], 0.0, shape_dy[1], shape_dx[1], 0.0, shape_dy[2], shape_dx[2], 0.0, shape_dy[3], shape_dx[3], 0.0, shape_dy[4], shape_dx[4], 0.0, shape_dy[5], shape_dx[5], 0.0, shape_dy[6], shape_dx[6], 0.0, shape_dy[7], shape_dx[7], 0.0],
-                        [0.0, shape_dz[0], shape_dy[0], 0.0, shape_dz[1], shape_dy[1], 0.0, shape_dz[2], shape_dy[2], 0.0, shape_dz[3], shape_dy[3], 0.0, shape_dz[4], shape_dy[4], 0.0, shape_dz[5], shape_dy[5], 0.0, shape_dz[6], shape_dy[6], 0.0, shape_dz[7], shape_dy[7]],
-                        [shape_dz[0], 0.0, shape_dx[0], shape_dz[1], 0.0, shape_dx[1], shape_dz[2], 0.0, shape_dx[2], shape_dz[3], 0.0, shape_dx[3], shape_dz[4], 0.0, shape_dx[4], shape_dz[5], 0.0, shape_dx[5], shape_dz[6], 0.0, shape_dx[6], shape_dz[7], 0.0, shape_dx[7]],
-                        ])
-                    # Вспомогательная матрица для построения матриц масс и демпфирования
-                    c = array([
-                        [shape[0], 0.0, 0.0, shape[1], 0.0, 0.0, shape[2], 0.0, 0.0, shape[2], 0.0, 0.0, shape[3], 0.0, 0.0, shape[4], 0.0, 0.0, shape[5], 0.0, 0.0, shape[6], 0.0, 0.0, shape[7], 0.0, 0.0],
-                        [0.0, shape[0], 0.0, 0.0, shape[1], 0.0, 0.0, shape[2], 0.0, 0.0, shape[2], 0.0, 0.0, shape[3], 0.0, 0.0, shape[4], 0.0, 0.0, shape[5], 0.0, 0.0, shape[6], 0.0, 0.0, shape[7], 0.0],
-                        [0.0, 0.0, shape[0], 0.0, 0.0, shape[1], 0.0, 0.0, shape[2], 0.0, 0.0, shape[2], 0.0, 0.0, shape[3], 0.0, 0.0, shape[4], 0.0, 0.0, shape[5], 0.0, 0.0, shape[6], 0.0, 0.0, shape[7]]
+            # Изопараметрические функции формы и их производные
+            shape = array([
+                0.125*(1.0 - xi[i])*(1.0 - eta[i])*(1.0 - psi[i]),
+                0.125*(1.0 + xi[i])*(1.0 - eta[i])*(1.0 - psi[i]),
+                0.125*(1.0 + xi[i])*(1.0 + eta[i])*(1.0 - psi[i]),
+                0.125*(1.0 - xi[i])*(1.0 + eta[i])*(1.0 - psi[i]),
+                0.125*(1.0 - xi[i])*(1.0 - eta[i])*(1.0 + psi[i]),
+                0.125*(1.0 + xi[i])*(1.0 - eta[i])*(1.0 + psi[i]),
+                0.125*(1.0 + xi[i])*(1.0 + eta[i])*(1.0 + psi[i]),
+                0.125*(1.0 - xi[i])*(1.0 + eta[i])*(1.0 + psi[i])
+                ])
+            shape_dxi = array([
+                -0.125*(1.0 - eta[i])*(1.0 - psi[i]),
+                0.125*(1.0 - eta[i])*(1.0 - psi[i]),
+                0.125*(1.0 + eta[i])*(1.0 - psi[i]),
+                -0.125*(1.0 + eta[i])*(1.0 - psi[i]),
+                -0.125*(1.0 - eta[i])*(1.0 + psi[i]),
+                0.125*(1.0 - eta[i])*(1.0 + psi[i]),
+                0.125*(1.0 + eta[i])*(1.0 + psi[i]),
+                -0.125*(1.0 + eta[i])*(1.0 + psi[i])
+                ])
+            shape_deta = array([
+                -0.125*(1.0 - xi[i])*(1.0 - psi[i]),
+                -0.125*(1.0 + xi[i])*(1.0 - psi[i]),
+                0.125*(1.0 + xi[i])*(1.0 - psi[i]),
+                0.125*(1.0 - xi[i])*(1.0 - psi[i]),
+                -0.125*(1.0 - xi[i])*(1.0 + psi[i]),
+                -0.125*(1.0 + xi[i])*(1.0 + psi[i]),
+                0.125*(1.0 + xi[i])*(1.0 + psi[i]),
+                0.125*(1.0 - xi[i])*(1.0 + psi[i])
+                ])
+            shape_dpsi = array([
+                -0.125*(1.0 - xi[i])*(1.0 - eta[i]),
+                -0.125*(1.0 + xi[i])*(1.0 - eta[i]),
+                -0.125*(1.0 + xi[i])*(1.0 + eta[i]),
+                -0.125*(1.0 - xi[i])*(1.0 + eta[i]),
+                0.125*(1.0 - xi[i])*(1.0 - eta[i]),
+                0.125*(1.0 + xi[i])*(1.0 - eta[i]),
+                0.125*(1.0 + xi[i])*(1.0 + eta[i]),
+                0.125*(1.0 - xi[i])*(1.0 + eta[i])
+                ])
+            # Матрица Якоби
+            jacobi = array([
+                [sum(shape_dxi*self.x), sum(shape_dxi*self.y), sum(shape_dxi*self.z)],
+                [sum(shape_deta*self.x), sum(shape_deta*self.y), sum(shape_deta*self.z)],
+                [sum(shape_dpsi*self.x), sum(shape_dpsi*self.y), sum(shape_dpsi*self.z)]
+                ])
+            # Якобиан
+            jacobian = det(jacobi)
+            inverted_jacobi = inv(jacobi)
+            shape_dx = inverted_jacobi[0, 0]*shape_dxi + \
+                       inverted_jacobi[0, 1]*shape_deta + \
+                       inverted_jacobi[0, 2]*shape_dpsi
+            shape_dy = inverted_jacobi[1, 0]*shape_dxi + inverted_jacobi[1, 1]*shape_deta + \
+                       inverted_jacobi[1, 2]*shape_dpsi
+            shape_dz = inverted_jacobi[2, 0]*shape_dxi + inverted_jacobi[2, 1]*shape_deta + \
+                       inverted_jacobi[2, 2]*shape_dpsi
+            # Матрица градиентов
+            b = array([
+                [shape_dx[0], 0.0, 0.0, shape_dx[1], 0.0, 0.0, shape_dx[2], 0.0, 0.0, shape_dx[3], 0.0, 0.0,
+                 shape_dx[4], 0.0, 0.0, shape_dx[5], 0.0, 0.0, shape_dx[6], 0.0, 0.0, shape_dx[7], 0.0, 0.0],
+                [0.0, shape_dy[0], 0.0, 0.0, shape_dy[1], 0.0, 0.0, shape_dy[2], 0.0, 0.0, shape_dy[3], 0.0, 0.0,
+                 shape_dy[4], 0.0, 0.0, shape_dy[5], 0.0, 0.0, shape_dy[6], 0.0, 0.0, shape_dy[7], 0.0],
+                [0.0, 0.0, shape_dz[0], 0.0, 0.0, shape_dz[1], 0.0, 0.0, shape_dz[2], 0.0, 0.0, shape_dz[3], 0.0, 0.0,
+                 shape_dz[4], 0.0, 0.0, shape_dz[5], 0.0, 0.0, shape_dz[6], 0.0, 0.0, shape_dz[7]],
+                [shape_dy[0], shape_dx[0], 0.0, shape_dy[1], shape_dx[1], 0.0, shape_dy[2], shape_dx[2], 0.0,
+                 shape_dy[3], shape_dx[3], 0.0, shape_dy[4], shape_dx[4], 0.0, shape_dy[5], shape_dx[5], 0.0,
+                 shape_dy[6], shape_dx[6], 0.0, shape_dy[7], shape_dx[7], 0.0],
+                [0.0, shape_dz[0], shape_dy[0], 0.0, shape_dz[1], shape_dy[1], 0.0, shape_dz[2], shape_dy[2], 0.0,
+                 shape_dz[3], shape_dy[3], 0.0, shape_dz[4], shape_dy[4], 0.0, shape_dz[5], shape_dy[5], 0.0,
+                 shape_dz[6], shape_dy[6], 0.0, shape_dz[7], shape_dy[7]],
+                [shape_dz[0], 0.0, shape_dx[0], shape_dz[1], 0.0, shape_dx[1], shape_dz[2], 0.0, shape_dx[2],
+                 shape_dz[3], 0.0, shape_dx[3], shape_dz[4], 0.0, shape_dx[4], shape_dz[5], 0.0, shape_dx[5],
+                 shape_dz[6], 0.0, shape_dx[6], shape_dz[7], 0.0, shape_dx[7]],
+                ])
+            bt = b.conj().transpose()
+            local_k += bt.dot(d).dot(b)*jacobian*w[i]
+            if not is_static:
+                # Вспомогательная матрица для построения матриц масс и демпфирования
+                c = array([
+                    [shape[0], 0.0, 0.0, shape[1], 0.0, 0.0, shape[2], 0.0, 0.0, shape[2], 0.0, 0.0, shape[3], 0.0, 0.0,
+                     shape[4], 0.0, 0.0, shape[5], 0.0, 0.0, shape[6], 0.0, 0.0, shape[7], 0.0, 0.0],
+                    [0.0, shape[0], 0.0, 0.0, shape[1], 0.0, 0.0, shape[2], 0.0, 0.0, shape[2], 0.0, 0.0, shape[3], 0.0,
+                     0.0, shape[4], 0.0, 0.0, shape[5], 0.0, 0.0, shape[6], 0.0, 0.0, shape[7], 0.0],
+                    [0.0, 0.0, shape[0], 0.0, 0.0, shape[1], 0.0, 0.0, shape[2], 0.0, 0.0, shape[2], 0.0, 0.0, shape[3],
+                     0.0, 0.0, shape[4], 0.0, 0.0, shape[5], 0.0, 0.0, shape[6], 0.0, 0.0, shape[7]]
                     ])
-                    bt = b.conj().transpose()
-                    ct = c.conj().transpose()
-                    local_k += bt.dot(d).dot(b)*jacobian*w[k]
-                    if not is_static:
-                        local_m += ct.dot(c)*jacobian*w[k]
-                    # Учет объемной нагрузки
-                    if len(self.vx) or len(self.vy) or len(self.vz):
-                        for m in range(0, self.size):
-                            volume_load[3*m + 0] = self.vx[m]*shape[m]
-                            volume_load[3*m + 1] = self.vy[m]*shape[m]
-                            volume_load[3*m + 2] = self.vz[m]*shape[m]
+                ct = c.conj().transpose()
+                local_m += ct.dot(c)*jacobian*w[i]
+            # Учет объемной нагрузки
+            for j in range(0, self.size):
+                volume_load[3*j + 0] += self.vx[j]*shape[j]*jacobian*w[j]
+                volume_load[3*j + 1] += self.vy[j]*shape[j]*jacobian*w[j]
+                volume_load[3*j + 2] += self.vz[j]*shape[j]*jacobian*w[j]
         for i in range(0, 24):
             for j in range(i, 24):
                 self.K[i][j] = local_k[i][j]
                 if not is_static:
                     self.M[i][j] = self.density*local_m[i][j]
                     self.D[i][j] = self.damping*local_m[i][j]
-            self.K[i][8] = volume_load[i]
+            self.K[i][24] = volume_load[i]
+
+
+#        print('******************************************')
+#        import sys
+#        sz = 24
+#        for i in range(0, sz):
+#            for j in range(0, sz):
+#                sys.stdout.write('%+E\t' % local_k[i][j])
+#            sys.stdout.write('\n')
+#        print('******************************************')
 
     def calc(self, u, index):
-        pass
+        dx = [0.0]*self.size
+        dy = [0.0]*self.size
+        dz = [0.0]*self.size
+        res = [0.0]*self.size
+        for i in range(0, self.size):
+            dx[i] = self.c[1] + self.c[4]*self.y[i] + self.c[5]*self.z[i] + self.c[7]*self.y[i]*self.z[i]
+            dy[i] = self.c[2] + self.c[4]*self.x[i] + self.c[6]*self.z[i] + self.c[7]*self.x[i]*self.z[i]
+            dz[i] = self.c[3] + self.c[5]*self.x[i] + self.c[6]*self.y[i] + self.c[7]*self.x[i]*self.y[i]
+
+        for i in range(0, self.size):
+            for j in range(0, self.size):
+                if index == 0:      # Exx
+                    res[i] += u[3*j]*dx[j]
+                elif index == 1:    # Eyy
+                    res[i] += u[3*j + 1]*dy[j]
+                elif index == 2:    # Ezz
+                    res[i] += u[3*j + 2]*dy[j]
+
+        for i in range(0, self.size):
+            u[i] = res[i]
