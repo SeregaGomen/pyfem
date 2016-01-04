@@ -16,7 +16,8 @@ def body1d():
     obj.set_precision(5)
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'x=0', DIR_X)
-    obj.add_volume_load('-1.0E+5', '', DIR_X)
+#    obj.add_volume_load('-1.0E+5', '', DIR_X)
+    obj.add_concentrated_load('-1.0E+5', 'x=1', DIR_X)
     if obj.calc():
         obj.print_result()
 
