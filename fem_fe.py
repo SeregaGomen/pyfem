@@ -131,24 +131,15 @@ class TFE1D2(TFE):
                                         self.c[1][0]*(self.x[1] - self.x[0]))
         if not is_static:
             # Формирование матрицы массы
-            k00 = self.__volume__()*(-2.0/3.0*self.c[0][1]*self.c[0][1]*self.x[0]*self.x[0]*self.x[0] +
-                                     2.0/3.0*self.c[0][1]*self.c[0][1]*self.x[1]*self.x[1]*self.x[1] -
-                                     2.0*self.c[0][0]*self.c[0][0]*self.x[0] + 2.0*self.c[0][0]*self.c[0][0]*self.x[1] -
-                                     2.0*self.c[0][0]*self.c[0][1]*self.x[0]*self.x[0] +
-                                     2.0*self.c[0][0]*self.c[0][1]*self.x[1]*self.x[1])
-            k01 = self.__volume__()*(-2.0/3.0*self.c[0][1]*self.c[1][1]*self.x[0]*self.x[0]*self.x[0] +
-                                     2.0/3.0*(self.c[0][1]*self.c[1][1]*self.x[1]*self.x[1]*self.x[1] -
-                                              self.c[0][1]*self.c[1][0]*self.x[0]*self.x[0] +
-                                              self.c[0][1]*self.c[1][0]*self.x[1]*self.x[1] -
-                                              self.c[0][0]*self.c[1][1]*self.x[0]*self.x[0] +
-                                              self.c[0][0]*self.c[1][1]*self.x[1]*self.x[1] -
-                                              (2.0*self.c[0][0]*self.c[1][0]*self.x[0] +
-                                               2.0*self.c[0][0]*self.c[1][0]*self.x[1])))
-            k11 = self.__volume__()*(2.0*self.c[1][0]*self.c[1][1]*self.x[1]*self.x[1] -
-                                     2.0*self.c[1][0]*self.c[1][1]*self.x[0]*self.x[0] +
-                                     2.0/3.0*self.c[1][1]*self.c[1][1]*self.x[1]*self.x[1]*self.x[1] -
-                                     2.0/3.0*self.c[1][1]*self.c[1][1]*self.x[0]*self.x[0]*self.x[0] +
-                                     2.0*self.c[1][0]*self.c[1][0]*self.x[1] - 2.0*self.c[1][0]*self.c[1][0]*self.x[0])
+            k00 = (self.c[0][0]**2*(self.x[1] - self.x[0])) + \
+                  (self.c[0][0]*self.c[0][1]*(self.x[1]**2 - self.x[0]**2)) + \
+                  (1.0/3.0*self.c[0][1]**2*(self.x[1]**3 - self.x[0]**3))
+            k01 = (self.c[0][0]*self.c[1][0]*(self.x[1] - self.x[0])) + \
+                  (0.5*(self.c[0][0]*self.c[1][1] + self.c[0][1]*self.c[1][0])*(self.x[1]**2 - self.x[0]**2)) + \
+                  (1.0/3.0*self.c[0][1]*self.c[1][1]*(self.x[1]**3 - self.x[0]**3))
+            k11 = (self.c[1][0]**2*(self.x[1] - self.x[0])) + \
+                  (self.c[1][0]*self.c[1][1]*(self.x[1]**2 - self.x[0]**2)) + \
+                  (1.0/3.0*self.c[1][1]**2*(self.x[1]**3 - self.x[0]**3))
 
             self.M = [[0, 0], [0, 0]]
             self.M[0][0] = self.density*k00
