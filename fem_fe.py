@@ -84,7 +84,7 @@ class TFE:
     # Вычисления стандартных результатов КЭ
     @abstractmethod
     def calc(self, u):
-        return zeros((0, 0))
+        return [[]]
 
 
 # Линейный (двухузловой) одномерный КЭ
@@ -114,23 +114,21 @@ class TFE1D2(TFE):
         self.c[1][1] = 1.0/vol
 
     def calc(self, u):
-        u0 = u[0]
-        u1 = u[1]
         res = zeros((2, 2))
-        res[0][0] = res[0][1] = u0*self.c[0][1] + u1*self.c[1][1]
-        res[1][0] = res[1][1] = self.e[0]*(u0*self.c[0][1] + u1*self.c[1][1])
+        res[0][0] = res[0][1] = u[0]*self.c[0][1] + u[1]*self.c[1][1]
+        res[1][0] = res[1][1] = self.e[0]*(u[0]*self.c[0][1] + u[1]*self.c[1][1])
         return res
 
     def generate(self, is_static=True):
-        self.K[0][0] = self.__volume__()*2.0*self.e[0]*self.c[0][1]*self.c[0][1]
-        self.K[0][1] = self.__volume__()*2.0*self.e[0]*self.c[0][1]*self.c[1][1]
-        self.K[1][1] = 2.0*self.e[0]*self.c[1][1]*self.c[1][1]
+        self.K[0][0] = 2.0*self.__volume__()*self.e[0]*self.c[0][1]**2
+        self.K[0][1] = 2.0*self.__volume__()*self.e[0]*self.c[0][1]*self.c[1][1]
+        self.K[1][1] = 2.0*self.__volume__()*self.e[0]*self.c[1][1]**2
 
         # Вычисление интеграла для объемных сил
         if len(self.vx):
-            self.K[0][2] += self.vx[0]*(self.c[0][1]*(self.x[1]*self.x[1] - self.x[0]*self.x[0])*0.5 +
+            self.K[0][2] += self.vx[0]*(self.c[0][1]*(self.x[1]**2 - self.x[0]**2)*0.5 +
                                         self.c[0][0]*(self.x[1] - self.x[0]))
-            self.K[1][2] += self.vx[1]*(self.c[1][1]*(self.x[1]*self.x[1] - self.x[0]*self.x[0])*0.5 +
+            self.K[1][2] += self.vx[1]*(self.c[1][1]*(self.x[1]**2 - self.x[0]**2)*0.5 +
                                         self.c[1][0]*(self.x[1] - self.x[0]))
         if not is_static:
             # Формирование матрицы массы
