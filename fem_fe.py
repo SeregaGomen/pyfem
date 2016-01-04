@@ -212,29 +212,22 @@ class TFE2D3(TFE):
         self.c[2][2] = det3/det0
 
     def calc(self, u):
-        u0 = u[0]
-        v0 = u[1]
-        u1 = u[2]
-        v1 = u[3]
-        u2 = u[4]
-        v2 = u[5]
-        c01 = self.c[0][1]
-        c02 = self.c[0][2]
-        c11 = self.c[1][1]
-        c12 = self.c[1][2]
-        c21 = self.c[2][1]
-        c22 = self.c[2][2]
-        e = self.e[0]
         m = self.m[0]
-        res = zeros((6, 3))
-        res[0][0] = res[0][1] = res[0][2] = u0*c01 + u1*c11 + u2*c21
-        res[1][0] = res[1][1] = res[1][2] = v0*c02 + v1*c12 + v2*c22
-        res[2][0] = res[2][1] = res[2][2] = u0*c02 + u1*c12 + u2*c22 + v0*c01 + v1*c11 + v2*c21
-        res[3][0] = res[3][1] = res[3][2] = e/(1.0 - m*m)*((u0*c01 + u1*c11 + u2*c21) +
-                                                           self.m[0]*(v0*c02 + v1*c12 + v2*c22))
-        res[4][0] = res[4][1] = res[4][2] = e/(1.0 - m*m)*(self.m[0]*(u0*c01 + u1*c11 + u2*c21) +
-                                                           (v0*c02 + v1*c12 + v2*c22))
-        res[5][0] = res[5][1] = res[5][2] = e/(2.0 + 2.0*m)*(u0*c02 + u1*c12 + u2*c22 + v0*c01 + v1*c11 + v2*c21)
+        g = self.e[0]/(2.0 + 2.0*m)
+        k = self.e[0]/(1.0 - m**2)
+        dx = zeros((self.size, self.size))
+        dy = zeros((self.size, self.size))
+        res = zeros((6, self.size))
+        for i in range(0, self.size):
+            for j in range(0, self.size):
+                dx[i][j] = self.c[j][1]
+                dy[i][j] = self.c[j][2]
+                res[0][i] += u[2*j]*dx[i][j]
+                res[1][i] += u[2*j + 1]*dy[i][j]
+                res[2][i] += u[2*j]*dy[i][j] + u[2*j + 1]*dx[i][j]
+                res[3][i] += k*(u[2*j]*dx[i][j] + m*u[2*j + 1]*dy[i][j])
+                res[4][i] += k*(u[2*j + 1]*dy[i][j] + m*u[2*j]*dx[i][j])
+                res[5][i] += g*(u[2*j]*dy[i][j] + u[2*j + 1]*dx[i][j])
         return res
 
     def generate(self, is_static=True):
@@ -349,62 +342,29 @@ class TFE3D4(TFE):
             self.c[j] = list(x)
 
     def calc(self, u):
-        e = self.e[0]
-        m = self.m[0]
-        g = e/(2.0 + 2.0*m)
-        l = 2.0*m*g/(1.0 - 2.0*m)
-        u0 = u[0]
-        v0 = u[1]
-        w0 = u[2]
-        u1 = u[3]
-        v1 = u[4]
-        w1 = u[5]
-        u2 = u[6]
-        v2 = u[7]
-        w2 = u[8]
-        u3 = u[9]
-        v3 = u[10]
-        w3 = u[11]
-        c01 = self.c[0][1]
-        c02 = self.c[0][2]
-        c03 = self.c[0][3]
-        c11 = self.c[1][1]
-        c12 = self.c[1][2]
-        c13 = self.c[1][3]
-        c21 = self.c[2][1]
-        c22 = self.c[2][2]
-        c23 = self.c[2][3]
-        c31 = self.c[3][1]
-        c32 = self.c[3][2]
-        c33 = self.c[3][3]
-        res = zeros((12, 4))
-        res[0][0] = res[0][1] = res[0][2] = res[0][3] = u0*c01 + u1*c11 + u2*c21 + u3*c31
-        res[1][0] = res[1][1] = res[1][2] = res[1][3] = v0*c02 + v1*c12 + v2*c22 + v3*c32
-        res[2][0] = res[2][1] = res[2][2] = res[2][3] = w0*c03 + w1*c13 + w2*c23 + w3*c33
-        res[3][0] = res[3][1] = res[3][2] = res[3][3] = u0*c02 + u1*c12 + u2*c22 + u3*c32 + v0*c01 + v1*c11 + v2*c21 + \
-                                                        v3*c31
-        res[4][0] = res[4][1] = res[4][2] = res[4][3] = u0*c03 + u1*c13 + u2*c23 + u3*c33 + w0*c01 + w1*c11 + w2*c21 + \
-                                                        w3*c31
-        res[5][0] = res[5][1] = res[5][2] = res[5][3] = v0*c03 + v1*c13 + v2*c23 + v3*c33 + w0*c02 + w1*c12 + w2*c22 + \
-                                                        w3*c32
-        res[6][0] = res[6][1] = res[6][2] = res[6][3] = 2.0*g*u0*c01 + 2.0*g*u1*c11 + 2.0*g*u2*c21 + 2.0*g*u3*c31 + \
-                                                        l*u0*c01 + l*u1*c11 + l*u2*c21 + l*u3*c31 + l*v0*c02 + \
-                                                        l*v1*c12 + l*v2*c22 + l*v3*c32 + l*w0*c03 + l*w1*c13 + \
-                                                        l*w2*c23 + l*w3*c33
-        res[7][0] = res[7][1] = res[7][2] = res[7][3] = 2.0*g*v0*c02 + 2.0*g*v1*c12 + 2.0*g*v2*c22 + 2.0*g*v3*c32 + \
-                                                        l*u0*c01 + l*u1*c11 + l*u2*c21 + l*u3*c31 + l*v0*c02 + \
-                                                        l*v1*c12 + l*v2*c22 + l*v3*c32 + l*w0*c03 + l*w1*c13 + \
-                                                        l*w2*c23 + l*w3*c33
-        res[8][0] = res[8][1] = res[8][2] = res[8][3] = 2.0*g*w0*c03 + 2.0*g*w1*c13 + 2.0*g*w2*c23 + 2.0*g*w3*c33 + \
-                                                        l*u0*c01 + l*u1*c11 + l*u2*c21 + l*u3*c31 + l*v0*c02 + \
-                                                        l*v1*c12 + l*v2*c22 + l*v3*c32 + l*w0*c03 + l*w1*c13 + \
-                                                        l*w2*c23 + l*w3*c33
-        res[9][0] = res[9][1] = res[9][2] = res[9][3] = g*(u0*c02 + u1*c12 + u2*c22 + u3*c32 + v0*c01 + v1*c11 +
-                                                           v2*c21 + v3*c31)
-        res[10][0] = res[10][1] = res[10][2] = res[10][3] = g*(u0*c03 + u1*c13 + u2*c23 + u3*c33 + w0*c01 + w1*c11 +
-                                                               w2*c21 + w3*c31)
-        res[11][0] = res[11][1] = res[11][2] = res[11][3] = g*(v0*c03 + v1*c13 + v2*c23 + v3*c33 + w0*c02 + w1*c12 +
-                                                               w2*c22 + w3*c32)
+        g = self.e[0]/(2.0 + 2.0*self.m[0])
+        l = 2.0*self.m[0]*g/(1.0 - 2.0*self.m[0])
+        dx = zeros((self.size, self.size))
+        dy = zeros((self.size, self.size))
+        dz = zeros((self.size, self.size))
+        res = zeros((12, self.size))
+        for i in range(0, self.size):
+            for j in range(0, self.size):
+                dx[i][j] = self.c[j][1]
+                dy[i][j] = self.c[j][2]
+                dz[i][j] = self.c[j][3]
+                res[0][i] += u[3*j]*dx[i][j]
+                res[1][i] += u[3*j + 1]*dy[i][j]
+                res[2][i] += u[3*j + 2]*dz[i][j]
+                res[3][i] += u[3*j]*dy[i][j] + u[3*j + 1]*dx[i][j]
+                res[4][i] += u[3*j]*dz[i][j] + u[3*j + 2]*dx[i][j]
+                res[5][i] += u[3*j + 1]*dz[i][j] + u[3*j + 2]*dy[i][j]
+                res[6][i] += 2.0*g*u[3*j]*dx[i][j] + l*(u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
+                res[7][i] += 2.0*g*u[3*j + 1]*dy[i][j] + l*(u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
+                res[8][i] += 2.0*g*u[3*j + 2]*dz[i][j] + l*(u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
+                res[9][i] += g*(u[3*j]*dy[i][j] + u[3*j + 1]*dx[i][j])
+                res[10][i] += g*(u[3*j]*dz[i][j] + u[3*j + 2]*dx[i][j])
+                res[11][i] += g*(u[3*j + 1]*dz[i][j] + u[3*j + 2]*dy[i][j])
         return res
 
     def generate(self, is_static=True):
@@ -640,8 +600,7 @@ class TFE2D4(TFE):
             ])*self.e[0]/((1.0 + self.m[0])*(1.0 - 2.0*self.m[0]))
         # Формирование локальных матриц жесткости, масс и демпфирования
         local_k = zeros((8, 8))
-        if not is_static:
-            local_m = zeros((8, 8))
+        local_m = zeros((8, 8))
         volume_load = zeros(8)
         # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(w)):
@@ -678,8 +637,7 @@ class TFE2D4(TFE):
             b = array([
                 [shape_dx[0], 0.0, shape_dx[1], 0.0, shape_dx[2], 0.0, shape_dx[3], 0.0],
                 [0.0, shape_dy[0], 0.0, shape_dy[1], 0.0, shape_dy[2], 0.0, shape_dy[3]],
-                [shape_dy[0], shape_dx[0], shape_dy[1], shape_dx[1], shape_dy[2], shape_dx[2],
-                 shape_dy[3],shape_dx[3]]
+                [shape_dy[0], shape_dx[0], shape_dy[1], shape_dx[1], shape_dy[2], shape_dx[2], shape_dy[3], shape_dx[3]]
                 ])
             # Вспомогательная матрица для построения матриц масс и демпфирования
             c = array([
@@ -713,41 +671,24 @@ class TFE2D4(TFE):
 #        print('*******************************')
 
     def calc(self, u):
-        l = self.e[0]/(1.0 - self.m[0]*self.m[0])
-        g = self.e[0]/(2.0 + 2.0*self.m[0])
-        u0 = u[0]
-        v0 = u[1]
-        u1 = u[2]
-        v1 = u[3]
-        u2 = u[4]
-        v2 = u[5]
-        u3 = u[6]
-        v3 = u[7]
-        res = zeros((6, 4))
+        m = self.m[0]
+        g = self.e[0]/(2.0 + 2.0*m)
+        k = self.e[0]/(1.0 - m**2)
+        dx = zeros((self.size, self.size))
+        dy = zeros((self.size, self.size))
+        res = zeros((6, self.size))
         for i in range(0, self.size):
-            res[0][i] = u0*self.c[0][1] + u0*self.c[0][3]*self.y[i] + u1*self.c[1][1] + u1*self.c[1][3]*self.y[i] + \
-                       u2*self.c[2][1] + u2*self.c[2][3]*self.y[i] + u3*self.c[3][1] + u3*self.c[3][3]*self.y[i]
-            res[1][i] = v0*self.c[0][2] + v0*self.c[0][3]*self.x[i] + v1*self.c[1][2] + v1*self.c[1][3]*self.x[i] + \
-                       v2*self.c[2][2] + v2*self.c[2][3]*self.x[i] + v3*self.c[3][2] + v3*self.c[3][3]*self.x[i]
-            res[2][i] = u0*self.c[0][2] + u0*self.c[0][3]*self.x[i] + u1*self.c[1][2] + u1*self.c[1][3]*self.x[i] + \
-                       u2*self.c[2][2] + u2*self.c[2][3]*self.x[i] + u3*self.c[3][2] + u3*self.c[3][3]*self.x[i] + \
-                       v0*self.c[0][1] + v0*self.c[0][3]*self.y[i] + v1*self.c[1][1] + v1*self.c[1][3]*self.y[i] + \
-                       v2*self.c[2][1] + v2*self.c[2][3]*self.y[i] + v3*self.c[3][1] + v3*self.c[3][3]*self.y[i]
-            res[3][i] = l*(u0*(self.c[0][1] + self.c[0][3]*self.y[i]) + u1*(self.c[1][1] + self.c[1][3]*self.y[i]) +
-                          u2*(self.c[2][1] + self.c[2][3]*self.y[i]) + u3*(self.c[3][1] + self.c[3][3]*self.y[i]) +
-                          (self.m[0]*(v0*(self.c[0][2] + self.c[0][3]*self.x[i])) +
-                          (v1*(self.c[1][2] + self.c[1][3]*self.x[i])) + v2*(self.c[2][2] + self.c[2][3]*self.x[i]) +
-                          (v3*(self.c[3][2] + self.c[3][3]*self.x[i]))))
-            res[4][i] = l*(self.m[0]*(u0*(self.c[0][1] + self.c[0][3]*self.y[i]) + u1*(self.c[1][1] +
-                          self.c[1][3]*self.y[i]) + u2*(self.c[2][1] + self.c[2][3]*self.y[i]) +
-                                     u3*(self.c[3][1] + self.c[3][3]*self.y[i])) +
-                          v0*(self.c[0][2] + self.c[0][3]*self.x[i]) + v1*(self.c[1][2] + self.c[1][3]*self.x[i]) +
-                          v2*(self.c[2][2] + self.c[2][3]*self.x[i]) + v3*(self.c[3][2] + self.c[3][3]*self.x[i]))
-            res[5][i] = g*(u0*(self.c[0][2] + self.c[0][3]*self.x[i]) + u1*(self.c[1][2] + self.c[1][3]*self.x[i]) +
-                          u2*(self.c[2][2] + self.c[2][3]*self.x[i]) + u3*(self.c[3][2] + self.c[3][3]*self.x[i]) +
-                          v0*(self.c[0][1] + self.c[0][3]*self.y[i]) + v1*(self.c[1][1] + self.c[1][3]*self.y[i]) +
-                          v2*(self.c[2][1] + self.c[2][3]*self.y[i]) + v3*(self.c[3][1] + self.c[3][3]*self.y[i]))
+            for j in range(0, self.size):
+                dx[i][j] = self.c[j][1] + self.c[j][3]*self.y[i]
+                dy[i][j] = self.c[j][2] + self.c[j][3]*self.x[i]
+                res[0][i] += u[2*j]*dx[i][j]
+                res[1][i] += u[2*j + 1]*dy[i][j]
+                res[2][i] += u[2*j]*dy[i][j] + u[2*j + 1]*dx[i][j]
+                res[3][i] += k*(u[2*j]*dx[i][j] + m*u[2*j + 1]*dy[i][j])
+                res[4][i] += k*(u[2*j + 1]*dy[i][j] + m*u[2*j]*dx[i][j])
+                res[5][i] += g*(u[2*j]*dy[i][j] + u[2*j + 1]*dx[i][j])
         return res
+
 
 # Восьмиузловой призматический КЭ
 class TFE3D8(TFE):
