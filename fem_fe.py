@@ -629,9 +629,9 @@ class TFE2D4(TFE):
 
     def generate(self, is_static=True):
         # Параметры квадратур Гаусса
-        xi = [-0.774596669, 0, 0.774596669]
-        eta = [-0.774596669, 0, 0.774596669]
-        w = [0.555555556, 0.888888889, 0.555555556]
+        xi = [-0.57735027, -0.57735027, 0.57735027, 0.57735027]
+        eta = [-0.57735027, 0.57735027, -0.57735027, 0.57735027]
+        w = [1.0, 1.0, 1.0, 1.0]
         # Матрица упругих свойст
         d = array([
             [1.0 - self.m[0], self.m[0], 0.0],
@@ -640,62 +640,61 @@ class TFE2D4(TFE):
             ])*self.e[0]/((1.0 + self.m[0])*(1.0 - 2.0*self.m[0]))
         # Формирование локальных матриц жесткости, масс и демпфирования
         local_k = zeros((8, 8))
-        local_m = zeros((8, 8))
+        if not is_static:
+            local_m = zeros((8, 8))
         volume_load = zeros(8)
         # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(w)):
-            for j in range(len(w)):
-                # Изопараметрические функции формы и их производные
-                shape = array([
-                    0.25*(1.0 - xi[i])*(1.0 - eta[j]),
-                    0.25*(1.0 + xi[i])*(1.0 - eta[j]),
-                    0.25*(1.0 + xi[i])*(1.0 + eta[j]),
-                    0.25*(1.0 - xi[i])*(1.0 + eta[j])
-                    ])
-                shape_dxi = array([
-                    -0.25*(1.0 - eta[j]),
-                    0.25*(1.0 - eta[j]),
-                    0.25*(1.0 + eta[j]),
-                    -0.25*(1.0 + eta[j])
-                    ])
-                shape_deta = array([
-                    -0.25*(1.0 - xi[i]),
-                    -0.25*(1.0 + xi[i]),
-                    0.25*(1.0 + xi[i]),
-                    0.25*(1.0 - xi[i])
-                    ])
-                # Матрица Якоби
-                jacobi = array([
-                    [sum(shape_dxi*self.x), sum(shape_dxi*self.y)],
-                    [sum(shape_deta*self.x), sum(shape_deta*self.y)]
-                    ])
-                # Якобиан
-                jacobian = det(jacobi)
-                inverted_jacobi = inv(jacobi)
-                shape_dx = inverted_jacobi[0, 0]*shape_dxi + inverted_jacobi[0, 1]*shape_deta
-                shape_dy = inverted_jacobi[1, 0]*shape_dxi + inverted_jacobi[1, 1]*shape_deta
-                # Матрица градиентов
-                b = array([
-                    [shape_dx[0], 0.0, shape_dx[1], 0.0, shape_dx[2], 0.0, shape_dx[3], 0.0],
-                    [0.0, shape_dy[0], 0.0, shape_dy[1], 0.0, shape_dy[2], 0.0, shape_dy[3]],
-                    [shape_dy[0], shape_dx[0], shape_dy[1], shape_dx[1], shape_dy[2], shape_dx[2], shape_dy[3],
-                     shape_dx[3]]
-                    ])
-                # Вспомогательная матрица для построения матриц масс и демпфирования
-                c = array([
-                    [shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[2], 0.0],
-                    [0.0, shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[2]]
+            # Изопараметрические функции формы и их производные
+            shape = array([
+                0.25*(1.0 - xi[i])*(1.0 - eta[i]),
+                0.25*(1.0 + xi[i])*(1.0 - eta[i]),
+                0.25*(1.0 + xi[i])*(1.0 + eta[i]),
+                0.25*(1.0 - xi[i])*(1.0 + eta[i])
                 ])
-                bt = b.conj().transpose()
+            shape_dxi = array([
+                -0.25*(1.0 - eta[i]),
+                0.25*(1.0 - eta[i]),
+                0.25*(1.0 + eta[i]),
+                -0.25*(1.0 + eta[i])
+                ])
+            shape_deta = array([
+                -0.25*(1.0 - xi[i]),
+                -0.25*(1.0 + xi[i]),
+                0.25*(1.0 + xi[i]),
+                0.25*(1.0 - xi[i])
+                ])
+            # Матрица Якоби
+            jacobi = array([
+                [sum(shape_dxi*self.x), sum(shape_dxi*self.y)],
+                [sum(shape_deta*self.x), sum(shape_deta*self.y)]
+                ])
+            # Якобиан
+            jacobian = det(jacobi)
+            inverted_jacobi = inv(jacobi)
+            shape_dx = inverted_jacobi[0, 0]*shape_dxi + inverted_jacobi[0, 1]*shape_deta
+            shape_dy = inverted_jacobi[1, 0]*shape_dxi + inverted_jacobi[1, 1]*shape_deta
+            # Матрица градиентов
+            b = array([
+                [shape_dx[0], 0.0, shape_dx[1], 0.0, shape_dx[2], 0.0, shape_dx[3], 0.0],
+                [0.0, shape_dy[0], 0.0, shape_dy[1], 0.0, shape_dy[2], 0.0, shape_dy[3]],
+                [shape_dy[0], shape_dx[0], shape_dy[1], shape_dx[1], shape_dy[2], shape_dx[2],
+                 shape_dy[3],shape_dx[3]]
+                ])
+            # Вспомогательная матрица для построения матриц масс и демпфирования
+            c = array([
+                [shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[2], 0.0],
+                [0.0, shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[2]]
+                ])
+            bt = b.conj().transpose()
+            local_k += bt.dot(d).dot(b)*jacobian*w[i]
+            if not is_static:
                 ct = c.conj().transpose()
-                local_k += bt.dot(d).dot(b)*jacobian*w[i]
-                if not is_static:
-                    local_m += ct.dot(c)*jacobian*w[i]
-                # Учет объемной нагрузки
-                if len(self.vx) or len(self.vy):
-                    for k in range(0, 4):
-                        volume_load[2*k] = self.vx[k]*shape[k]
-                        volume_load[2*k + 1] = self.vy[k]*shape[k]
+                local_m += ct.dot(c)*jacobian*w[i]
+            # Учет объемной нагрузки
+            for k in range(0, 4):
+                volume_load[2*k] = self.vx[k]*shape[k]
+                volume_load[2*k + 1] = self.vy[k]*shape[k]
 
         for i in range(0, 8):
             for j in range(i, 8):
