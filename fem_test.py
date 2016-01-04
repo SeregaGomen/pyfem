@@ -173,10 +173,10 @@ def tank3():
         obj.print_result('mesh/' + obj.object_name() + '.res')
 
 # body1d()
-cube()
+# cube()
 # console()
 # beam()
 # tank3()
 # cylinder()
-# quad()
+quad()
 # console4()

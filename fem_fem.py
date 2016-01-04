@@ -70,11 +70,10 @@ class TFEM:
                 for k in range(0, self.__mesh__.freedom):
                     uvw[j*self.__mesh__.freedom + k] = \
                         self.__global_vector__[self.__mesh__.freedom*self.__mesh__.fe[i][j] + k]
-            for m in range(0, self.num_result() - self.__mesh__.freedom):
-                r = list(uvw)
-                self.__fe__.calc(r, m)
-                for j in range(0, len(self.__mesh__.fe[i])):
-                    res[self.__mesh__.freedom + m][self.__mesh__.fe[i][j]] += r[j]
+            r = self.__fe__.calc(uvw)
+            for m in range(0, len(r)):
+                for j in range(0, len(r[0])):
+                    res[self.__mesh__.freedom + m][self.__mesh__.fe[i][j]] += r[m][j]
                     if not m:
                         counter[self.__mesh__.fe[i][j]] += 1
         # Осредняем результаты

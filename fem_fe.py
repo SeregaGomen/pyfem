@@ -83,8 +83,8 @@ class TFE:
 
     # Вычисления стандартных результатов КЭ
     @abstractmethod
-    def calc(self, u, index):
-        pass
+    def calc(self, u):
+        return zeros((0, 0))
 
 
 # Линейный (двухузловой) одномерный КЭ
@@ -113,14 +113,13 @@ class TFE1D2(TFE):
         self.c[1][0] = self.x[0]/vol
         self.c[1][1] = 1.0/vol
 
-    def calc(self, u, index):
+    def calc(self, u):
         u0 = u[0]
         u1 = u[1]
-        if index == 0:
-            res = u0*self.c[0][1] + u1*self.c[1][1]
-        else:
-            res = self.e[0]*(u0*self.c[0][1] + u1*self.c[1][1])
-        u[0] = u[1] = res
+        res = zeros((2, 2))
+        res[0][0] = res[0][1] = u0*self.c[0][1] + u1*self.c[1][1]
+        res[1][0] = res[1][1] = self.e[0]*(u0*self.c[0][1] + u1*self.c[1][1])
+        return res
 
     def generate(self, is_static=True):
         self.K[0][0] = self.__volume__()*2.0*self.e[0]*self.c[0][1]*self.c[0][1]
@@ -212,14 +211,13 @@ class TFE2D3(TFE):
         self.c[2][1] = det2/det0
         self.c[2][2] = det3/det0
 
-    def calc(self, u, index):
+    def calc(self, u):
         u0 = u[0]
         v0 = u[1]
         u1 = u[2]
         v1 = u[3]
         u2 = u[4]
         v2 = u[5]
-        res = 0
         c01 = self.c[0][1]
         c02 = self.c[0][2]
         c11 = self.c[1][1]
@@ -228,19 +226,16 @@ class TFE2D3(TFE):
         c22 = self.c[2][2]
         e = self.e[0]
         m = self.m[0]
-        if index == 0:      # Exx
-            res = u0*c01 + u1*c11 + u2*c21
-        elif index == 1:    # Eyy
-            res = v0*c02 + v1*c12 + v2*c22
-        elif index == 2:    # Exy
-            res = u0*c02 + u1*c12 + u2*c22 + v0*c01 + v1*c11 + v2*c21
-        elif index == 3:    # Sxx
-            res = e/(1.0 - m*m)*((u0*c01 + u1*c11 + u2*c21) + self.m[0]*(v0*c02 + v1*c12 + v2*c22))
-        elif index == 4:    # Syy
-            res = e/(1.0 - m*m)*(self.m[0]*(u0*c01 + u1*c11 + u2*c21) + (v0*c02 + v1*c12 + v2*c22))
-        elif index == 5:    # Sxy
-            res = e/(2.0 + 2.0*m)*(u0*c02 + u1*c12 + u2*c22 + v0*c01 + v1*c11 + v2*c21)
-        u[0] = u[1] = u[2] = res
+        res = zeros((6, 3))
+        res[0][0] = res[0][1] = res[0][2] = u0*c01 + u1*c11 + u2*c21
+        res[1][0] = res[1][1] = res[1][2] = v0*c02 + v1*c12 + v2*c22
+        res[2][0] = res[2][1] = res[2][2] = u0*c02 + u1*c12 + u2*c22 + v0*c01 + v1*c11 + v2*c21
+        res[3][0] = res[3][1] = res[3][2] = e/(1.0 - m*m)*((u0*c01 + u1*c11 + u2*c21) +
+                                                           self.m[0]*(v0*c02 + v1*c12 + v2*c22))
+        res[4][0] = res[4][1] = res[4][2] = e/(1.0 - m*m)*(self.m[0]*(u0*c01 + u1*c11 + u2*c21) +
+                                                           (v0*c02 + v1*c12 + v2*c22))
+        res[5][0] = res[5][1] = res[5][2] = e/(2.0 + 2.0*m)*(u0*c02 + u1*c12 + u2*c22 + v0*c01 + v1*c11 + v2*c21)
+        return res
 
     def generate(self, is_static=True):
         k = self.e[0]/(1.0 - self.m[0]*self.m[0])
@@ -353,7 +348,7 @@ class TFE3D4(TFE):
             x = solve(a, b)
             self.c[j] = list(x)
 
-    def calc(self, u, index):
+    def calc(self, u):
         e = self.e[0]
         m = self.m[0]
         g = e/(2.0 + 2.0*m)
@@ -382,35 +377,35 @@ class TFE3D4(TFE):
         c31 = self.c[3][1]
         c32 = self.c[3][2]
         c33 = self.c[3][3]
-        res = 0
-        if index == 0:      # Exx
-            res = u0*c01 + u1*c11 + u2*c21 + u3*c31
-        elif index == 1:    # Eyy
-            res = v0*c02 + v1*c12 + v2*c22 + v3*c32
-        elif index == 2:    # Ezz
-            res = w0*c03 + w1*c13 + w2*c23 + w3*c33
-        elif index == 3:    # Exy
-            res = u0*c02 + u1*c12 + u2*c22 + u3*c32 + v0*c01 + v1*c11 + v2*c21 + v3*c31
-        elif index == 4:    # Exz
-            res = u0*c03 + u1*c13 + u2*c23 + u3*c33 + w0*c01 + w1*c11 + w2*c21 + w3*c31
-        elif index == 5:    # Eyz
-            res = v0*c03 + v1*c13 + v2*c23 + v3*c33 + w0*c02 + w1*c12 + w2*c22 + w3*c32
-        elif index == 6:    # Sxx
-            res = 2.0*g*u0*c01 + 2.0*g*u1*c11 + 2.0*g*u2*c21 + 2.0*g*u3*c31 + l*u0*c01 + l*u1*c11 + l*u2*c21 + \
-                  l*u3*c31 + l*v0*c02 + l*v1*c12 + l*v2*c22 + l*v3*c32 + l*w0*c03 + l*w1*c13 + l*w2*c23 + l*w3*c33
-        elif index == 7:    # Syy
-            res = 2.0*g*v0*c02 + 2.0*g*v1*c12 + 2.0*g*v2*c22 + 2.0*g*v3*c32 + l*u0*c01 + l*u1*c11 + l*u2*c21 + \
-                  l*u3*c31 + l*v0*c02 + l*v1*c12 + l*v2*c22 + l*v3*c32 + l*w0*c03 + l*w1*c13 + l*w2*c23 + l*w3*c33
-        elif index == 8:    # Szz
-            res = 2.0*g*w0*c03 + 2.0*g*w1*c13 + 2.0*g*w2*c23 + 2.0*g*w3*c33 + l*u0*c01 + l*u1*c11 + l*u2*c21 + \
-                  l*u3*c31 + l*v0*c02 + l*v1*c12 + l*v2*c22 + l*v3*c32 + l*w0*c03 + l*w1*c13 + l*w2*c23 + l*w3*c33
-        elif index == 9:    # Sxy
-            res = g*(u0*c02 + u1*c12 + u2*c22 + u3*c32 + v0*c01 + v1*c11 + v2*c21 + v3*c31)
-        elif index == 10:   # Sxz
-            res = g*(u0*c03 + u1*c13 + u2*c23 + u3*c33 + w0*c01 + w1*c11 + w2*c21 + w3*c31)
-        elif index == 11:   # Syz
-            res = g*(v0*c03 + v1*c13 + v2*c23 + v3*c33 + w0*c02 + w1*c12 + w2*c22 + w3*c32)
-        u[0] = u[1] = u[2] = u[3] = u[4] = res
+        res = zeros((12, 4))
+        res[0][0] = res[0][1] = res[0][2] = res[0][3] = u0*c01 + u1*c11 + u2*c21 + u3*c31
+        res[1][0] = res[1][1] = res[1][2] = res[1][3] = v0*c02 + v1*c12 + v2*c22 + v3*c32
+        res[2][0] = res[2][1] = res[2][2] = res[2][3] = w0*c03 + w1*c13 + w2*c23 + w3*c33
+        res[3][0] = res[3][1] = res[3][2] = res[3][3] = u0*c02 + u1*c12 + u2*c22 + u3*c32 + v0*c01 + v1*c11 + v2*c21 + \
+                                                        v3*c31
+        res[4][0] = res[4][1] = res[4][2] = res[4][3] = u0*c03 + u1*c13 + u2*c23 + u3*c33 + w0*c01 + w1*c11 + w2*c21 + \
+                                                        w3*c31
+        res[5][0] = res[5][1] = res[5][2] = res[5][3] = v0*c03 + v1*c13 + v2*c23 + v3*c33 + w0*c02 + w1*c12 + w2*c22 + \
+                                                        w3*c32
+        res[6][0] = res[6][1] = res[6][2] = res[6][3] = 2.0*g*u0*c01 + 2.0*g*u1*c11 + 2.0*g*u2*c21 + 2.0*g*u3*c31 + \
+                                                        l*u0*c01 + l*u1*c11 + l*u2*c21 + l*u3*c31 + l*v0*c02 + \
+                                                        l*v1*c12 + l*v2*c22 + l*v3*c32 + l*w0*c03 + l*w1*c13 + \
+                                                        l*w2*c23 + l*w3*c33
+        res[7][0] = res[7][1] = res[7][2] = res[7][3] = 2.0*g*v0*c02 + 2.0*g*v1*c12 + 2.0*g*v2*c22 + 2.0*g*v3*c32 + \
+                                                        l*u0*c01 + l*u1*c11 + l*u2*c21 + l*u3*c31 + l*v0*c02 + \
+                                                        l*v1*c12 + l*v2*c22 + l*v3*c32 + l*w0*c03 + l*w1*c13 + \
+                                                        l*w2*c23 + l*w3*c33
+        res[8][0] = res[8][1] = res[8][2] = res[8][3] = 2.0*g*w0*c03 + 2.0*g*w1*c13 + 2.0*g*w2*c23 + 2.0*g*w3*c33 + \
+                                                        l*u0*c01 + l*u1*c11 + l*u2*c21 + l*u3*c31 + l*v0*c02 + \
+                                                        l*v1*c12 + l*v2*c22 + l*v3*c32 + l*w0*c03 + l*w1*c13 + \
+                                                        l*w2*c23 + l*w3*c33
+        res[9][0] = res[9][1] = res[9][2] = res[9][3] = g*(u0*c02 + u1*c12 + u2*c22 + u3*c32 + v0*c01 + v1*c11 +
+                                                           v2*c21 + v3*c31)
+        res[10][0] = res[10][1] = res[10][2] = res[10][3] = g*(u0*c03 + u1*c13 + u2*c23 + u3*c33 + w0*c01 + w1*c11 +
+                                                               w2*c21 + w3*c31)
+        res[11][0] = res[11][1] = res[11][2] = res[11][3] = g*(v0*c03 + v1*c13 + v2*c23 + v3*c33 + w0*c02 + w1*c12 +
+                                                               w2*c22 + w3*c32)
+        return res
 
     def generate(self, is_static=True):
         vol = self.__volume__()
@@ -718,7 +713,7 @@ class TFE2D4(TFE):
 #            sys.stdout.write('\n')
 #        print('*******************************')
 
-    def calc(self, u, index):
+    def calc(self, u):
         l = self.e[0]/(1.0 - self.m[0]*self.m[0])
         g = self.e[0]/(2.0 + 2.0*self.m[0])
         u0 = u[0]
@@ -729,37 +724,31 @@ class TFE2D4(TFE):
         v2 = u[5]
         u3 = u[6]
         v3 = u[7]
-
+        res = zeros((6, 4))
         for i in range(0, self.size):
-            if index == 0:      # Exx
-                u[i] = u0*self.c[0][1] + u0*self.c[0][3]*self.y[i] + u1*self.c[1][1] + u1*self.c[1][3]*self.y[i] + \
+            res[0][i] = u0*self.c[0][1] + u0*self.c[0][3]*self.y[i] + u1*self.c[1][1] + u1*self.c[1][3]*self.y[i] + \
                        u2*self.c[2][1] + u2*self.c[2][3]*self.y[i] + u3*self.c[3][1] + u3*self.c[3][3]*self.y[i]
-            elif index == 1:    # Eyy
-                u[i] = v0*self.c[0][2] + v0*self.c[0][3]*self.x[i] + v1*self.c[1][2] + v1*self.c[1][3]*self.x[i] + \
+            res[1][i] = v0*self.c[0][2] + v0*self.c[0][3]*self.x[i] + v1*self.c[1][2] + v1*self.c[1][3]*self.x[i] + \
                        v2*self.c[2][2] + v2*self.c[2][3]*self.x[i] + v3*self.c[3][2] + v3*self.c[3][3]*self.x[i]
-            elif index == 2:    # Exy
-                u[i] = u0*self.c[0][2] + u0*self.c[0][3]*self.x[i] + u1*self.c[1][2] + u1*self.c[1][3]*self.x[i] + \
+            res[2][i] = u0*self.c[0][2] + u0*self.c[0][3]*self.x[i] + u1*self.c[1][2] + u1*self.c[1][3]*self.x[i] + \
                        u2*self.c[2][2] + u2*self.c[2][3]*self.x[i] + u3*self.c[3][2] + u3*self.c[3][3]*self.x[i] + \
                        v0*self.c[0][1] + v0*self.c[0][3]*self.y[i] + v1*self.c[1][1] + v1*self.c[1][3]*self.y[i] + \
                        v2*self.c[2][1] + v2*self.c[2][3]*self.y[i] + v3*self.c[3][1] + v3*self.c[3][3]*self.y[i]
-            elif index == 3:    # Sxx
-                u[i] = l*(u0*(self.c[0][1] + self.c[0][3]*self.y[i]) + u1*(self.c[1][1] + self.c[1][3]*self.y[i]) +
+            res[3][i] = l*(u0*(self.c[0][1] + self.c[0][3]*self.y[i]) + u1*(self.c[1][1] + self.c[1][3]*self.y[i]) +
                           u2*(self.c[2][1] + self.c[2][3]*self.y[i]) + u3*(self.c[3][1] + self.c[3][3]*self.y[i]) +
                           (self.m[0]*(v0*(self.c[0][2] + self.c[0][3]*self.x[i])) +
                           (v1*(self.c[1][2] + self.c[1][3]*self.x[i])) + v2*(self.c[2][2] + self.c[2][3]*self.x[i]) +
                           (v3*(self.c[3][2] + self.c[3][3]*self.x[i]))))
-            elif index == 4:    # Syy
-                u[i] = l*(self.m[0]*(u0*(self.c[0][1] + self.c[0][3]*self.y[i]) + u1*(self.c[1][1] +
+            res[4][i] = l*(self.m[0]*(u0*(self.c[0][1] + self.c[0][3]*self.y[i]) + u1*(self.c[1][1] +
                           self.c[1][3]*self.y[i]) + u2*(self.c[2][1] + self.c[2][3]*self.y[i]) +
                                      u3*(self.c[3][1] + self.c[3][3]*self.y[i])) +
                           v0*(self.c[0][2] + self.c[0][3]*self.x[i]) + v1*(self.c[1][2] + self.c[1][3]*self.x[i]) +
                           v2*(self.c[2][2] + self.c[2][3]*self.x[i]) + v3*(self.c[3][2] + self.c[3][3]*self.x[i]))
-            elif index == 5:    # Sxy
-                u[i] = g*(u0*(self.c[0][2] + self.c[0][3]*self.x[i]) + u1*(self.c[1][2] + self.c[1][3]*self.x[i]) +
+            res[5][i] = g*(u0*(self.c[0][2] + self.c[0][3]*self.x[i]) + u1*(self.c[1][2] + self.c[1][3]*self.x[i]) +
                           u2*(self.c[2][2] + self.c[2][3]*self.x[i]) + u3*(self.c[3][2] + self.c[3][3]*self.x[i]) +
                           v0*(self.c[0][1] + self.c[0][3]*self.y[i]) + v1*(self.c[1][1] + self.c[1][3]*self.y[i]) +
                           v2*(self.c[2][1] + self.c[2][3]*self.y[i]) + v3*(self.c[3][1] + self.c[3][3]*self.y[i]))
-
+        return res
 
 # Восьмиузловой призматический КЭ
 class TFE3D8(TFE):
@@ -921,13 +910,13 @@ class TFE3D8(TFE):
 #            sys.stdout.write('\n')
 #        print('******************************************')
 
-    def calc(self, u, index):
+    def calc(self, u):
         g = self.e[0]/(2.0 + 2.0*self.m[0])
         l = 2.0*self.m[0]*g/(1.0 - 2.0*self.m[0])
         dx = zeros((self.size, self.size))
         dy = zeros((self.size, self.size))
         dz = zeros((self.size, self.size))
-        res = zeros(self.size)
+        res = zeros((12, self.size))
         for i in range(0, self.size):
             for j in range(0, self.size):
                 dx[i][j] = (self.c[j][1] + self.c[j][4]*self.y[i]) + \
@@ -936,33 +925,16 @@ class TFE3D8(TFE):
                            (self.c[j][6]*self.z[i] + self.c[j][7]*self.x[i]*self.z[i])
                 dz[i][j] = (self.c[j][3] + self.c[j][5]*self.x[i]) + \
                            (self.c[j][6]*self.y[i] + self.c[j][7]*self.x[i]*self.y[i])
-                if index == 0:      # Exx
-                    res[i] += u[3*j]*dx[i][j]
-                elif index == 1:    # Eyy
-                    res[i] += u[3*j + 1]*dy[i][j]
-                elif index == 2:    # Ezz
-                    res[i] += u[3*j + 2]*dz[i][j]
-                elif index == 3:    # Exy
-                    res[i] += u[3*j]*dy[i][j] + u[3*j + 1]*dx[i][j]
-                elif index == 4:    # Exz
-                    res[i] += u[3*j]*dz[i][j] + u[3*j + 2]*dx[i][j]
-                elif index == 5:    # Eyz
-                    res[i] += u[3*j + 1]*dz[i][j] + u[3*j + 2]*dy[i][j]
-                elif index == 6:    # Sxx
-                    res[i] += 2.0*g*u[3*j]*dx[i][j] + \
-                              l*(u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
-                elif index == 7:    # Syy
-                    res[i] += 2.0*g*u[3*j + 1]*dy[i][j] + \
-                              l*(u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
-                elif index == 8:    # Szz
-                    res[i] += 2.0*g*u[3*j + 2]*dz[i][j] + \
-                              l*(u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
-                elif index == 9:    # Sxy
-                    res[i] += g*(u[3*j]*dy[i][j] + u[3*j + 1]*dx[i][j])
-                elif index == 10:   # Sxz
-                    res[i] += g*(u[3*j]*dz[i][j] + u[3*j + 2]*dx[i][j])
-                elif index == 11:   # Syz
-                    res[i] += g*(u[3*j + 1]*dz[i][j] + u[3*j + 2]*dy[i][j])
-
-        for i in range(0, self.size):
-            u[i] = res[i]
+                res[0][i] += u[3*j]*dx[i][j]
+                res[1][i] += u[3*j + 1]*dy[i][j]
+                res[2][i] += u[3*j + 2]*dz[i][j]
+                res[3][i] += u[3*j]*dy[i][j] + u[3*j + 1]*dx[i][j]
+                res[4][i] += u[3*j]*dz[i][j] + u[3*j + 2]*dx[i][j]
+                res[5][i] += u[3*j + 1]*dz[i][j] + u[3*j + 2]*dy[i][j]
+                res[6][i] += 2.0*g*u[3*j]*dx[i][j] + l*(u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
+                res[7][i] += 2.0*g*u[3*j + 1]*dy[i][j] + l*(u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
+                res[8][i] += 2.0*g*u[3*j + 2]*dz[i][j] + l*(u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
+                res[9][i] += g*(u[3*j]*dy[i][j] + u[3*j + 1]*dx[i][j])
+                res[10][i] += g*(u[3*j]*dz[i][j] + u[3*j + 2]*dx[i][j])
+                res[11][i] += g*(u[3*j + 1]*dz[i][j] + u[3*j + 2]*dy[i][j])
+        return res
