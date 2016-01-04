@@ -107,11 +107,10 @@ class TFE1D2(TFE):
     def __create__(self):
         if self.__volume__() == 0.0:
             raise TFEMException('incorrect_fe_err')
-        vol = self.x[1] - self.x[0]
-        self.c[0][0] = self.x[1]/vol
-        self.c[0][1] = 1.0/vol
-        self.c[1][0] = self.x[0]/vol
-        self.c[1][1] = 1.0/vol
+        self.c[0][0] = self.x[1]/(self.x[1] - self.x[0])
+        self.c[0][1] = -1.0/(self.x[1] - self.x[0])
+        self.c[1][0] = self.x[0]/(self.x[0] - self.x[1])
+        self.c[1][1] = -1.0/(self.x[0] - self.x[1])
 
     def calc(self, u):
         res = zeros((2, 2))
