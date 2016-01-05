@@ -124,11 +124,10 @@ class TFE1D2(TFE):
         self.K[1][1] = 2.0*self.__length__()*self.e[0]*self.c[1][1]**2
 
         # Вычисление интеграла для объемных сил
-        if len(self.vx):
-            self.K[0][2] += self.vx[0]*(self.c[0][1]*(self.x[1]**2 - self.x[0]**2)*0.5 +
-                                        self.c[0][0]*(self.x[1] - self.x[0]))
-            self.K[1][2] += self.vx[1]*(self.c[1][1]*(self.x[1]**2 - self.x[0]**2)*0.5 +
-                                        self.c[1][0]*(self.x[1] - self.x[0]))
+        self.K[0][2] += self.vx[0]*(self.c[0][1]*(self.x[1]**2 - self.x[0]**2)*0.5 +
+                                    self.c[0][0]*(self.x[1] - self.x[0]))
+        self.K[1][2] += self.vx[1]*(self.c[1][1]*(self.x[1]**2 - self.x[0]**2)*0.5 +
+                                    self.c[1][0]*(self.x[1] - self.x[0]))
         if not is_static:
             # Формирование матрицы массы
             k00 = (self.c[0][0]**2*(self.x[1] - self.x[0])) + \
@@ -423,9 +422,9 @@ class TFE2D4(TFE):
                 ct = c.conj().transpose()
                 local_m += ct.dot(c)*jacobian*w[i]
             # Учет объемной нагрузки
-            for k in range(0, 4):
-                volume_load[2*k] = self.vx[k]*shape[k]
-                volume_load[2*k + 1] = self.vy[k]*shape[k]
+            for j in range(0, 4):
+                volume_load[2*j] += self.vx[j]*shape[j]*jacobian*w[i]
+                volume_load[2*j + 1] += self.vy[j]*shape[j]*jacobian*w[i]
 
         for i in range(0, 8):
             for j in range(i, 8):
