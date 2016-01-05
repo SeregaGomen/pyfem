@@ -175,8 +175,8 @@ def tank3():
 
 # body1d()
 # cube()
-console()
-# beam()
+# console()
+beam()
 # tank3()
 # cylinder()
 # quad()
