@@ -68,7 +68,7 @@ def console():
 #    obj.set_solve_method('iterative')
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y)
-    obj.add_volume_load('-1.0E+5', '', DIR_X)
+    obj.add_concentrated_load('-1.0E+5', 'x=10', DIR_X)
     if obj.calc():
         obj.print_result()
 
@@ -173,9 +173,9 @@ def tank3():
     if obj.calc():
         obj.print_result('mesh/' + obj.object_name() + '.res')
 
-body1d()
+# body1d()
 # cube()
-# console()
+console()
 # beam()
 # tank3()
 # cylinder()

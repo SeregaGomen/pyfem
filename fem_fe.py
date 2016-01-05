@@ -173,31 +173,18 @@ class TFE2D3(TFE):
     def __create__(self):
         det0 = self.y[2]*self.x[1] - self.y[2]*self.x[0] - self.y[0]*self.x[1] - self.y[1]*self.x[2] + \
                self.y[1]*self.x[0] + self.y[0]*self.x[2]
-        det1 = self.y[2]*self.x[1] - self.y[1]*self.x[2]
-        det2 = self.y[1] - self.y[2]
-        det3 = self.x[2] - self.x[1]
-
         if math.fabs(det0) < eps:
             raise TFEMException('incorrect_fe_err')
-        self.c[0][0] = det1/det0
-        self.c[0][1] = det2/det0
-        self.c[0][2] = det3/det0
 
-        det1 = -self.y[2]*self.x[0] + self.y[0]*self.x[2]
-        det2 = self.y[2] - self.y[0]
-        det3 = -self.x[2] + self.x[0]
+        index = [[2, 1], [0, 2], [1, 0]]
 
-        self.c[1][0] = det1/det0
-        self.c[1][1] = det2/det0
-        self.c[1][2] = det3/det0
-
-        det1 = -self.y[0]*self.x[1] + self.y[1]*self.x[0]
-        det2 = -self.y[1] + self.y[0]
-        det3 = self.x[1] - self.x[0]
-
-        self.c[2][0] = det1/det0
-        self.c[2][1] = det2/det0
-        self.c[2][2] = det3/det0
+        for i in range(0, 3):
+            det1 = self.y[index[i][0]]*self.x[index[i][1]] - self.y[index[i][1]]*self.x[index[i][0]]
+            det2 = self.y[index[i][1]] - self.y[index[i][0]]
+            det3 = self.x[index[i][0]] - self.x[index[i][1]]
+            self.c[i][0] = det1/det0
+            self.c[i][1] = det2/det0
+            self.c[i][2] = det3/det0
 
     def calc(self, u):
         m = self.m[0]
