@@ -33,7 +33,7 @@ class TFEMStatic(TFEM):
 
         self.create_fe()
         self.__fe__.set_elasticity(self.__params__.e, self.__params__.m)
-        # Вычисление компонент нагрузки
+        # Предварительное вычисление компонент нагрузки
         self.prepare_load()
         # Формирование глобальной матрицы жесткости
         self.__progress__.set_process('Assembling global stiffness matrix...', 1, len(self.__mesh__.fe))
@@ -106,6 +106,25 @@ class TFEMStatic(TFEM):
             if not (self.__params__.bc_list[i].type == 'volume' or self.__params__.bc_list[i].type == 'surface' or
                self.__params__.bc_list[i].type == 'concentrated'):
                 continue
+            if self.__params__.bc_list[i].type == 'surface':
+                # Проверяем, все ли узлы ГЭ удовлетворяют предикату отбора
+                self.__surface_attribute__ = [False]*len(self.__mesh__.surface)
+                for j in range(0, len(self.__mesh__.surface)):
+                    is_ok = True
+                    for k in range(0, len(self.__mesh__.surface[0])):
+                        x, y, z = self.__mesh__.get_coord(self.__mesh__.surface[j][k])
+                        parser.set_variable(self.__params__.names[0], x)
+                        parser.set_variable(self.__params__.names[1], y)
+                        parser.set_variable(self.__params__.names[2], z)
+                        if len(self.__params__.bc_list[i].predicate):
+                            parser.set_code(self.__params__.bc_list[i].predicate)
+                            if parser.error != '':
+                                return
+                            if parser.run() == 0:
+                                is_ok = False
+                                break
+                    self.__surface_attribute__[j] = is_ok
+
             for j in range(0, len(self.__mesh__.x)):
                 self.__progress__.set_progress(counter)
                 counter += 1
@@ -142,8 +161,7 @@ class TFEMStatic(TFEM):
         for i in range(0, len(self.__concentrated_load__)):
             self.__progress__.set_progress(counter)
             counter += 1
-            if self.__concentrated_load__[i]:
-                self.__global_vector__[i] += self.__concentrated_load__[i]
+            self.__global_vector__[i] += self.__concentrated_load__[i]
         # Учет поверхностной нагрузки
         if self.__mesh__.freedom == 1:
             return
@@ -153,15 +171,12 @@ class TFEMStatic(TFEM):
         for i in range(0, len(self.__mesh__.surface)):
             self.__progress__.set_progress(counter)
             counter += 1
+            if not len(self.__surface_attribute__) or not self.__surface_attribute__[i]:
+                continue
             for j in range(0, len(self.__mesh__.surface[0])):
                 x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.surface[i][j])
-            se = self.square(x, y, z)
+            rel_se = self.square(x, y, z)/float(len(self.__mesh__.surface[0]))
             for j in range(0, len(self.__mesh__.surface[0])):
                 for k in range(0, self.__mesh__.freedom):
                     l = self.__mesh__.surface[i][j]*self.__mesh__.freedom + k
-                    if self.__surface_load__[l]:
-                        if self.__mesh__.fe_type != 'fe_3d_10':
-                            self.__global_vector__[l] += \
-                                self.__surface_load__[l]*se/float(len(self.__mesh__.surface[0]))
-                        elif j > 2:
-                            self.__global_vector__[l] += self.__surface_load__[l]*se/3.0
+                    self.__global_vector__[l] += self.__surface_load__[l]*rel_se

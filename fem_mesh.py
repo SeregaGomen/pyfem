@@ -11,10 +11,8 @@ FEType = [
     'fe_1d_2',
     'fe_2d_3',
     'fe_2d_4',
-    'fe_2d_6',
     'fe_3d_4',
-    'fe_3d_8',
-    'fe_3d_10'
+    'fe_3d_8'
 ]
 
 
@@ -35,12 +33,8 @@ class TMesh:
             return 'fe_2d_3', 2, 3, 2
         elif t == 4:
             return 'fe_3d_4', 3, 4, 3
-        elif t == 6:
-            return 'fe_2d_6', 3, 6, 2
         elif t == 8:
             return 'fe_3d_8', 4, 8, 3
-        elif t == 10:
-            return 'fe_3d_10', 6, 10, 3
         elif t == 24:
             return 'fe_2d_4', 2, 4, 2
         elif t == 34:
