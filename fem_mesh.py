@@ -104,3 +104,6 @@ class TMesh:
             return 'cube element (8 nodes)'
         elif self.fe_type == 'fe_3d_10':
             return 'quadratic tetrahedron (10 nodes)'
+
+    def get_coord(self, i):
+        return self.x[i], self.y[i] if (len(self.y)) else 0, self.z[i] if (len(self.z)) else 0

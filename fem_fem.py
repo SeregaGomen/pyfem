@@ -62,9 +62,7 @@ class TFEM:
             y = [0]*len(self.__mesh__.fe[i])
             z = [0]*len(self.__mesh__.fe[i])
             for j in range(len(self.__mesh__.fe[i])):
-                x[j] = self.__mesh__.x[self.__mesh__.fe[i][j]]
-                y[j] = self.__mesh__.y[self.__mesh__.fe[i][j]] if (len(self.__mesh__.y)) else 0
-                z[j] = self.__mesh__.z[self.__mesh__.fe[i][j]] if (len(self.__mesh__.z)) else 0
+                x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.fe[i][j])
             self.__fe__.set_coord(x, y, z)
             for j in range(0, len(self.__mesh__.fe[i])):
                 for k in range(0, self.__mesh__.freedom):
@@ -182,9 +180,7 @@ class TFEM:
                 for j in range(0, len(self.__mesh__.x)):
                     self.__progress__.set_progress(counter)
                     counter += 1
-                    x = self.__mesh__.x[j]
-                    y = self.__mesh__.y[j] if (len(self.__mesh__.y)) else 0
-                    z = self.__mesh__.z[j] if (len(self.__mesh__.z)) else 0
+                    x, y, z = self.__mesh__.get_coord(j)
                     parser.set_variable(self.__params__.names[0], x)
                     parser.set_variable(self.__params__.names[1], y)
                     parser.set_variable(self.__params__.names[2], z)

@@ -47,9 +47,7 @@ class TFEMStatic(TFEM):
             vz = [0]*len(self.__mesh__.fe[i])
             # Настройка КЭ
             for j in range(len(self.__mesh__.fe[i])):
-                x[j] = self.__mesh__.x[self.__mesh__.fe[i][j]]
-                y[j] = self.__mesh__.y[self.__mesh__.fe[i][j]] if (len(self.__mesh__.y)) else 0
-                z[j] = self.__mesh__.z[self.__mesh__.fe[i][j]] if (len(self.__mesh__.z)) else 0
+                x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.fe[i][j])
                 vx[j] = self.__volume_load__[self.__mesh__.fe[i][j]*self.__mesh__.freedom + 0]
                 vy[j] = self.__volume_load__[self.__mesh__.fe[i][j]*self.__mesh__.freedom + 1] \
                     if (len(self.__mesh__.y)) else 0
@@ -111,9 +109,7 @@ class TFEMStatic(TFEM):
             for j in range(0, len(self.__mesh__.x)):
                 self.__progress__.set_progress(counter)
                 counter += 1
-                x = self.__mesh__.x[j]
-                y = self.__mesh__.y[j] if (len(self.__mesh__.y)) else 0
-                z = self.__mesh__.z[j] if (len(self.__mesh__.z)) else 0
+                x, y, z = self.__mesh__.get_coord(j)
                 parser.set_variable(self.__params__.names[0], x)
                 parser.set_variable(self.__params__.names[1], y)
                 parser.set_variable(self.__params__.names[2], z)
@@ -158,9 +154,7 @@ class TFEMStatic(TFEM):
             self.__progress__.set_progress(counter)
             counter += 1
             for j in range(0, len(self.__mesh__.surface[0])):
-                x[j] = self.__mesh__.x[self.__mesh__.surface[i][j]]
-                y[j] = self.__mesh__.y[self.__mesh__.surface[i][j]]
-                z[j] = self.__mesh__.z[self.__mesh__.surface[i][j]] if (len(self.__mesh__.z)) else 0
+                x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.surface[i][j])
             se = self.square(x, y, z)
             for j in range(0, len(self.__mesh__.surface[0])):
                 for k in range(0, self.__mesh__.freedom):
