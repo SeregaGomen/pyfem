@@ -25,12 +25,10 @@ class TFEM:
         self.__volume_load__ = []                       # Узловые объемная, поверхностная и сосредоточенная нагрузки
         self.__surface_load__ = []
         self.__concentrated_load__ = []
-        self.__fe__ = TFE()                             # Конечный элемент
         self.__global_matrix__ = lil_matrix((0, 0))     # Глобальная матрица жесткости (ГМЖ)
-        self.__global_vector__ = []                     # Глобальная правая часть
+        self.__global_vector__ = []                     # Глобальный вектор нагрузок (правая часть)
         self.__progress__ = TProgress()                 # Индикатор прогресса расчета
         self.__result__ = []                            # Список результатов расчета для перемещений, деформаций, ...
-        self.__surface_attribute__ = []                 # Признак того, что ГЭ нужно учитывать при вычислении нагрузки
 
     # Запуск процедуры расчета
     @abstractmethod
@@ -39,7 +37,7 @@ class TFEM:
 
     # Добавление локальной матрицы жесткости (масс, демпфирования) к глобальной
     @abstractmethod
-    def __assembly__(self, index):
+    def __assembly__(self, fe, index):
         pass
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...) 
@@ -56,6 +54,8 @@ class TFEM:
             for j in range(0, self.__mesh__.freedom):
                 res[j][i] = self.__global_vector__[i*self.__mesh__.freedom + j]
         # Вычисляем стандартные результаты по всем КЭ
+        fe = self.create_fe()
+        fe.set_elasticity(self.__params__.e, self.__params__.m)
         self.__progress__.set_process('Calculation results...', 1, len(self.__mesh__.fe))
         for i in range(0, len(self.__mesh__.fe)):
             self.__progress__.set_progress(i + 1)
@@ -64,12 +64,12 @@ class TFEM:
             z = [0]*len(self.__mesh__.fe[i])
             for j in range(len(self.__mesh__.fe[i])):
                 x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.fe[i][j])
-            self.__fe__.set_coord(x, y, z)
+            fe.set_coord(x, y, z)
             for j in range(0, len(self.__mesh__.fe[i])):
                 for k in range(0, self.__mesh__.freedom):
                     uvw[j*self.__mesh__.freedom + k] = \
                         self.__global_vector__[self.__mesh__.freedom*self.__mesh__.fe[i][j] + k]
-            r = self.__fe__.calc(uvw)
+            r = fe.calc(uvw)
             for m in range(0, len(r)):
                 for j in range(0, len(r[0])):
                     res[self.__mesh__.freedom + m][self.__mesh__.fe[i][j]] += r[m][j]
@@ -117,16 +117,18 @@ class TFEM:
 
     # Создание нужного типа КЭ
     def create_fe(self):
+        fe = TFE()
         if self.__mesh__.fe_type == 'fe_1d_2':
-            self.__fe__ = TFE1D2()
+            fe = TFE1D2()
         elif self.__mesh__.fe_type == 'fe_2d_3':
-            self.__fe__ = TFE2D3()
+            fe = TFE2D3()
         elif self.__mesh__.fe_type == 'fe_2d_4':
-            self.__fe__ = TFE2D4()
+            fe = TFE2D4()
         elif self.__mesh__.fe_type == 'fe_3d_4':
-            self.__fe__ = TFE3D4()
+            fe = TFE3D4()
         elif self.__mesh__.fe_type == 'fe_3d_8':
-            self.__fe__ = TFE3D8()
+            fe = TFE3D8()
+        return fe
 
     # Учет нагрузки
     def add_load(self, i, j, value):
@@ -165,11 +167,7 @@ class TFEM:
 
     # Учет граничных условий
     def use_boundary_condition(self):
-        parser = TParser()
-        for i in range(0, len(self.__params__.names)):
-            parser.add_variable(self.__params__.names[i])
-        for key, value in self.__params__.var_list.items():
-            parser.add_variable(key, value)
+        parser = self.create_parser()
         counter = 0
         for i in range(0, len(self.__params__.bc_list)):
             if self.__params__.bc_list[i].type == 'boundary':
@@ -202,6 +200,27 @@ class TFEM:
                         self.set_boundary_condition(j, 1, val)
                     if direct & DIR_Z:
                         self.set_boundary_condition(j, 2, val)
+
+    # Проверка соответствия граничного єлемента предикату отбора (всех его вершин)
+    def check_boundary_elements(self, predicate):
+        parser = self.create_parser()
+        surface_attribute = [False]*len(self.__mesh__.surface)
+        for i in range(0, len(self.__mesh__.surface)):
+            is_ok = True
+            for k in range(0, len(self.__mesh__.surface[0])):
+                x, y, z = self.__mesh__.get_coord(self.__mesh__.surface[i][k])
+                parser.set_variable(self.__params__.names[0], x)
+                parser.set_variable(self.__params__.names[1], y)
+                parser.set_variable(self.__params__.names[2], z)
+                if len(predicate):
+                    parser.set_code(predicate)
+                    if parser.error != '':
+                        return surface_attribute
+                    if parser.run() == 0:
+                        is_ok = False
+                        break
+            surface_attribute[i] = is_ok
+        return surface_attribute
 
     # Задание граничных условий
     def set_boundary_condition(self, i, j, val):
@@ -278,3 +297,12 @@ class TFEM:
     # Возврат результатов расчета
     def get_result(self):
         return self.__result__
+
+    # Настройка парсера
+    def create_parser(self):
+        parser = TParser()
+        for i in range(0, len(self.__params__.names)):
+            parser.add_variable(self.__params__.names[i])
+        for key, value in self.__params__.var_list.items():
+            parser.add_variable(key, value)
+        return parser

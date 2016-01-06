@@ -26,7 +26,7 @@ def cube():
     obj = TObject()
     e = [203200]
     m = [0.27]
-    obj.set_mesh('mesh/cube8.trpa')
+    obj.set_mesh('mesh/cube.trpa')
     obj.set_problem_type('static')
     obj.set_solve_method('direct')
     obj.set_width(10)
