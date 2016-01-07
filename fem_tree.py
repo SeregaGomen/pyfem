@@ -12,7 +12,7 @@ from abc import abstractmethod
 class TNode:
     @abstractmethod
     def value(self):
-        pass
+        raise NotImplementedError('Method TNode.value is pure virtual')
 
 
 # Класс, реализующий дерево разбора арифметических выражений
@@ -34,80 +34,80 @@ class TTree:
 # Вещественная переменная
 class TRealNode(TNode):
     def __init__(self, val):
-        self.val = val
+        self.__val__ = val
 
     def value(self):
-        return self.val
+        return self.__val__
 
 
 # Унарная операция
 class TUnaryNode(TNode):
     def __init__(self, op, val):
-        self.op = op
-        self.val = val
+        self.__op__ = op
+        self.__val__ = val
 
     def value(self):
-        if self.op == '-':
-            return -self.val.value()
-        elif self.op == '+':
-            return +self.val.value()
-        elif self.op == 'abs':
-            return math.fabs(self.val.value())
-        elif self.op == 'sin':
-            return math.sin(self.val.value())
-        elif self.op == 'cos':
-            return math.cos(self.val.value())
-        elif self.op == 'tan':
-            return math.tan(self.val.value())
-        elif self.op == 'exp':
-            return math.exp(self.val.value())
-        elif self.op == 'asin':
-            return math.asin(self.val.value())
-        elif self.op == 'acos':
-            return math.acos(self.val.value())
-        elif self.op == 'atan':
-            return math.atan(self.val.value())
-        elif self.op == 'sinh':
-            return math.sinh(self.val.value())
-        elif self.op == 'cosh':
-            return math.cosh(self.val.value())
-        elif self.op == 'not':
-            return 1 if self.val.value() == 0 else 0
+        if self.__op__ == '-':
+            return -self.__val__.value()
+        elif self.__op__ == '+':
+            return +self.__val__.value()
+        elif self.__op__ == 'abs':
+            return math.fabs(self.__val__.value())
+        elif self.__op__ == 'sin':
+            return math.sin(self.__val__.value())
+        elif self.__op__ == 'cos':
+            return math.cos(self.__val__.value())
+        elif self.__op__ == 'tan':
+            return math.tan(self.__val__.value())
+        elif self.__op__ == 'exp':
+            return math.exp(self.__val__.value())
+        elif self.__op__ == 'asin':
+            return math.asin(self.__val__.value())
+        elif self.__op__ == 'acos':
+            return math.acos(self.__val__.value())
+        elif self.__op__ == 'atan':
+            return math.atan(self.__val__.value())
+        elif self.__op__ == 'sinh':
+            return math.sinh(self.__val__.value())
+        elif self.__op__ == 'cosh':
+            return math.cosh(self.__val__.value())
+        elif self.__op__ == 'not':
+            return 1 if self.__val__.value() == 0 else 0
 
 
 # Бинарная операция
 class TBinaryNode(TNode):
     def __init__(self, left, op, right):
         self.left = left
-        self.op = op
+        self.__op__ = op
         self.right = right
 
     def value(self):
-        if self.op == '+':
+        if self.__op__ == '+':
             return self.left.value() + self.right.value()
-        elif self.op == '-':
+        elif self.__op__ == '-':
             return self.left.value() - self.right.value()
-        elif self.op == '*':
+        elif self.__op__ == '*':
             return self.left.value()*self.right.value()
-        elif self.op == '/':
+        elif self.__op__ == '/':
             return self.left.value()/self.right.value()
-        elif self.op == '^':
+        elif self.__op__ == '^':
             return math.pow(self.left.value(), self.right.value())
-        elif self.op == '=':
+        elif self.__op__ == '=':
             return 1 if self.left.value() == self.right.value() else 0
-        elif self.op == '<>':
+        elif self.__op__ == '<>':
             return 0 if self.left.value() == self.right.value() else 1
-        elif self.op == '<':
+        elif self.__op__ == '<':
             return 1 if self.left.value() < self.right.value() else 0
-        elif self.op == '<=':
+        elif self.__op__ == '<=':
             return 1 if self.left.value() <= self.right.value() else 0
-        elif self.op == '>':
+        elif self.__op__ == '>':
             return 1 if self.left.value() > self.right.value() else 0
-        elif self.op == '>=':
+        elif self.__op__ == '>=':
             return 1 if self.left.value() >= self.right.value() else 0
-        elif self.op == 'or':
+        elif self.__op__ == 'or':
             return 0 if (self.left.value() or self.right.value()) == 0 else 1
-        elif self.op == 'and':
+        elif self.__op__ == 'and':
             return 0 if (self.left.value() and self.right.value()) == 0 else 1
-        elif self.op == 'atan2':
+        elif self.__op__ == 'atan2':
             return math.atan2(self.left.value(), self.right.value())

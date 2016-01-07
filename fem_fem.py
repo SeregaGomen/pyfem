@@ -33,12 +33,13 @@ class TFEM:
     # Запуск процедуры расчета
     @abstractmethod
     def calc(self):
-        pass
+        raise NotImplementedError('Method TFEM.calc is pure virtual')
+
 
     # Добавление локальной матрицы жесткости (масс, демпфирования) к глобальной
     @abstractmethod
     def __assembly__(self, fe, index):
-        pass
+        raise NotImplementedError('Method TFEM.__assembly__ is pure virtual')
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...) 
     def calc_results(self):

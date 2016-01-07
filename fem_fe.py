@@ -74,12 +74,12 @@ class TFE:
     @abstractmethod
     # Вычисление функций форм КЭ
     def __create__(self):
-        pass
+        raise NotImplementedError('Method TFE.__create__ is pure virtual')
 
     # Формирование матриц жесткости, масс и демпфирования
     @abstractmethod
     def generate(self, is_static=True):
-        pass
+        raise NotImplementedError('Method TFE.generate is pure virtual')
 
     # Вычисления стандартных результатов КЭ
     @abstractmethod
