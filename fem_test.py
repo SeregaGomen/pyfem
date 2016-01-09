@@ -190,6 +190,27 @@ def tank3():
         obj.print_result('mesh/' + obj.object_name() + '.res')
 
 
+def head3d():
+    obj = TObject()
+    e = [1000]
+    m = [0.3]
+    obj.set_mesh('mesh/head3d.trpa')
+    obj.set_problem_type('static')
+    obj.set_solve_method('direct')
+    obj.set_width(10)
+    obj.set_precision(5)
+#    obj.set_solve_method('iterative')
+    obj.set_elasticity(e, m)
+    obj.add_variable('eps', 1.0E-6)
+    obj.add_boundary_condition('0', 'y=0', DIR_X | DIR_Z)
+    obj.add_boundary_condition('0', 'y=991.3', DIR_X | DIR_Y | DIR_Z)
+    obj.add_surface_load('-1*cos(atan2(z,x))', 'abs(x^2 + z^2 - 210^2) <=0.001', DIR_X)
+    obj.add_surface_load('-1*sin(atan2(z,x))', 'abs(x^2 + z^2 - 210^2) <= 0.001', DIR_Z)
+    if obj.calc():
+        obj.print_result()
+
+
+# head3d()
 # body1d()
 cube()
 # console()
