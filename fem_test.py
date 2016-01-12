@@ -210,11 +210,11 @@ def head3d():
         obj.print_result()
 
 
-head3d()
+# head3d()
 # body1d()
 # cube()
 # console()
-# beam()
+beam()
 # tank3()
 # cylinder()
 # quad()

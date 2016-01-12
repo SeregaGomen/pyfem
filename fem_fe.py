@@ -226,7 +226,7 @@ class TFE2D3(TFE):
         for i in range(0, 6):
             for j in range(i, 6):
                 self.K[i][j] = local_k[i][j]
-                self.K[i][6] = self.vy[0]*self.__square__()/6.0 if j % 2 == 0 else self.vx[0]*self.__square__()/6.0
+                self.K[i][6] = self.vy[0]*self.__square__()/3.0 if j % 2 == 0 else self.vx[0]*self.__square__()/3.0
                 if not is_static:
                     self.M[i][j] = self.density*self.__square__()/12.0 if i == j else self.density*self.__square__()/6.0
                     self.D[i][j] = self.damping*self.__square__()/12.0 if i == j else self.density*self.__square__()/6.0
