@@ -14,7 +14,6 @@ from fem_progress import TProgress
 from fem_fe import TFE, TFE1D2, TFE2D3, TFE2D4, TFE3D4, TFE3D8
 from fem_parser import TParser
 from fem_defs import DIR_X, DIR_Y, DIR_Z
-from fem_result import TResult
 
 
 # Абстрактный базовый класс, реализующий МКЭ
@@ -22,9 +21,6 @@ class TFEM:
     def __init__(self):
         self.__mesh__ = TMesh()                         # Дискретная модель объекта
         self.__params__ = TFEMParams()                  # Параметры расчета
-        self.__volume_load__ = []                       # Узловые объемная, поверхностная и сосредоточенная нагрузки
-        self.__surface_load__ = []
-        self.__concentrated_load__ = []
         self.__global_matrix__ = lil_matrix((0, 0))     # Глобальная матрица жесткости (ГМЖ)
         self.__global_vector__ = []                     # Глобальный вектор нагрузок (правая часть)
         self.__progress__ = TProgress()                 # Индикатор прогресса расчета
@@ -35,58 +31,16 @@ class TFEM:
     def calc(self):
         raise NotImplementedError('Method TFEM.calc is pure virtual')
 
-
     # Добавление локальной матрицы жесткости (масс, демпфирования) к глобальной
     @abstractmethod
     def __assembly__(self, fe, index):
         raise NotImplementedError('Method TFEM.__assembly__ is pure virtual')
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...) 
+    @abstractmethod
     def calc_results(self):
-        # Выделяем память для хранения результатов
-        res = []
-        for i in range(0, self.num_result()):
-            r = [0]*len(self.__mesh__.x)
-            res.append(r)
-        uvw = [0]*len(self.__mesh__.fe[0])*self.__mesh__.freedom
-        counter = [0]*len(self.__mesh__.x)  # Счетчик кол-ва вхождения узлов для осреднения результатов
-        # Копируем полученные перемещения
-        for i in range(0, len(self.__mesh__.x)):
-            for j in range(0, self.__mesh__.freedom):
-                res[j][i] = self.__global_vector__[i*self.__mesh__.freedom + j]
-        # Вычисляем стандартные результаты по всем КЭ
-        fe = self.create_fe()
-        fe.set_elasticity(self.__params__.e, self.__params__.m)
-        self.__progress__.set_process('Calculation results...', 1, len(self.__mesh__.fe))
-        for i in range(0, len(self.__mesh__.fe)):
-            self.__progress__.set_progress(i + 1)
-            x = [0]*len(self.__mesh__.fe[i])
-            y = [0]*len(self.__mesh__.fe[i])
-            z = [0]*len(self.__mesh__.fe[i])
-            for j in range(len(self.__mesh__.fe[i])):
-                x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.fe[i][j])
-            fe.set_coord(x, y, z)
-            for j in range(0, len(self.__mesh__.fe[i])):
-                for k in range(0, self.__mesh__.freedom):
-                    uvw[j*self.__mesh__.freedom + k] = \
-                        self.__global_vector__[self.__mesh__.freedom*self.__mesh__.fe[i][j] + k]
-            r = fe.calc(uvw)
-            for m in range(0, len(r)):
-                for j in range(0, len(r[0])):
-                    res[self.__mesh__.freedom + m][self.__mesh__.fe[i][j]] += r[m][j]
-                    if not m:
-                        counter[self.__mesh__.fe[i][j]] += 1
-        # Осредняем результаты
-        for i in range(self.__mesh__.freedom, self.num_result()):
-            for j in range(0, len(self.__mesh__.x)):
-                res[i][j] /= counter[j]
-        # Сохраняем полученные результаты в списке
-        for i in range(0, self.num_result()):
-            r = TResult()
-            r.name = self.__params__.names[self.index_result(i)]
-            r.results = res[i]
-            self.__result__.append(r)
-        
+        raise NotImplementedError('Method TFEM.calc_results is pure virtual')
+
     # Решение СЛАУ
     def solve(self):
         ret = False
@@ -131,18 +85,13 @@ class TFEM:
             fe = TFE3D8()
         return fe
 
-    # Учет нагрузки
-    def add_load(self, i, j, value):
-        if self.__params__.bc_list[i].type == 'volume':
-            self.__volume_load__[j] += value
-        elif self.__params__.bc_list[i].type == 'surface':
-            self.__surface_load__[j] += value
-        elif self.__params__.bc_list[i].type == 'concentrated':
-            self.__concentrated_load__[j] += value
-
-    # Вычисление длины (площади) граничного элемента
-    @staticmethod
-    def square(x, y, z):
+    # Вычисление длины (площади) заданного граничного элемента
+    def square(self, index):
+        x = [0]*len(self.__mesh__.surface[index])
+        y = [0]*len(self.__mesh__.surface[index])
+        z = [0]*len(self.__mesh__.surface[index])
+        for i in range(0, len(self.__mesh__.surface[index])):
+            x[i], y[i], z[i] = self.__mesh__.get_coord(self.__mesh__.surface[index][i])
         s = 0
         if len(x) == 2:     # Граничный элемент - отрезок
             s = math.sqrt((x[0] - x[1])*(x[0] - x[1]) + (y[0] - y[1])*(y[0] - y[1]))
@@ -202,26 +151,20 @@ class TFEM:
                     if direct & DIR_Z:
                         self.set_boundary_condition(j, 2, val)
 
-    # Проверка соответствия граничного єлемента предикату отбора (всех его вершин)
-    def check_boundary_elements(self, predicate):
+    # Проверка соответствия граничного элемента предикату отбора (всех его вершин)
+    def check_boundary_elements(self, i, predicate):
+        if not len(predicate):
+            return True
         parser = self.create_parser()
-        surface_attribute = [False]*len(self.__mesh__.surface)
-        for i in range(0, len(self.__mesh__.surface)):
-            is_ok = True
-            for k in range(0, len(self.__mesh__.surface[0])):
-                x, y, z = self.__mesh__.get_coord(self.__mesh__.surface[i][k])
-                parser.set_variable(self.__params__.names[0], x)
-                parser.set_variable(self.__params__.names[1], y)
-                parser.set_variable(self.__params__.names[2], z)
-                if len(predicate):
-                    parser.set_code(predicate)
-                    if parser.error != '':
-                        return surface_attribute
-                    if parser.run() == 0:
-                        is_ok = False
-                        break
-            surface_attribute[i] = is_ok
-        return surface_attribute
+        for k in range(0, len(self.__mesh__.surface[0])):
+            x, y, z = self.__mesh__.get_coord(self.__mesh__.surface[i][k])
+            parser.set_variable(self.__params__.names[0], x)
+            parser.set_variable(self.__params__.names[1], y)
+            parser.set_variable(self.__params__.names[2], z)
+            parser.set_code(predicate)
+            if parser.error != '' or parser.run() == 0:
+                return False
+        return True
 
     # Задание граничных условий
     def set_boundary_condition(self, i, j, val):

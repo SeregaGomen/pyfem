@@ -140,7 +140,7 @@ def cylinder():
     obj.add_surface_load('-1.0e+4*cos(atan2(y,z))', 'abs(y^2 + z^2 - 0.5^2) <= eps', DIR_Z)
     obj.add_surface_load('-1.0e+4*sin(atan2(y,z))', 'abs(y^2 + z^2 - 0.5^2) <= eps', DIR_Y)
     obj.add_surface_load('1.0e+4*cos(atan2(y,z))', 'abs(y^2 + z^2 - 0.25^2) <= eps', DIR_Z)
-    obj.add_surface_load('1.0e+4*sin(atan2(y,z))', 'abs(y^2 + z^2 - 0.25^2) <= eps',DIR_Y)
+    obj.add_surface_load('1.0e+4*sin(atan2(y,z))', 'abs(y^2 + z^2 - 0.25^2) <= eps', DIR_Y)
     if obj.calc():
         obj.print_result()
 
@@ -210,9 +210,9 @@ def head3d():
         obj.print_result()
 
 
-# head3d()
+head3d()
 # body1d()
-cube()
+# cube()
 # console()
 # beam()
 # tank3()

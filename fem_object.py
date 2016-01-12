@@ -22,7 +22,7 @@ class TObject:
         self.mesh.load(name)
         print('Object: %s' % self.object_name())
         print('Points: %d' % len(self.mesh.x))
-        print('FE: %d - %s' % (len(self.mesh.fe), self.mesh.fe_name(self.mesh.fe_type)))
+        print('FE: %d - %s' % (len(self.mesh.fe), self.mesh.fe_name()))
 #        print('FE type: %s' % self.mesh.fe_type)
 
     # Название объекта

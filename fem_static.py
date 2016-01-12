@@ -8,6 +8,7 @@ from scipy.sparse import lil_matrix
 from fem_fem import TFEM
 from fem_defs import DIR_X, DIR_Y, DIR_Z
 from fem_error import TFEMException
+from fem_result import TResult
 
 
 class TFEMStatic(TFEM):
@@ -32,8 +33,10 @@ class TFEMStatic(TFEM):
 
         fe = self.create_fe()
         fe.set_elasticity(self.__params__.e, self.__params__.m)
-        # Предварительное вычисление компонент нагрузки
-        surface_attribute = self.prepare_load()
+        # Вычисление компонент нагрузки
+        self.prepare_concentrated_load()
+        self.prepare_surface_load()
+        volume_load = self.prepare_volume_load()
         # Формирование глобальной матрицы жесткости
         self.__progress__.set_process('Assembling global stiffness matrix...', 1, len(self.__mesh__.fe))
         for i in range(0, len(self.__mesh__.fe)):
@@ -47,18 +50,14 @@ class TFEMStatic(TFEM):
             # Настройка КЭ
             for j in range(len(self.__mesh__.fe[i])):
                 x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.fe[i][j])
-                vx[j] = self.__volume_load__[self.__mesh__.fe[i][j]*self.__mesh__.freedom + 0]
-                vy[j] = self.__volume_load__[self.__mesh__.fe[i][j]*self.__mesh__.freedom + 1] \
-                    if (len(self.__mesh__.y)) else 0
-                vz[j] = self.__volume_load__[self.__mesh__.fe[i][j]*self.__mesh__.freedom + 2] \
-                    if (len(self.__mesh__.z)) else 0
+                vx[j] = volume_load[self.__mesh__.fe[i][j]*self.__mesh__.freedom + 0]
+                vy[j] = volume_load[self.__mesh__.fe[i][j]*self.__mesh__.freedom + 1] if (len(self.__mesh__.y)) else 0
+                vz[j] = volume_load[self.__mesh__.fe[i][j]*self.__mesh__.freedom + 2] if (len(self.__mesh__.z)) else 0
             fe.set_coord(x, y, z)
             fe.set_volume_load(vx, vy, vz)
             fe.generate()
             # Ансамблирование ЛМЖ к ГМЖ
             self.__assembly__(fe, i)
-        # Учет сосредоточенной и поверхностной нагрузок
-        self.use_load_condition(surface_attribute)
         # Учет краевых условий
         self.use_boundary_condition()
         # Решение СЛАУ
@@ -81,30 +80,101 @@ class TFEMStatic(TFEM):
                     self.__global_matrix__[l, k] += fe.K[i][j]
             self.__global_vector__[k] += fe.K[i][len(fe.K)]
 
-    # Предварительное вычисление нагрузок
-    def prepare_load(self):
-        surface_attribute = []
+    # Вычисление сосредоточенных нагрузок
+    def prepare_concentrated_load(self):
         parser = self.create_parser()
-        self.__volume_load__ = [0]*len(self.__mesh__.x)*self.__mesh__.freedom
-        self.__surface_load__ = [0]*len(self.__mesh__.x)*self.__mesh__.freedom
-        self.__concentrated_load__ = [0]*len(self.__mesh__.x)*self.__mesh__.freedom
+        counter = 0
+        for i in range(0, len(self.__params__.bc_list)):
+            if self.__params__.bc_list[i].type == 'concentrated':
+                counter += 1
+        if not counter:
+            return
+        self.__progress__.set_process('Computation of concentrated load...', 1, counter*len(self.__mesh__.x))
+        counter = 1
+        for i in range(0, len(self.__params__.bc_list)):
+            if not self.__params__.bc_list[i].type == 'concentrated':
+                continue
+            for j in range(0, len(self.__mesh__.x)):
+                self.__progress__.set_progress(counter)
+                counter += 1
+                x, y, z = self.__mesh__.get_coord(j)
+                parser.set_variable(self.__params__.names[0], x)
+                parser.set_variable(self.__params__.names[1], y)
+                parser.set_variable(self.__params__.names[2], z)
+                if len(self.__params__.bc_list[i].predicate):
+                    parser.set_code(self.__params__.bc_list[i].predicate)
+                    if parser.error != '':
+                        return
+                    if parser.run() == 0:
+                        continue
+                parser.set_code(self.__params__.bc_list[i].expression)
+                if parser.error != '':
+                    return
+                val = parser.run()
+                if self.__params__.bc_list[i].direct & DIR_X:
+                    self.__global_vector__[j*self.__mesh__.freedom + 0] += val
+                if self.__params__.bc_list[i].direct & DIR_Y:
+                    self.__global_vector__[j*self.__mesh__.freedom + 1] += val
+                if self.__params__.bc_list[i].direct & DIR_Z:
+                    self.__global_vector__[j*self.__mesh__.freedom + 2] += val
+
+    # Вычисление поверхностных нагрузок
+    def prepare_surface_load(self):
+        x = [0]*len(self.__mesh__.surface[0])
+        y = [0]*len(self.__mesh__.surface[0])
+        z = [0]*len(self.__mesh__.surface[0])
+        val = [0]*len(self.__mesh__.surface[0])
+        parser = self.create_parser()
+        counter = 0
+        for i in range(0, len(self.__params__.bc_list)):
+            if self.__params__.bc_list[i].type == 'surface':
+                counter += 1
+        if not counter:
+            return
+        self.__progress__.set_process('Computation of surface load...', 1, counter*len(self.__mesh__.surface))
+        counter = 1
+        for i in range(0, len(self.__params__.bc_list)):
+            if self.__params__.bc_list[i].type != 'surface':
+                continue
+            for j in range(0, len(self.__mesh__.surface)):
+                self.__progress__.set_progress(counter)
+                counter += 1
+                if not self.check_boundary_elements(j, self.__params__.bc_list[i].predicate):
+                    continue
+                rel_se = self.square(j)/float(len(self.__mesh__.surface[j]))
+                for k in range(0, len(self.__mesh__.surface[j])):
+                    x[k], y[k], z[k] = self.__mesh__.get_coord(self.__mesh__.surface[j][k])
+                    parser.set_variable(self.__params__.names[0], x[k])
+                    parser.set_variable(self.__params__.names[1], y[k])
+                    parser.set_variable(self.__params__.names[2], z[k])
+                    parser.set_code(self.__params__.bc_list[i].expression)
+                    if parser.error != '':
+                        return
+                    val[k] = parser.run()
+                    if self.__params__.bc_list[i].direct & DIR_X:
+                        self.__global_vector__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 0] += val[k]*rel_se
+                    if self.__params__.bc_list[i].direct & DIR_Y:
+                        self.__global_vector__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 1] += val[k]*rel_se
+                    if self.__params__.bc_list[i].direct & DIR_Z:
+                        self.__global_vector__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 2] += val[k]*rel_se
+
+    # Предварительное объемных нагрузок
+    def prepare_volume_load(self):
+        parser = self.create_parser()
+        volume_load = [0]*len(self.__mesh__.x)*self.__mesh__.freedom
 
         counter = 0
         for i in range(0, len(self.__params__.bc_list)):
-            if not (self.__params__.bc_list[i].type == 'volume' or self.__params__.bc_list[i].type == 'surface' or
-               self.__params__.bc_list[i].type == 'concentrated'):
-                continue
-            counter += 1
+            if self.__params__.bc_list[i].type == 'volume':
+                counter += 1
+        if not counter:
+            return volume_load
 
-        self.__progress__.set_process('Computation of load...', 1, counter*len(self.__mesh__.x))
+        self.__progress__.set_process('Computation of volume load...', 1, counter*len(self.__mesh__.x))
         counter = 1
         for i in range(0, len(self.__params__.bc_list)):
-            if not (self.__params__.bc_list[i].type == 'volume' or self.__params__.bc_list[i].type == 'surface' or
-               self.__params__.bc_list[i].type == 'concentrated'):
+            if self.__params__.bc_list[i].type != 'volume':
                 continue
-            if self.__params__.bc_list[i].type == 'surface':
-                # Проверяем, все ли узлы ГЭ удовлетворяют предикату отбора
-                surface_attribute = self.check_boundary_elements(self.__params__.bc_list[i].predicate)
 
             for j in range(0, len(self.__mesh__.x)):
                 self.__progress__.set_progress(counter)
@@ -116,49 +186,63 @@ class TFEMStatic(TFEM):
                 if len(self.__params__.bc_list[i].predicate):
                     parser.set_code(self.__params__.bc_list[i].predicate)
                     if parser.error != '':
-                        return surface_attribute
+                        return volume_load
                     if parser.run() == 0:
                         continue
                 parser.set_code(self.__params__.bc_list[i].expression)
                 if parser.error != '':
-                    return surface_attribute
+                    return volume_load
                 val = parser.run()
                 if self.__params__.bc_list[i].direct & DIR_X:
-                    index = j*self.__mesh__.freedom + 0
-                    self.add_load(i, index, val)
+                    volume_load[j*self.__mesh__.freedom + 0] += val
                 if self.__params__.bc_list[i].direct & DIR_Y:
-                    index = j*self.__mesh__.freedom + 1
-                    self.add_load(i, index, val)
+                    volume_load[j*self.__mesh__.freedom + 1] += val
                 if self.__params__.bc_list[i].direct & DIR_Z:
-                    index = j*self.__mesh__.freedom + 2
-                    self.add_load(i, index, val)
-        return surface_attribute
+                    volume_load[j*self.__mesh__.freedom + 2] += val
+        return volume_load
 
-    # Учет сосредоточенной и поверхностной нагрузок
-    def use_load_condition(self, surface_attribute):
-        self.__progress__.set_process('Building the load vector-column...', 1,
-                                      len(self.__concentrated_load__) + len(self.__mesh__.surface))
-        counter = 1
-        # Учет сосредоточенной нагрузки
-        for i in range(0, len(self.__concentrated_load__)):
-            self.__progress__.set_progress(counter)
-            counter += 1
-            self.__global_vector__[i] += self.__concentrated_load__[i]
-        # Учет поверхностной нагрузки
-        if self.__mesh__.freedom == 1:
-            return
-        x = [0]*len(self.__mesh__.surface[0])
-        y = [0]*len(self.__mesh__.surface[0])
-        z = [0]*len(self.__mesh__.surface[0])
-        for i in range(0, len(self.__mesh__.surface)):
-            self.__progress__.set_progress(counter)
-            counter += 1
-            if not len(surface_attribute) or not surface_attribute[i]:
-                continue
-            for j in range(0, len(self.__mesh__.surface[0])):
-                x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.surface[i][j])
-            rel_se = self.square(x, y, z)/float(len(self.__mesh__.surface[0]))
-            for j in range(0, len(self.__mesh__.surface[0])):
+    # Вычисление вспомогательных результатов (деформаций, напряжений, ...)
+    def calc_results(self):
+        # Выделяем память для хранения результатов
+        res = []
+        for i in range(0, self.num_result()):
+            r = [0]*len(self.__mesh__.x)
+            res.append(r)
+        uvw = [0]*len(self.__mesh__.fe[0])*self.__mesh__.freedom
+        counter = [0]*len(self.__mesh__.x)  # Счетчик кол-ва вхождения узлов для осреднения результатов
+        # Копируем полученные перемещения
+        for i in range(0, len(self.__mesh__.x)):
+            for j in range(0, self.__mesh__.freedom):
+                res[j][i] = self.__global_vector__[i*self.__mesh__.freedom + j]
+        # Вычисляем стандартные результаты по всем КЭ
+        fe = self.create_fe()
+        fe.set_elasticity(self.__params__.e, self.__params__.m)
+        self.__progress__.set_process('Calculation results...', 1, len(self.__mesh__.fe))
+        for i in range(0, len(self.__mesh__.fe)):
+            self.__progress__.set_progress(i + 1)
+            x = [0]*len(self.__mesh__.fe[i])
+            y = [0]*len(self.__mesh__.fe[i])
+            z = [0]*len(self.__mesh__.fe[i])
+            for j in range(len(self.__mesh__.fe[i])):
+                x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.fe[i][j])
+            fe.set_coord(x, y, z)
+            for j in range(0, len(self.__mesh__.fe[i])):
                 for k in range(0, self.__mesh__.freedom):
-                    l = self.__mesh__.surface[i][j]*self.__mesh__.freedom + k
-                    self.__global_vector__[l] += self.__surface_load__[l]*rel_se
+                    uvw[j*self.__mesh__.freedom + k] = \
+                        self.__global_vector__[self.__mesh__.freedom*self.__mesh__.fe[i][j] + k]
+            r = fe.calc(uvw)
+            for m in range(0, len(r)):
+                for j in range(0, len(r[0])):
+                    res[self.__mesh__.freedom + m][self.__mesh__.fe[i][j]] += r[m][j]
+                    if not m:
+                        counter[self.__mesh__.fe[i][j]] += 1
+        # Осредняем результаты
+        for i in range(self.__mesh__.freedom, self.num_result()):
+            for j in range(0, len(self.__mesh__.x)):
+                res[i][j] /= counter[j]
+        # Сохраняем полученные результаты в списке
+        for i in range(0, self.num_result()):
+            r = TResult()
+            r.name = self.__params__.names[self.index_result(i)]
+            r.results = res[i]
+            self.__result__.append(r)
