@@ -36,7 +36,7 @@ class TFEMStatic(TFEM):
         # Вычисление компонент нагрузки
         self.prepare_concentrated_load()
         self.prepare_surface_load()
-        volume_load = self.prepare_volume_load()
+        self.prepare_volume_load()
         # Формирование глобальной матрицы жесткости
         self.__progress__.set_process('Assembling global stiffness matrix...', 1, len(self.__mesh__.fe))
         for i in range(0, len(self.__mesh__.fe)):
@@ -50,11 +50,7 @@ class TFEMStatic(TFEM):
             # Настройка КЭ
             for j in range(len(self.__mesh__.fe[i])):
                 x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.fe[i][j])
-                vx[j] = volume_load[self.__mesh__.fe[i][j]*self.__mesh__.freedom + 0]
-                vy[j] = volume_load[self.__mesh__.fe[i][j]*self.__mesh__.freedom + 1] if (len(self.__mesh__.y)) else 0
-                vz[j] = volume_load[self.__mesh__.fe[i][j]*self.__mesh__.freedom + 2] if (len(self.__mesh__.z)) else 0
             fe.set_coord(x, y, z)
-            fe.set_volume_load(vx, vy, vz)
             fe.generate()
             # Ансамблирование ЛМЖ к ГМЖ
             self.__assembly__(fe, i)
@@ -103,13 +99,9 @@ class TFEMStatic(TFEM):
                 parser.set_variable(self.__params__.names[2], z)
                 if len(self.__params__.bc_list[i].predicate):
                     parser.set_code(self.__params__.bc_list[i].predicate)
-                    if parser.error != '':
-                        return
                     if parser.run() == 0:
                         continue
                 parser.set_code(self.__params__.bc_list[i].expression)
-                if parser.error != '':
-                    return
                 val = parser.run()
                 if self.__params__.bc_list[i].direct & DIR_X:
                     self.__global_vector__[j*self.__mesh__.freedom + 0] += val
@@ -148,8 +140,6 @@ class TFEMStatic(TFEM):
                     parser.set_variable(self.__params__.names[1], y[k])
                     parser.set_variable(self.__params__.names[2], z[k])
                     parser.set_code(self.__params__.bc_list[i].expression)
-                    if parser.error != '':
-                        return
                     val[k] = parser.run()
                     if self.__params__.bc_list[i].direct & DIR_X:
                         self.__global_vector__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 0] += val[k]*rel_se
@@ -158,48 +148,41 @@ class TFEMStatic(TFEM):
                     if self.__params__.bc_list[i].direct & DIR_Z:
                         self.__global_vector__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 2] += val[k]*rel_se
 
-    # Предварительное объемных нагрузок
+    # Вычисление объемных нагрузок
     def prepare_volume_load(self):
+        x = [0]*len(self.__mesh__.fe[0])
+        y = [0]*len(self.__mesh__.fe[0])
+        z = [0]*len(self.__mesh__.fe[0])
+        val = [0]*len(self.__mesh__.fe[0])
         parser = self.create_parser()
-        volume_load = [0]*len(self.__mesh__.x)*self.__mesh__.freedom
-
         counter = 0
         for i in range(0, len(self.__params__.bc_list)):
             if self.__params__.bc_list[i].type == 'volume':
                 counter += 1
         if not counter:
-            return volume_load
-
-        self.__progress__.set_process('Computation of volume load...', 1, counter*len(self.__mesh__.x))
+            return
+        self.__progress__.set_process('Computation of volume load...', 1, counter*len(self.__mesh__.fe))
         counter = 1
         for i in range(0, len(self.__params__.bc_list)):
             if self.__params__.bc_list[i].type != 'volume':
                 continue
-
-            for j in range(0, len(self.__mesh__.x)):
+            for j in range(0, len(self.__mesh__.fe)):
                 self.__progress__.set_progress(counter)
                 counter += 1
-                x, y, z = self.__mesh__.get_coord(j)
-                parser.set_variable(self.__params__.names[0], x)
-                parser.set_variable(self.__params__.names[1], y)
-                parser.set_variable(self.__params__.names[2], z)
-                if len(self.__params__.bc_list[i].predicate):
-                    parser.set_code(self.__params__.bc_list[i].predicate)
-                    if parser.error != '':
-                        return volume_load
-                    if parser.run() == 0:
-                        continue
-                parser.set_code(self.__params__.bc_list[i].expression)
-                if parser.error != '':
-                    return volume_load
-                val = parser.run()
-                if self.__params__.bc_list[i].direct & DIR_X:
-                    volume_load[j*self.__mesh__.freedom + 0] += val
-                if self.__params__.bc_list[i].direct & DIR_Y:
-                    volume_load[j*self.__mesh__.freedom + 1] += val
-                if self.__params__.bc_list[i].direct & DIR_Z:
-                    volume_load[j*self.__mesh__.freedom + 2] += val
-        return volume_load
+                rel_ve = self.volume(j)/float(len(self.__mesh__.fe[j]))
+                for k in range(0, len(self.__mesh__.fe[j])):
+                    x[k], y[k], z[k] = self.__mesh__.get_coord(self.__mesh__.fe[j][k])
+                    parser.set_variable(self.__params__.names[0], x[k])
+                    parser.set_variable(self.__params__.names[1], y[k])
+                    parser.set_variable(self.__params__.names[2], z[k])
+                    parser.set_code(self.__params__.bc_list[i].expression)
+                    val[k] = parser.run()
+                    if self.__params__.bc_list[i].direct & DIR_X:
+                        self.__global_vector__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 0] += val[k]*rel_ve
+                    if self.__params__.bc_list[i].direct & DIR_Y:
+                        self.__global_vector__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 1] += val[k]*rel_ve
+                    if self.__params__.bc_list[i].direct & DIR_Z:
+                        self.__global_vector__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 2] += val[k]*rel_ve
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...)
     def calc_results(self):

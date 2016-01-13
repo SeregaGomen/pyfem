@@ -124,10 +124,11 @@ class TFE1D2(TFE):
         self.K[1][1] = 2.0*self.__length__()*self.e[0]*self.c[1][1]**2
 
         # Вычисление интеграла для объемных сил
-        self.K[0][2] += self.vx[0]*(self.c[0][1]*(self.x[1]**2 - self.x[0]**2)*0.5 +
-                                    self.c[0][0]*(self.x[1] - self.x[0]))
-        self.K[1][2] += self.vx[1]*(self.c[1][1]*(self.x[1]**2 - self.x[0]**2)*0.5 +
-                                    self.c[1][0]*(self.x[1] - self.x[0]))
+        if len(self.vx):
+            self.K[0][2] += self.vx[0]*(self.c[0][1]*(self.x[1]**2 - self.x[0]**2)*0.5 +
+                                        self.c[0][0]*(self.x[1] - self.x[0]))
+            self.K[1][2] += self.vx[1]*(self.c[1][1]*(self.x[1]**2 - self.x[0]**2)*0.5 +
+                                        self.c[1][0]*(self.x[1] - self.x[0]))
         if not is_static:
             # Формирование матрицы массы
             k00 = (self.c[0][0]**2*(self.x[1] - self.x[0])) + \
@@ -226,7 +227,8 @@ class TFE2D3(TFE):
         for i in range(0, 6):
             for j in range(i, 6):
                 self.K[i][j] = local_k[i][j]
-                self.K[i][6] = self.vy[0]*self.__square__()/3.0 if j % 2 == 0 else self.vx[0]*self.__square__()/3.0
+                if len(self.vx) or len(self.vy):
+                    self.K[i][6] = self.vy[0]*self.__square__()/3.0 if j % 2 == 0 else self.vx[0]*self.__square__()/3.0
                 if not is_static:
                     self.M[i][j] = self.density*self.__square__()/12.0 if i == j else self.density*self.__square__()/6.0
                     self.D[i][j] = self.damping*self.__square__()/12.0 if i == j else self.density*self.__square__()/6.0
@@ -320,12 +322,13 @@ class TFE3D4(TFE):
         bt = b.conj().transpose()
         local_k = bt.dot(d).dot(b)*self.__volume__()
         for i in range(0, 12):
-            if i % 3 == 0:
-                self.K[i][12] = 0.25*self.vx[0]*self.__volume__()
-            elif i % 3 == 1:
-                self.K[i][12] = 0.25*self.vy[0]*self.__volume__()
-            elif i % 3 == 2:
-                self.K[i][12] = 0.25*self.vz[0]*self.__volume__()
+            if len(self.vx) or len(self.vy) or len(self.vz):
+                if i % 3 == 0:
+                    self.K[i][12] = 0.25*self.vx[0]*self.__volume__()
+                elif i % 3 == 1:
+                    self.K[i][12] = 0.25*self.vy[0]*self.__volume__()
+                elif i % 3 == 2:
+                    self.K[i][12] = 0.25*self.vz[0]*self.__volume__()
             for j in range(i, 12):
                 self.K[i][j] = local_k[i][j]
                 if not is_static:
@@ -422,9 +425,10 @@ class TFE2D4(TFE):
                 ct = c.conj().transpose()
                 local_m += ct.dot(c)*jacobian*w[i]
             # Учет объемной нагрузки
-            for j in range(0, 4):
-                volume_load[2*j] += self.vx[j]*shape[j]*jacobian*w[i]
-                volume_load[2*j + 1] += self.vy[j]*shape[j]*jacobian*w[i]
+            if len(self.vx) or len(self.vy):
+                for j in range(0, 4):
+                    volume_load[2*j] += self.vx[j]*shape[j]*jacobian*w[i]
+                    volume_load[2*j + 1] += self.vy[j]*shape[j]*jacobian*w[i]
 
         for i in range(0, 8):
             for j in range(i, 8):
@@ -600,10 +604,11 @@ class TFE3D8(TFE):
                 ct = c.conj().transpose()
                 local_m += ct.dot(c)*jacobian*w[i]
             # Учет объемной нагрузки
-            for j in range(0, self.size):
-                volume_load[3*j + 0] += self.vx[j]*shape[j]*jacobian*w[j]
-                volume_load[3*j + 1] += self.vy[j]*shape[j]*jacobian*w[j]
-                volume_load[3*j + 2] += self.vz[j]*shape[j]*jacobian*w[j]
+            if len(self.vx) or len(self.vy) or len(self.vz):
+                for j in range(0, self.size):
+                    volume_load[3*j + 0] += self.vx[j]*shape[j]*jacobian*w[j]
+                    volume_load[3*j + 1] += self.vy[j]*shape[j]*jacobian*w[j]
+                    volume_load[3*j + 2] += self.vz[j]*shape[j]*jacobian*w[j]
         for i in range(0, 24):
             for j in range(i, 24):
                 self.K[i][j] = local_k[i][j]
