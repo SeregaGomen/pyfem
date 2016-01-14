@@ -7,22 +7,12 @@
 from scipy.sparse import lil_matrix
 from fem_fem import TFEM
 from fem_defs import DIR_X, DIR_Y, DIR_Z
-from fem_error import TFEMException
 from fem_result import TResult
 
 
 class TFEMStatic(TFEM):
     def __init__(self):
         super().__init__()
-
-    # Запуск процедуры расчета
-    def calc(self):
-        try:
-            ret = self.__calc_problem__()
-        except TFEMException as err:
-            ret = False
-            err.print_error()
-        return ret
 
     # Расчет статической задачи методом конечных элементов
     def __calc_problem__(self):

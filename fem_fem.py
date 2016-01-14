@@ -14,6 +14,7 @@ from fem_progress import TProgress
 from fem_fe import TFE, TFE1D2, TFE2D3, TFE2D4, TFE3D4, TFE3D8
 from fem_parser import TParser
 from fem_defs import DIR_X, DIR_Y, DIR_Z
+from fem_error import TFEMException
 
 
 # Абстрактный базовый класс, реализующий МКЭ
@@ -27,9 +28,13 @@ class TFEM:
         self.__result__ = []                            # Список результатов расчета для перемещений, деформаций, ...
 
     # Запуск процедуры расчета
-    @abstractmethod
     def calc(self):
-        raise NotImplementedError('Method TFEM.calc is pure virtual')
+        try:
+            ret = self.__calc_problem__()
+        except TFEMException as err:
+            ret = False
+            err.print_error()
+        return ret
 
     # Добавление локальной матрицы жесткости (масс, демпфирования) к глобальной
     @abstractmethod
