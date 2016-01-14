@@ -10,6 +10,7 @@ from fem_mesh import TMesh
 from fem_params import TFEMParams
 from fem_error import TFEMException
 from fem_static import TFEMStatic
+from fem_dynamic import TFEMDynamic
 
 
 class TObject:
@@ -92,8 +93,8 @@ class TObject:
                 raise TFEMException('time_err')
         if self.params.problem_type == 'static':
             fem = TFEMStatic()
-#        elif self.params.problem_type == 'dynamic':
-#            pass
+        elif self.params.problem_type == 'dynamic':
+            fem = TFEMDynamic()
         fem.set_mesh(self.mesh)
         fem.set_params(self.params)
         ret = fem.calc()

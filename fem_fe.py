@@ -96,6 +96,14 @@ class TFE1D2(TFE):
             [0, 0, 0],
             [0, 0, 0]
         ]
+        self.M = [
+            [0, 0, 0],
+            [0, 0, 0]
+        ]
+        self.D = [
+            [0, 0, 0],
+            [0, 0, 0]
+        ]
         self.c = [
             [0, 0],
             [0, 0]
@@ -161,6 +169,8 @@ class TFE2D3(TFE):
         super().__init__()
         self.size = 3
         self.K = zeros((6, 7))
+        self.M = zeros((6, 6))
+        self.D = zeros((6, 6))
         self.c = zeros((3, 3))
 
     def __square__(self):

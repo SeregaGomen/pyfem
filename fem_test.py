@@ -89,6 +89,24 @@ def console():
         obj.print_result()
 
 
+def console_dynamic():
+    obj = TObject()
+    e = [6.5E+10]
+    m = [0.3]
+    obj.set_mesh('mesh/console.trpa')
+    obj.set_problem_type('dynamic')
+    obj.set_solve_method('direct')
+    obj.set_time(0, 1, 0.1)
+    obj.set_width(10)
+    obj.set_precision(5)
+#    obj.set_solve_method('iterative')
+    obj.set_elasticity(e, m)
+    obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y)
+    obj.add_concentrated_load('-1.0E+5', 'x=10', DIR_X)
+    if obj.calc():
+        obj.print_result()
+
+
 def console4():
     obj = TObject()
     e = [6.5E+10]
@@ -212,7 +230,7 @@ def head3d():
 
 # head3d()
 # body1d()
-cube()
+# cube()
 # console()
 # beam()
 # tank3()
@@ -220,3 +238,4 @@ cube()
 # quad()
 # console4()
 # cube_test()
+console_dynamic()

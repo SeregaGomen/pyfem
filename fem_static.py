@@ -18,8 +18,8 @@ class TFEMStatic(TFEM):
     def __calc_problem__(self):
         # Создание ГМЖ
         size = len(self.__mesh__.x)*self.__mesh__.freedom
-        self.__global_matrix__ = lil_matrix((size, size))
-        self.__global_vector__ = [0]*size
+        self.__global_matrix_stiffness__ = lil_matrix((size, size))
+        self.__global_load__ = [0]*size
 
         fe = self.create_fe()
         fe.set_elasticity(self.__params__.e, self.__params__.m)
@@ -34,9 +34,6 @@ class TFEMStatic(TFEM):
             x = [0]*len(self.__mesh__.fe[i])
             y = [0]*len(self.__mesh__.fe[i])
             z = [0]*len(self.__mesh__.fe[i])
-            vx = [0]*len(self.__mesh__.fe[i])
-            vy = [0]*len(self.__mesh__.fe[i])
-            vz = [0]*len(self.__mesh__.fe[i])
             # Настройка КЭ
             for j in range(len(self.__mesh__.fe[i])):
                 x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.fe[i][j])
@@ -61,10 +58,10 @@ class TFEMStatic(TFEM):
             k = self.__mesh__.fe[index][i//self.__mesh__.freedom]*self.__mesh__.freedom + i % self.__mesh__.freedom
             for j in range(i, len(fe.K)):
                 l = self.__mesh__.fe[index][j//self.__mesh__.freedom]*self.__mesh__.freedom + j % self.__mesh__.freedom
-                self.__global_matrix__[k, l] += fe.K[i][j]
+                self.__global_matrix_stiffness__[k, l] += fe.K[i][j]
                 if k != l:
-                    self.__global_matrix__[l, k] += fe.K[i][j]
-            self.__global_vector__[k] += fe.K[i][len(fe.K)]
+                    self.__global_matrix_stiffness__[l, k] += fe.K[i][j]
+            self.__global_load__[k] += fe.K[i][len(fe.K)]
 
     # Вычисление сосредоточенных нагрузок
     def prepare_concentrated_load(self):
@@ -94,11 +91,11 @@ class TFEMStatic(TFEM):
                 parser.set_code(self.__params__.bc_list[i].expression)
                 val = parser.run()
                 if self.__params__.bc_list[i].direct & DIR_X:
-                    self.__global_vector__[j*self.__mesh__.freedom + 0] += val
+                    self.__global_load__[j*self.__mesh__.freedom + 0] += val
                 if self.__params__.bc_list[i].direct & DIR_Y:
-                    self.__global_vector__[j*self.__mesh__.freedom + 1] += val
+                    self.__global_load__[j*self.__mesh__.freedom + 1] += val
                 if self.__params__.bc_list[i].direct & DIR_Z:
-                    self.__global_vector__[j*self.__mesh__.freedom + 2] += val
+                    self.__global_load__[j*self.__mesh__.freedom + 2] += val
 
     # Вычисление поверхностных нагрузок
     def prepare_surface_load(self):
@@ -132,11 +129,11 @@ class TFEMStatic(TFEM):
                     parser.set_code(self.__params__.bc_list[i].expression)
                     val[k] = parser.run()
                     if self.__params__.bc_list[i].direct & DIR_X:
-                        self.__global_vector__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 0] += val[k]*rel_se
+                        self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 0] += val[k]*rel_se
                     if self.__params__.bc_list[i].direct & DIR_Y:
-                        self.__global_vector__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 1] += val[k]*rel_se
+                        self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 1] += val[k]*rel_se
                     if self.__params__.bc_list[i].direct & DIR_Z:
-                        self.__global_vector__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 2] += val[k]*rel_se
+                        self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 2] += val[k]*rel_se
 
     # Вычисление объемных нагрузок
     def prepare_volume_load(self):
@@ -168,11 +165,11 @@ class TFEMStatic(TFEM):
                     parser.set_code(self.__params__.bc_list[i].expression)
                     val[k] = parser.run()
                     if self.__params__.bc_list[i].direct & DIR_X:
-                        self.__global_vector__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 0] += val[k]*rel_ve
+                        self.__global_load__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 0] += val[k]*rel_ve
                     if self.__params__.bc_list[i].direct & DIR_Y:
-                        self.__global_vector__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 1] += val[k]*rel_ve
+                        self.__global_load__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 1] += val[k]*rel_ve
                     if self.__params__.bc_list[i].direct & DIR_Z:
-                        self.__global_vector__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 2] += val[k]*rel_ve
+                        self.__global_load__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 2] += val[k]*rel_ve
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...)
     def calc_results(self):
@@ -186,7 +183,7 @@ class TFEMStatic(TFEM):
         # Копируем полученные перемещения
         for i in range(0, len(self.__mesh__.x)):
             for j in range(0, self.__mesh__.freedom):
-                res[j][i] = self.__global_vector__[i*self.__mesh__.freedom + j]
+                res[j][i] = self.__global_load__[i*self.__mesh__.freedom + j]
         # Вычисляем стандартные результаты по всем КЭ
         fe = self.create_fe()
         fe.set_elasticity(self.__params__.e, self.__params__.m)
@@ -202,7 +199,7 @@ class TFEMStatic(TFEM):
             for j in range(0, len(self.__mesh__.fe[i])):
                 for k in range(0, self.__mesh__.freedom):
                     uvw[j*self.__mesh__.freedom + k] = \
-                        self.__global_vector__[self.__mesh__.freedom*self.__mesh__.fe[i][j] + k]
+                        self.__global_load__[self.__mesh__.freedom*self.__mesh__.fe[i][j] + k]
             r = fe.calc(uvw)
             for m in range(0, len(r)):
                 for j in range(0, len(r[0])):

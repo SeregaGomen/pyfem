@@ -20,12 +20,12 @@ from fem_error import TFEMException
 # Абстрактный базовый класс, реализующий МКЭ
 class TFEM:
     def __init__(self):
-        self.__mesh__ = TMesh()                         # Дискретная модель объекта
-        self.__params__ = TFEMParams()                  # Параметры расчета
-        self.__global_matrix__ = lil_matrix((0, 0))     # Глобальная матрица жесткости (ГМЖ)
-        self.__global_vector__ = []                     # Глобальный вектор нагрузок (правая часть)
-        self.__progress__ = TProgress()                 # Индикатор прогресса расчета
-        self.__result__ = []                            # Список результатов расчета для перемещений, деформаций, ...
+        self.__mesh__ = TMesh()                                 # Дискретная модель объекта
+        self.__params__ = TFEMParams()                          # Параметры расчета
+        self.__global_matrix_stiffness__ = lil_matrix((0, 0))   # Глобальная матрица жесткости (ГМЖ)
+        self.__global_load__ = []                               # Глобальный вектор нагрузок (правая часть)
+        self.__progress__ = TProgress()                         # Индикатор прогресса расчета
+        self.__result__ = []                                    # Список результатов расчета
 
     # Запуск процедуры расчета
     def calc(self):
@@ -35,6 +35,10 @@ class TFEM:
             ret = False
             err.print_error()
         return ret
+
+    @abstractmethod
+    def __calc_problem__(self):
+        raise NotImplementedError('Method TFEM.__calc_problem__ is pure virtual')
 
     # Добавление локальной матрицы жесткости (масс, демпфирования) к глобальной
     @abstractmethod
@@ -58,9 +62,9 @@ class TFEM:
     # Прямое решение СЛАУ
     def solve_direct(self):
         self.__progress__.set_process('Solving of equation system...', 1, 1)
-        self.__global_matrix__ = self.__global_matrix__.tocsr()
+        self.__global_matrix_stiffness__ = self.__global_matrix_stiffness__.tocsr()
         try:
-            self.__global_vector__ = spsolve(self.__global_matrix__, self.__global_vector__)
+            self.__global_load__ = spsolve(self.__global_matrix_stiffness__, self.__global_load__)
         except ArpackError:
             return False
         self.__progress__.set_progress(1)
@@ -69,9 +73,9 @@ class TFEM:
     # Приближенное решение СЛАУ
     def solve_iterative(self):
         self.__progress__.set_process('Solving of equation system...', 1, 1)
-        self.__global_matrix__ = self.__global_matrix__.tocsr()
-        self.__global_vector__, info = bicgstab(self.__global_matrix__, self.__global_vector__, self.__global_vector__,
-                                                self.__params__.eps)
+        self.__global_matrix_stiffness__ = self.__global_matrix_stiffness__.tocsr()
+        self.__global_load__, info = bicgstab(self.__global_matrix_stiffness__, self.__global_load__,
+                                              self.__global_load__, self.__params__.eps)
         self.__progress__.set_progress(1)
         return True if not info else False
 
@@ -215,10 +219,10 @@ class TFEM:
     # Задание граничных условий
     def set_boundary_condition(self, i, j, val):
         l = i*self.__mesh__.freedom + j
-        for k in self.__global_matrix__[l].nonzero()[1]:
+        for k in self.__global_matrix_stiffness__[l].nonzero()[1]:
             if l != k:
-                self.__global_matrix__[l, k] = self.__global_matrix__[k, l] = 0
-        self.__global_vector__[l] = val*self.__global_matrix__[l, l]
+                self.__global_matrix_stiffness__[l, k] = self.__global_matrix_stiffness__[k, l] = 0
+        self.__global_load__[l] = val*self.__global_matrix_stiffness__[l, l]
 
     # Определение кол-ва результатов в зависимости от типа и размерности задачи
     def num_result(self):
