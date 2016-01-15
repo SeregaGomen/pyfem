@@ -33,8 +33,8 @@ def cube():
     obj.set_precision(5)
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'z=0', DIR_X | DIR_Y | DIR_Z)
-    obj.add_volume_load('-1000', '', DIR_Z)
-#    obj.add_surface_load('-1000', 'z=1', DIR_Z)
+#    obj.add_volume_load('-1000', '', DIR_Z)
+    obj.add_surface_load('-1000', 'z=1', DIR_Z)
 #    obj.add_concentrated_load('-1000', 'z=1', DIR_Z)
     if obj.calc():
         obj.print_result()
@@ -96,6 +96,7 @@ def console_dynamic():
     obj.set_mesh('mesh/console.trpa')
     obj.set_problem_type('dynamic')
     obj.set_solve_method('direct')
+    obj.set_damping(1.0E+3)
     obj.set_time(0, 1, 0.1)
     obj.set_width(10)
     obj.set_precision(5)
@@ -238,4 +239,5 @@ def head3d():
 # quad()
 # console4()
 # cube_test()
+
 console_dynamic()

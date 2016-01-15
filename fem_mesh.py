@@ -4,6 +4,7 @@
 #           Конечно-элементная модель объекта расчета
 ###################################################################
 
+import math
 from fem_error import TFEMException
 
 # Типы конечных элементов
@@ -97,3 +98,78 @@ class TMesh:
 
     def get_coord(self, i):
         return self.x[i], self.y[i] if (len(self.y)) else 0, self.z[i] if (len(self.z)) else 0
+
+    # Вычисление длины (площади) заданного граничного элемента
+    def square(self, index):
+        x = [0]*len(self.surface[index])
+        y = [0]*len(self.surface[index])
+        z = [0]*len(self.surface[index])
+        for i in range(0, len(self.surface[index])):
+            x[i], y[i], z[i] = self.get_coord(self.surface[index][i])
+        s = 0
+        if len(x) == 2:     # Граничный элемент - отрезок
+            s = math.sqrt((x[0] - x[1])**2 + (y[0] - y[1])**2)
+        elif len(x) == 3:   # Граничный элемент - треугольник
+            a = math.sqrt((x[0] - x[1])**2 + (y[0] - y[1])**2 + (z[0] - z[1])**2)
+            b = math.sqrt((x[0] - x[2])**2 + (y[0] - y[2])**2 + (z[0] - z[2])**2)
+            c = math.sqrt((x[2] - x[1])**2 + (y[2] - y[1])**2 + (z[2] - z[1])**2)
+            p = 0.5*(a + b + c)
+            s = math.sqrt(p*(p - a)*(p - b)*(p - c))
+        elif len(x) == 4:   # Граничный элемент - четырехугольник
+            a = math.sqrt((x[0] - x[1])**2 + (y[0] - y[1])**2 + (z[0] - z[1])**2)
+            b = math.sqrt((x[0] - x[2])**2 + (y[0] - y[2])**2 + (z[0] - z[2])**2)
+            c = math.sqrt((x[2] - x[1])**2 + (y[2] - y[1])**2 + (z[2] - z[1])**2)
+            p = 0.5*(a + b + c)
+            s = math.sqrt(p*(p - a)*(p - b)*(p - c))
+
+            a = math.sqrt((x[0] - x[3])**2 + (y[0] - y[3])**2 + (z[0] - z[3])**2)
+            b = math.sqrt((x[0] - x[2])**2 + (y[0] - y[2])**2 + (z[0] - z[2])**2)
+            c = math.sqrt((x[2] - x[3])**2 + (y[2] - y[3])**2 + (z[2] - z[3])**2)
+            p = 0.5*(a + b + c)
+            s += math.sqrt(p*(p - a)*(p - b)*(p - c))
+        return s
+
+    # Вычисление объема (длины, площади) заданного конечного элемента
+    def volume(self, index):
+        x = [0]*len(self.fe[index])
+        y = [0]*len(self.fe[index])
+        z = [0]*len(self.fe[index])
+        for i in range(0, len(self.fe[index])):
+            x[i], y[i], z[i] = self.get_coord(self.fe[index][i])
+        v = 0
+        if self.fe_type == 'fe_1d_2':
+            v = math.sqrt((x[0] - x[1])**2 + (y[0] - y[1])**2)
+        elif self.fe_type == 'fe_2d_3':
+            a = math.sqrt((x[0] - x[1])**2 + (y[0] - y[1])**2 + (z[0] - z[1])**2)
+            b = math.sqrt((x[0] - x[2])**2 + (y[0] - y[2])**2 + (z[0] - z[2])**2)
+            c = math.sqrt((x[2] - x[1])**2 + (y[2] - y[1])**2 + (z[2] - z[1])**2)
+            p = 0.5*(a + b + c)
+            v = math.sqrt(p*(p - a)*(p - b)*(p - c))
+        elif self.fe_type == 'fe_2d_4':
+            a = math.sqrt((x[0] - x[1])**2 + (y[0] - y[1])**2 + (z[0] - z[1])**2)
+            b = math.sqrt((x[0] - x[2])**2 + (y[0] - y[2])**2 + (z[0] - z[2])**2)
+            c = math.sqrt((x[2] - x[1])**2 + (y[2] - y[1])**2 + (z[2] - z[1])**2)
+            p = 0.5*(a + b + c)
+            v = math.sqrt(p*(p - a)*(p - b)*(p - c))
+            a = math.sqrt((x[0] - x[3])**2 + (y[0] - y[3])**2 + (z[0] - z[3])**2)
+            b = math.sqrt((x[0] - x[2])**2 + (y[0] - y[2])**2 + (z[0] - z[2])**2)
+            c = math.sqrt((x[2] - x[3])**2 + (y[2] - y[3])**2 + (z[2] - z[3])**2)
+            p = 0.5*(a + b + c)
+            v += math.sqrt(p*(p - a)*(p - b)*(p - c))
+        elif self.fe_type == 'fe_3d_4':
+            a = (x[1] - x[0])*(y[2] - y[0])*(z[3] - z[0]) + (x[3] - x[0])*(y[1] - y[0])*(z[2] - z[0]) + \
+                (x[2] - x[0])*(y[3] - y[0])*(z[1] - z[0])
+            b = (x[3] - x[0])*(y[2] - y[0])*(z[1] - z[0]) + (x[2] - x[0])*(y[1] - y[0])*(z[3] - z[0]) + \
+                (x[1] - x[0])*(y[3] - y[0])*(z[2] - z[0])
+            v = math.fabs(a - b)/6.0
+        elif self.fe_type == 'fe_3d_8':
+            ref = [[0, 1, 4, 7], [4, 1, 5, 7], [1, 2, 6, 7], [1, 5, 6, 7], [1, 2, 3, 7], [0, 3, 1, 7]]
+            for i in range(0, 6):
+                a = (x[ref[i][1]] - x[ref[i][0]])*(y[ref[i][2]] - y[ref[i][0]])*(z[ref[i][3]] - z[ref[i][0]]) + \
+                    (x[ref[i][3]] - x[ref[i][0]])*(y[ref[i][1]] - y[ref[i][0]])*(z[ref[i][2]] - z[ref[i][0]]) + \
+                    (x[ref[i][2]] - x[ref[i][0]])*(y[ref[i][3]] - y[ref[i][0]])*(z[ref[i][1]] - z[ref[i][0]])
+                b = (x[ref[i][3]] - x[ref[i][0]])*(y[ref[i][2]] - y[ref[i][0]])*(z[ref[i][1]] - z[ref[i][0]]) + \
+                    (x[ref[i][2]] - x[ref[i][0]])*(y[ref[i][1]] - y[ref[i][0]])*(z[ref[i][3]] - z[ref[i][0]]) + \
+                    (x[ref[i][1]] - x[ref[i][0]])*(y[ref[i][3]] - y[ref[i][0]])*(z[ref[i][2]] - z[ref[i][0]])
+                v += math.fabs(a - b)/6.0
+        return v
