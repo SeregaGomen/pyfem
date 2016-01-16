@@ -66,8 +66,8 @@ class TObject:
     def add_boundary_condition(self, e, p, d):
         self.params.add_boundary_condition(e, p, d)
 
-    def add_initial_condition(self, e, p, d):
-        self.params.add_initial_condition(e, p, d)
+    def add_initial_condition(self, e, d):
+        self.params.add_initial_condition(e, '', d)
 
     def add_volume_load(self, e, p, d):
         self.params.add_volume_load(e, p, d)

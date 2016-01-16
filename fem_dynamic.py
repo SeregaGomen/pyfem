@@ -4,8 +4,12 @@
 #           Класс, реализующий расчет статической задачи
 #######################################################################
 
-from fem_static import TFEMStatic
+import scipy
+from os import remove
 from scipy.sparse import lil_matrix
+from numpy import zeros
+from fem_defs import INIT_U, INIT_V, INIT_W, INIT_U_T, INIT_V_T, INIT_W_T, INIT_U_T_T, INIT_V_T_T, INIT_W_T_T
+from fem_static import TFEMStatic
 
 
 class TFEMDynamic(TFEMStatic):
@@ -13,6 +17,7 @@ class TFEMDynamic(TFEMStatic):
         super().__init__()
         self.__global_matrix_mass__ = lil_matrix((0, 0))        # Глобальная матрица масс (ГММ)
         self.__global_matrix_damping__ = lil_matrix((0, 0))     # Глобальная матрица демпфирования (ГМД)
+        self.__initial_condition__ = [[]]                       # Начальные условия
 
     # Расчет динамической задачи методом конечных элементов
     def __calc_problem__(self):
@@ -43,6 +48,50 @@ class TFEMDynamic(TFEMStatic):
             self.__assembly__(fe, i)
         # Формирование статической (левой) части СЛАУ
         self.__create_static_matrix__()
+        # Сохранение матрицы для последующего использования
+        scipy.save('tmp_matrix.npy', self.__global_matrix_stiffness__)
+        # Учет начальных условий
+        self.__use_initial_condition__()
+
+        # Удаляем временный файл с матрицей
+        remove('tmp_matrix.npy')
+
+    # Учет начальных условий
+    def __use_initial_condition__(self):
+        parser = self.__create_parser__()
+        counter = 0
+        self.__initial_condition__ = zeros((9, len(self.__mesh__.x)))
+        for i in range(0, len(self.__params__.bc_list)):
+            if self.__params__.bc_list[i].type == 'initial':
+                counter += 1
+        self.__progress__.set_process('Using initial conditions...', 1, counter*len(self.__mesh__.x))
+        counter = 1
+        for i in range(0, len(self.__params__.bc_list)):
+            if self.__params__.bc_list[i].type == 'initial':
+                parser.set_code(self.__params__.bc_list[i].expression)
+                value = parser.run()
+                direct = self.__params__.bc_list[i].direct
+                for j in range(0, len(self.__mesh__.x)):
+                    self.__progress__.set_progress(counter)
+                    counter += 1
+                    if direct & INIT_U:
+                        self.__initial_condition__[0][j] = value
+                    if direct & INIT_V:
+                        self.__initial_condition__[1][j] = value
+                    if direct & INIT_W:
+                        self.__initial_condition__[2][j] = value
+                    if direct & INIT_U_T:
+                        self.__initial_condition__[3][j] = value
+                    if direct & INIT_V_T:
+                        self.__initial_condition__[4][j] = value
+                    if direct & INIT_W_T:
+                        self.__initial_condition__[5][j] = value
+                    if direct & INIT_U_T_T:
+                        self.__initial_condition__[6][j] = value
+                    if direct & INIT_V_T_T:
+                        self.__initial_condition__[7][j] = value
+                    if direct & INIT_W_T_T:
+                        self.__initial_condition__[8][j] = value
 
     # Добавление ЛМЖ, ЛММ и ЛМД к ГМЖ
     def __assembly__(self, fe, index):

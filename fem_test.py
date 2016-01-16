@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from fem_defs import DIR_X, DIR_Y, DIR_Z
+from fem_defs import DIR_X, DIR_Y, DIR_Z, INIT_U, INIT_V, INIT_U_T, INIT_V_T, INIT_U_T_T, INIT_V_T_T
 from fem_object import TObject
 
 
@@ -79,25 +79,6 @@ def console():
     obj.set_mesh('mesh/console.trpa')
     obj.set_problem_type('static')
     obj.set_solve_method('direct')
-    obj.set_width(10)
-    obj.set_precision(5)
-#    obj.set_solve_method('iterative')
-    obj.set_elasticity(e, m)
-    obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y)
-    obj.add_concentrated_load('-1.0E+5', 'x=10', DIR_X)
-    if obj.calc():
-        obj.print_result()
-
-
-def console_dynamic():
-    obj = TObject()
-    e = [6.5E+10]
-    m = [0.3]
-    obj.set_mesh('mesh/console.trpa')
-    obj.set_problem_type('dynamic')
-    obj.set_solve_method('direct')
-    obj.set_damping(1.0E+3)
-    obj.set_time(0, 1, 0.1)
     obj.set_width(10)
     obj.set_precision(5)
 #    obj.set_solve_method('iterative')
@@ -225,6 +206,31 @@ def head3d():
     obj.add_boundary_condition('0', 'y=991.3', DIR_X | DIR_Y | DIR_Z)
     obj.add_surface_load('-1*cos(atan2(z,x))', 'abs(x^2 + z^2 - 210^2) <=0.001', DIR_X)
     obj.add_surface_load('-1*sin(atan2(z,x))', 'abs(x^2 + z^2 - 210^2) <= 0.001', DIR_Z)
+    if obj.calc():
+        obj.print_result()
+
+
+def console_dynamic():
+    obj = TObject()
+    e = [6.5E+10]
+    m = [0.3]
+    obj.set_mesh('mesh/console.trpa')
+    obj.set_problem_type('dynamic')
+    obj.set_solve_method('direct')
+    obj.set_damping(1.0E+3)
+    obj.set_time(0, 1, 0.1)
+    obj.set_width(10)
+    obj.set_precision(5)
+#    obj.set_solve_method('iterative')
+    obj.set_elasticity(e, m)
+    obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y)
+    obj.add_concentrated_load('-1.0E+5', 'x=10', DIR_X)
+    obj.add_initial_condition('0', INIT_U)
+    obj.add_initial_condition('0', INIT_V)
+    obj.add_initial_condition('0', INIT_U_T)
+    obj.add_initial_condition('0', INIT_V_T)
+    obj.add_initial_condition('0', INIT_U_T_T)
+    obj.add_initial_condition('0', INIT_V_T_T)
     if obj.calc():
         obj.print_result()
 
