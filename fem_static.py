@@ -67,7 +67,7 @@ class TFEMStatic(TFEM):
             self.__global_load__[k] += fe.K[i][len(fe.K)]
 
     # Вычисление сосредоточенных нагрузок
-    def __prepare_concentrated_load__(self):
+    def __prepare_concentrated_load__(self, t=0):
         parser = self.__create_parser__()
         counter = 0
         for i in range(0, len(self.__params__.bc_list)):
@@ -87,6 +87,7 @@ class TFEMStatic(TFEM):
                 parser.set_variable(self.__params__.names[0], x)
                 parser.set_variable(self.__params__.names[1], y)
                 parser.set_variable(self.__params__.names[2], z)
+                parser.set_variable(self.__params__.names[3], t)
                 if len(self.__params__.bc_list[i].predicate):
                     parser.set_code(self.__params__.bc_list[i].predicate)
                     if parser.run() == 0:
@@ -101,7 +102,7 @@ class TFEMStatic(TFEM):
                     self.__global_load__[j*self.__mesh__.freedom + 2] += val
 
     # Вычисление поверхностных нагрузок
-    def __prepare_surface_load__(self):
+    def __prepare_surface_load__(self, t=0):
         x = [0]*len(self.__mesh__.surface[0])
         y = [0]*len(self.__mesh__.surface[0])
         z = [0]*len(self.__mesh__.surface[0])
@@ -121,7 +122,7 @@ class TFEMStatic(TFEM):
             for j in range(0, len(self.__mesh__.surface)):
                 self.__progress__.set_progress(counter)
                 counter += 1
-                if not self.check_boundary_elements(j, self.__params__.bc_list[i].predicate):
+                if not self.__check_boundary_elements__(j, self.__params__.bc_list[i].predicate):
                     continue
                 rel_se = self.__mesh__.square(j)/float(len(self.__mesh__.surface[j]))
                 for k in range(0, len(self.__mesh__.surface[j])):
@@ -129,6 +130,7 @@ class TFEMStatic(TFEM):
                     parser.set_variable(self.__params__.names[0], x[k])
                     parser.set_variable(self.__params__.names[1], y[k])
                     parser.set_variable(self.__params__.names[2], z[k])
+                    parser.set_variable(self.__params__.names[3], t)
                     parser.set_code(self.__params__.bc_list[i].expression)
                     val[k] = parser.run()
                     if self.__params__.bc_list[i].direct & DIR_X:
@@ -139,7 +141,7 @@ class TFEMStatic(TFEM):
                         self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 2] += val[k]*rel_se
 
     # Вычисление объемных нагрузок
-    def __prepare_volume_load__(self):
+    def __prepare_volume_load__(self, t=0):
         x = [0]*len(self.__mesh__.fe[0])
         y = [0]*len(self.__mesh__.fe[0])
         z = [0]*len(self.__mesh__.fe[0])
@@ -165,6 +167,7 @@ class TFEMStatic(TFEM):
                     parser.set_variable(self.__params__.names[0], x[k])
                     parser.set_variable(self.__params__.names[1], y[k])
                     parser.set_variable(self.__params__.names[2], z[k])
+                    parser.set_variable(self.__params__.names[3], t)
                     parser.set_code(self.__params__.bc_list[i].expression)
                     val[k] = parser.run()
                     if self.__params__.bc_list[i].direct & DIR_X:
@@ -281,7 +284,7 @@ class TFEMStatic(TFEM):
         return True if not info else False
 
     # Проверка соответствия граничного элемента предикату отбора (всех его вершин)
-    def check_boundary_elements(self, i, predicate):
+    def __check_boundary_elements__(self, i, predicate):
         if not len(predicate):
             return True
         parser = self.__create_parser__()

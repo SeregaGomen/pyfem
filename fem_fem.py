@@ -4,6 +4,8 @@
 # Реализация вычислений задач заданного типа методо конечных элементов
 #######################################################################
 
+import numpy
+from scipy.sparse import lil_matrix
 from abc import abstractmethod
 from fem_mesh import TMesh
 from fem_params import TFEMParams

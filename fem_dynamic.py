@@ -4,7 +4,8 @@
 #           Класс, реализующий расчет статической задачи
 #######################################################################
 
-import scipy
+import numpy
+import math
 from os import remove
 from scipy.sparse import lil_matrix
 from numpy import zeros
@@ -49,12 +50,32 @@ class TFEMDynamic(TFEMStatic):
         # Формирование статической (левой) части СЛАУ
         self.__create_static_matrix__()
         # Сохранение матрицы для последующего использования
-        scipy.save('tmp_matrix.npy', self.__global_matrix_stiffness__)
+#        self.save_sparse_csr('tmp_matrix.npz', self.__global_matrix_stiffness__)
         # Учет начальных условий
         self.__use_initial_condition__()
-
+        # Итерационный процесс по времени
+        t = self.__params__.t0
+        while t <= self.__params__.t1:
+            print('t = %5.2f' % t)
+            # Вычисление компонент нагрузки для текущего момента времени
+            self.__prepare_concentrated_load__(t)
+            self.__prepare_surface_load__(t)
+            self.__prepare_volume_load__(t)
+            # Учет краевых условий
+            self.__use_boundary_condition__()
+            # Решение СЛАУ
+            if not self.__solve__():
+                print('The system of equations is not solved!')
+                return False
+            self.__calc_results__()
+            t += self.__params__.th
+            if math.fabs(t - self.__params__.t1) < self.__params__.eps:
+                t = self.__params__.t1
+#            self.__global_matrix_stiffness__ = self.load_sparse_csr('tmp_matrix.npz')
         # Удаляем временный файл с матрицей
         remove('tmp_matrix.npy')
+        print('**************** Success! ****************')
+        return True
 
     # Учет начальных условий
     def __use_initial_condition__(self):
