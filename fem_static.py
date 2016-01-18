@@ -297,3 +297,34 @@ class TFEMStatic(TFEM):
             if parser.run() == 0:
                 return False
         return True
+
+    # Определение кол-ва результатов в зависимости от размерности задачи
+    def __num_result__(self):
+        res = 0
+        if self.__mesh__.freedom == 1:
+            # u, Exx, Sxx
+            res = 3
+        elif self.__mesh__.freedom == 2:
+            # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy
+            res = 8
+        elif self.__mesh__.freedom == 3:
+            # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz
+            res = 15
+        return res
+
+    # Индекс функции в зависимости от размерности задачи
+    def __index_result__(self, i):
+        ret = 0
+        # u, Exx, Sxx
+        index1 = [4, 7, 13]
+        # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy
+        index2 = [4, 5, 7, 8, 10, 13, 14, 16]
+        # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz
+        index3 = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+        if self.__mesh__.freedom == 1:
+            ret = index1[i]
+        elif self.__mesh__.freedom == 2:
+            ret = index2[i]
+        elif self.__mesh__.freedom == 3:
+            ret = index3[i]
+        return ret

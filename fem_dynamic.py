@@ -151,3 +151,34 @@ class TFEMDynamic(TFEMStatic):
             j = self.__global_matrix_damping__.nonzero()[1][m]
             self.__global_matrix_stiffness__[i, j] += k2*self.__global_matrix_damping__[i, j]
             counter += 1
+
+    # Определение кол-ва результатов в зависимости от размерности задачи
+    def __num_result__(self):
+        res = 0
+        if self.__mesh__.freedom == 1:
+            # u, Exx, Sxx, ut, utt
+            res = 5
+        elif self.__mesh__.freedom == 2:
+            # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy, ut, vt, utt, vtt
+            res = 12
+        elif self.__mesh__.freedom == 3:
+            # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz, ut, utt, vt, vtt, wt, wtt
+            res = 21
+        return res
+
+    # Индекс функции в зависимости от размерности задачи
+    def __index_result__(self, i):
+        ret = 0
+        # u, Exx, Sxx, ut, utt
+        index4 = [4, 7, 13, 19, 22]
+        # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy, ut, vt, utt, vtt
+        index5 = [4, 5, 7, 8, 10, 13, 14, 16, 19, 20, 22, 23]
+        # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz, ut, utt, vt, vtt, wt, wtt
+        index6 = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+        if self.__mesh__.freedom == 1:
+            ret = index4[i]
+        elif self.__mesh__.freedom == 2:
+            ret = index5[i]
+        elif self.__mesh__.freedom == 3:
+            ret = index6[i]
+        return ret
