@@ -4,7 +4,6 @@
 #           Класс, реализующий расчет статической задачи
 #######################################################################
 
-import numpy
 import math
 from os import remove
 from scipy.sparse import lil_matrix
