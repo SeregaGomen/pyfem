@@ -24,9 +24,8 @@ def save_matrix(file_name, matrix):
 
 # Загрузка разреженной матрицы из файла
 def load_matrix(file_name):
-    tmp = load(file_name)
-    matrix = coo_matrix((tmp['data'], (tmp['row'], tmp['col'])), shape=tmp['shape'])
-    return matrix.tolil()
+    matrix = load(file_name)
+    return coo_matrix((matrix['data'], (matrix['row'], matrix['col'])), shape=matrix['shape']).tolil()
 
 
 class TFEMDynamic(TFEMStatic):
