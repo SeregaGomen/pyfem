@@ -6,10 +6,27 @@
 
 import math
 from os import remove
-from scipy.sparse import lil_matrix
-from numpy import zeros
+from scipy.sparse import lil_matrix, coo_matrix
+from numpy import zeros, savez, load
 from fem_defs import INIT_U, INIT_V, INIT_W, INIT_U_T, INIT_V_T, INIT_W_T, INIT_U_T_T, INIT_V_T_T, INIT_W_T_T
 from fem_static import TFEMStatic
+
+
+# Сохранение разреженной матрицы в файл
+def save_matrix(file_name, matrix):
+    matrix_coo = matrix.tocoo()
+    row = matrix_coo.row
+    col = matrix_coo.col
+    data = matrix_coo.data
+    shape = matrix_coo.shape
+    savez(file_name, row=row, col=col, data=data, shape=shape)
+
+
+# Загрузка разреженной матрицы из файла
+def load_matrix(file_name):
+    tmp = load(file_name)
+    matrix = coo_matrix((tmp['data'], (tmp['row'], tmp['col'])), shape=tmp['shape'])
+    return matrix.tolil()
 
 
 class TFEMDynamic(TFEMStatic):
@@ -49,7 +66,7 @@ class TFEMDynamic(TFEMStatic):
         # Формирование статической (левой) части СЛАУ
         self.__create_static_matrix__()
         # Сохранение матрицы для последующего использования
-#        self.save_sparse_csr('tmp_matrix.npz', self.__global_matrix_stiffness__)
+        save_matrix('tmp_matrix', self.__global_matrix_stiffness__)
         # Учет начальных условий
         self.__use_initial_condition__()
         # Итерационный процесс по времени
@@ -70,9 +87,9 @@ class TFEMDynamic(TFEMStatic):
             t += self.__params__.th
             if math.fabs(t - self.__params__.t1) < self.__params__.eps:
                 t = self.__params__.t1
-#            self.__global_matrix_stiffness__ = self.load_sparse_csr('tmp_matrix.npz')
+            self.__global_matrix_stiffness__ = load_matrix('tmp_matrix.npz')
         # Удаляем временный файл с матрицей
-        remove('tmp_matrix.npy')
+        remove('tmp_matrix.npz')
         print('**************** Success! ****************')
         return True
 
