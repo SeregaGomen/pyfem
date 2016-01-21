@@ -96,7 +96,7 @@ class TFEMDynamic(TFEMStatic):
     def __use_initial_condition__(self):
         parser = self.__create_parser__()
         counter = 0
-        self.__initial_condition__ = zeros((9, len(self.__mesh__.x)))
+        self.__initial_condition__ = zeros((3, len(self.__mesh__.x)*self.__mesh__.freedom))
         for i in range(0, len(self.__params__.bc_list)):
             if self.__params__.bc_list[i].type == 'initial':
                 counter += 1
@@ -111,23 +111,23 @@ class TFEMDynamic(TFEMStatic):
                     self.__progress__.set_progress(counter)
                     counter += 1
                     if direct & INIT_U:
-                        self.__initial_condition__[0][j] = value
+                        self.__initial_condition__[0][j*self.__mesh__.freedom + 0] = value
                     if direct & INIT_V:
-                        self.__initial_condition__[1][j] = value
+                        self.__initial_condition__[0][j*self.__mesh__.freedom + 1] = value
                     if direct & INIT_W:
-                        self.__initial_condition__[2][j] = value
+                        self.__initial_condition__[0][j*self.__mesh__.freedom + 2] = value
                     if direct & INIT_U_T:
-                        self.__initial_condition__[3][j] = value
+                        self.__initial_condition__[1][j*self.__mesh__.freedom + 0] = value
                     if direct & INIT_V_T:
-                        self.__initial_condition__[4][j] = value
+                        self.__initial_condition__[1][j*self.__mesh__.freedom + 1] = value
                     if direct & INIT_W_T:
-                        self.__initial_condition__[5][j] = value
+                        self.__initial_condition__[1][j*self.__mesh__.freedom + 2] = value
                     if direct & INIT_U_T_T:
-                        self.__initial_condition__[6][j] = value
+                        self.__initial_condition__[2][j*self.__mesh__.freedom + 0] = value
                     if direct & INIT_V_T_T:
-                        self.__initial_condition__[7][j] = value
+                        self.__initial_condition__[2][j*self.__mesh__.freedom + 1] = value
                     if direct & INIT_W_T_T:
-                        self.__initial_condition__[8][j] = value
+                        self.__initial_condition__[2][j*self.__mesh__.freedom + 2] = value
 
     # Добавление ЛМЖ, ЛММ и ЛМД к ГМЖ
     def __assembly__(self, fe, index):
