@@ -5,7 +5,6 @@
 #######################################################################
 
 import math
-from os import remove
 from scipy.sparse import lil_matrix, coo_matrix
 from numpy import zeros, savez, load
 from fem_defs import INIT_U, INIT_V, INIT_W, INIT_U_T, INIT_V_T, INIT_W_T, INIT_U_T_T, INIT_V_T_T, INIT_W_T_T
@@ -31,8 +30,8 @@ def load_matrix(file_name):
 class TFEMDynamic(TFEMStatic):
     def __init__(self):
         super().__init__()
-        self.__global_matrix_mass__ = lil_matrix((0, 0))                    # Глобальная матрица масс (ГММ)
-        self.__global_matrix_damping__ = lil_matrix((0, 0))                 # Глобальная матрица демпфирования (ГМД)
+        self.__global_matrix_mass__ = lil_matrix((0, 0))        # Глобальная матрица масс (ГММ)
+        self.__global_matrix_damping__ = lil_matrix((0, 0))     # Глобальная матрица демпфирования (ГМД)
 
     # Расчет динамической задачи методом конечных элементов
     def __calc_problem__(self):
@@ -63,8 +62,6 @@ class TFEMDynamic(TFEMStatic):
             self.__assembly__(fe, i)
         # Формирование левой части СЛАУ
         self.__create_dynamic_matrix__()
-        # Сохранение матрицы для последующего использования
-        save_matrix('tmp_matrix', self.__global_matrix_stiffness__)
         # Учет начальных условий
         u0, ut0, utt0 = self.__prepare_initial_condition__()
         # Итерационный процесс по времени
@@ -79,13 +76,10 @@ class TFEMDynamic(TFEMStatic):
             if not self.__solve__():
                 print('The system of equations is not solved!')
                 return False
-            self.__calc_results__()
+            u0, ut0, utt0 = self.__calc_dynamic_results__(u0, ut0, utt0)
             t += self.__params__.th
             if math.fabs(t - self.__params__.t1) < self.__params__.eps:
                 t = self.__params__.t1
-            self.__global_matrix_stiffness__ = load_matrix('tmp_matrix.npz')
-        # Удаляем временный файл с матрицей
-        remove('tmp_matrix.npz')
         print('**************** Success! ****************')
         return True
 
@@ -128,6 +122,16 @@ class TFEMDynamic(TFEMStatic):
                     if direct & INIT_W_T_T:
                         utt0[j*self.__mesh__.freedom + 2] = value
         return u0, ut0, utt0
+
+    # Извлечение предыдущих результатов для органимзации итерационного процесса
+    def __calc_dynamic_results__(self, u0, ut0, utt0):
+        u0 = self.__global_load__
+        ut0 = zeros(len(self.__mesh__.x)*self.__mesh__.freedom)
+        utt0 = zeros(len(self.__mesh__.x)*self.__mesh__.freedom)
+        # Вычисление деформаций и напряжений
+        super().__calc_results__()
+        return u0, ut0, utt0
+
 
     # Добавление ЛМЖ, ЛММ и ЛМД к ГМЖ
     def __assembly__(self, fe, index):
