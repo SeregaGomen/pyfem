@@ -31,9 +31,8 @@ def load_matrix(file_name):
 class TFEMDynamic(TFEMStatic):
     def __init__(self):
         super().__init__()
-        self.__global_matrix_mass__ = lil_matrix((0, 0))        # Глобальная матрица масс (ГММ)
-        self.__global_matrix_damping__ = lil_matrix((0, 0))     # Глобальная матрица демпфирования (ГМД)
-        self.__initial_condition__ = [[]]                       # Начальные условия
+        self.__global_matrix_mass__ = lil_matrix((0, 0))                    # Глобальная матрица масс (ГММ)
+        self.__global_matrix_damping__ = lil_matrix((0, 0))                 # Глобальная матрица демпфирования (ГМД)
 
     # Расчет динамической задачи методом конечных элементов
     def __calc_problem__(self):
@@ -62,20 +61,18 @@ class TFEMDynamic(TFEMStatic):
             fe.generate(False)
             # Ансамблирование ЛМЖ к ГМЖ
             self.__assembly__(fe, i)
-        # Формирование статической (левой) части СЛАУ
-        self.__create_static_matrix__()
+        # Формирование левой части СЛАУ
+        self.__create_dynamic_matrix__()
         # Сохранение матрицы для последующего использования
         save_matrix('tmp_matrix', self.__global_matrix_stiffness__)
         # Учет начальных условий
-        self.__use_initial_condition__()
+        u0, ut0, utt0 = self.__prepare_initial_condition__()
         # Итерационный процесс по времени
         t = self.__params__.t0
         while t <= self.__params__.t1:
             print('t = %5.2f' % t)
-            # Вычисление компонент нагрузки для текущего момента времени
-            self.__prepare_concentrated_load__(t)
-            self.__prepare_surface_load__(t)
-            self.__prepare_volume_load__(t)
+            # Формирование правой части СЛАУ
+            self.__create_dynamic_vector__(u0, ut0, utt0, t)
             # Учет краевых условий
             self.__use_boundary_condition__()
             # Решение СЛАУ
@@ -92,11 +89,13 @@ class TFEMDynamic(TFEMStatic):
         print('**************** Success! ****************')
         return True
 
-    # Учет начальных условий
-    def __use_initial_condition__(self):
+    # Извлечение начальных условий
+    def __prepare_initial_condition__(self):
+        u0 = zeros(len(self.__mesh__.x)*self.__mesh__.freedom)
+        ut0 = zeros(len(self.__mesh__.x)*self.__mesh__.freedom)
+        utt0 = zeros(len(self.__mesh__.x)*self.__mesh__.freedom)
         parser = self.__create_parser__()
         counter = 0
-        self.__initial_condition__ = zeros((3, len(self.__mesh__.x)*self.__mesh__.freedom))
         for i in range(0, len(self.__params__.bc_list)):
             if self.__params__.bc_list[i].type == 'initial':
                 counter += 1
@@ -111,23 +110,24 @@ class TFEMDynamic(TFEMStatic):
                     self.__progress__.set_progress(counter)
                     counter += 1
                     if direct & INIT_U:
-                        self.__initial_condition__[0][j*self.__mesh__.freedom + 0] = value
+                        u0[j*self.__mesh__.freedom + 0] = value
                     if direct & INIT_V:
-                        self.__initial_condition__[0][j*self.__mesh__.freedom + 1] = value
+                        u0[j*self.__mesh__.freedom + 1] = value
                     if direct & INIT_W:
-                        self.__initial_condition__[0][j*self.__mesh__.freedom + 2] = value
+                        u0[j*self.__mesh__.freedom + 2] = value
                     if direct & INIT_U_T:
-                        self.__initial_condition__[1][j*self.__mesh__.freedom + 0] = value
+                        ut0[j*self.__mesh__.freedom + 0] = value
                     if direct & INIT_V_T:
-                        self.__initial_condition__[1][j*self.__mesh__.freedom + 1] = value
+                        ut0[j*self.__mesh__.freedom + 1] = value
                     if direct & INIT_W_T:
-                        self.__initial_condition__[1][j*self.__mesh__.freedom + 2] = value
+                        ut0[j*self.__mesh__.freedom + 2] = value
                     if direct & INIT_U_T_T:
-                        self.__initial_condition__[2][j*self.__mesh__.freedom + 0] = value
+                        utt0[j*self.__mesh__.freedom + 0] = value
                     if direct & INIT_V_T_T:
-                        self.__initial_condition__[2][j*self.__mesh__.freedom + 1] = value
+                        utt0[j*self.__mesh__.freedom + 1] = value
                     if direct & INIT_W_T_T:
-                        self.__initial_condition__[2][j*self.__mesh__.freedom + 2] = value
+                        utt0[j*self.__mesh__.freedom + 2] = value
+        return u0, ut0, utt0
 
     # Добавление ЛМЖ, ЛММ и ЛМД к ГМЖ
     def __assembly__(self, fe, index):
@@ -145,27 +145,29 @@ class TFEMDynamic(TFEMStatic):
                     self.__global_matrix_damping__[l, k] += fe.D[i][j]
             self.__global_load__[k] += fe.K[i][len(fe.K)]
 
-    # Добавление к матрице жесткости матриц масс и демпфирования
-    def __create_static_matrix__(self):
+    # Формирование левой части (матрицы) уравнения квазистатического равновесия
+    def __create_dynamic_matrix__(self):
         theta = 1.37
-        size1 = len(self.__global_matrix_mass__.nonzero()[0])
-        size2 = len(self.__global_matrix_damping__.nonzero()[0])
-        counter = 1
-        k1 = 3.0/(theta*self.__params__.th)
-        k2 = 6.0/(theta**2**self.__params__.th**2)
-        self.__progress__.set_process('Creating static part of global matrix...', 1, size1 + size2)
-        for m in range(0, size1):
-            self.__progress__.set_progress(counter)
-            i = self.__global_matrix_mass__.nonzero()[0][m]
-            j = self.__global_matrix_mass__.nonzero()[1][m]
-            self.__global_matrix_stiffness__[i, j] += k1*self.__global_matrix_mass__[i, j]
-            counter += 1
-        for m in range(0, size2):
-            self.__progress__.set_progress(counter)
-            i = self.__global_matrix_damping__.nonzero()[0][m]
-            j = self.__global_matrix_damping__.nonzero()[1][m]
-            self.__global_matrix_stiffness__[i, j] += k2*self.__global_matrix_damping__[i, j]
-            counter += 1
+        self.__progress__.set_process('Creating static part of global matrix...', 1, 2)
+        self.__global_matrix_stiffness__ += \
+            self.__global_matrix_mass__.dot(6.0/(theta**2**self.__params__.th**2)) + \
+            self.__global_matrix_damping__.dot(6.0/(3.0/(theta*self.__params__.th)))
+        self.__progress__.set_progress(2)
+
+    # Формирование правой части (вектора) уравнения квазистатического равновесия
+    def __create_dynamic_vector__(self, u0, ut0, utt0, t):
+        theta = 1.37
+        k1 = 6.0/(theta**2**self.__params__.th**2)
+        k2 = 3.0/(theta*self.__params__.th)
+        k3 = 0.5*(theta*self.__params__.th)
+        self.__global_load__ = zeros(len(self.__mesh__.x)*self.__mesh__.freedom)
+        # Вычисление компонент нагрузки для текущего момента времени
+        self.__prepare_concentrated_load__(t)
+        self.__prepare_surface_load__(t)
+        self.__prepare_volume_load__(t)
+        self.__global_load__ += \
+            self.__global_matrix_mass__.dot(u0.dot(k1) + ut0.dot(2.0*k2) + utt0.dot(2.0)) + \
+            self.__global_matrix_damping__.dot(u0.dot(k2) + ut0.dot(2.0) + utt0.dot(k3))
 
     # Определение кол-ва результатов в зависимости от размерности задачи
     def __num_result__(self):
