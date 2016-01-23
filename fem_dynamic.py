@@ -123,15 +123,25 @@ class TFEMDynamic(TFEMStatic):
                         utt0[j*self.__mesh__.freedom + 2] = value
         return u0, ut0, utt0
 
-    # Извлечение предыдущих результатов для органимзации итерационного процесса
+    # Вычисление напряжений, деформаций, скоростей и ускорений
     def __calc_dynamic_results__(self, u0, ut0, utt0):
-        u0 = self.__global_load__
-        ut0 = zeros(len(self.__mesh__.x)*self.__mesh__.freedom)
-        utt0 = zeros(len(self.__mesh__.x)*self.__mesh__.freedom)
         # Вычисление деформаций и напряжений
         super().__calc_results__()
+        # Вычисление скоростей и ускорений (конечными разностями)
+        th = self.__params__.th
+        for i in range(0, len(self.__mesh__.x)):
+            for j in range(0, self.__mesh__.freedom):
+                u_0 = u0[i*self.__mesh__.freedom + j]
+                u_1 = self.__global_load__[i*self.__mesh__.freedom + j]
+                u_t_0 = ut0[i*self.__mesh__.freedom + j]
+                u_t_1 = (u_1 - u_0)/th
+                u_t_t_1 = (u_t_1 - u_t_0)/th
+                u0[i*self.__mesh__.freedom + j] = u_1
+                ut0[i*self.__mesh__.freedom + j] = u_t_1
+                utt0[i*self.__mesh__.freedom + j] = u_t_t_1
+                self.__result__[len(self.__result__) - 2*self.__mesh__.freedom + j].results[i] = u_t_1
+                self.__result__[len(self.__result__) - self.__mesh__.freedom + j].results[i] = u_t_t_1
         return u0, ut0, utt0
-
 
     # Добавление ЛМЖ, ЛММ и ЛМД к ГМЖ
     def __assembly__(self, fe, index):
