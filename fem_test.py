@@ -218,7 +218,7 @@ def console_dynamic():
     obj.set_problem_type('dynamic')
     obj.set_solve_method('direct')
     obj.set_damping(1.0E+3)
-    obj.set_time(0, 1.0, 0.1)
+    obj.set_time(0, 1.0, 0.05)
     obj.set_width(10)
     obj.set_precision(5)
 #    obj.set_solve_method('iterative')
