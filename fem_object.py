@@ -6,6 +6,7 @@
 
 import os
 import sys
+from math import fabs
 from fem_mesh import TMesh
 from fem_params import TFEMParams
 from fem_error import TFEMException
@@ -110,6 +111,21 @@ class TObject:
                 file = open(argv[0], 'w')
         except IOError:
             raise TFEMException('read_file_err')
+        if self.params.problem_type == 'static':
+            self.__print__(file)
+        else:
+            t = self.params.t0
+            while t <= self.params.t1:
+                file.write('t = %5.2f\n' % t)
+                self.__print__(file, t)
+                t += self.params.th
+                if fabs(t - self.params.t1) < self.params.eps:
+                    t = self.params.t1
+
+        file.close()
+
+    # Вывод результатов расчета для одного момента времени
+    def __print__(self, file, t=0):
         # Определение ширины позиции
         len1 = len('%+*.*E' % (self.params.width, self.params.precision, 3.14159))
         len2 = len('%d' % len(self.mesh.x))
@@ -121,7 +137,8 @@ class TObject:
                 file.write(',')
         file.write(') |')
         for i in range(0, len(self.result)):
-            file.write(' %*s |' % (len1, self.result[i].name))
+            if self.result[i].t == t:
+                file.write(' %*s |' % (len1, self.result[i].name))
         file.write('\n')
         for i in range(0, len(self.mesh.x)):
             file.write('| %*d  (' % (len2, i + 1))
@@ -132,8 +149,9 @@ class TObject:
                 file.write(', %+*.*E' % (self.params.width, self.params.precision, self.mesh.z[i]))
             file.write(') | ')
             for k in range(0, len(self.result)):
-                file.write('%+*.*E' % (self.params.width, self.params.precision, self.result[k].results[i]))
-                file.write(' | ')
+                if self.result[k].t == t:
+                    file.write('%+*.*E' % (self.params.width, self.params.precision, self.result[k].results[i]))
+                    file.write(' | ')
             file.write('\n')
         file.write('\n')
         # Печать итогов
@@ -144,16 +162,18 @@ class TObject:
                 file.write(' ')
         file.write('  |')
         for i in range(0, len(self.result)):
-            file.write(' %*s |' % (len1, self.result[i].name))
+            if self.result[i].t == t:
+                file.write(' %*s |' % (len1, self.result[i].name))
         file.write('\n')
         file.write('|   %*s  |' % (self.mesh.freedom*(len1 + 1) + self.mesh.freedom + len2, 'min:'))
         for i in range(0, len(self.result)):
-            file.write(' %+*.*E ' % (self.params.width, self.params.precision, self.result[i].min()))
-            file.write('|')
+            if self.result[i].t == t:
+                file.write(' %+*.*E ' % (self.params.width, self.params.precision, self.result[i].min()))
+                file.write('|')
         file.write('\n')
         file.write('|   %*s  |' % (self.mesh.freedom*(len1 + 1) + self.mesh.freedom + len2, 'max:'))
         for i in range(0, len(self.result)):
-            file.write(' %+*.*E ' % (self.params.width, self.params.precision, self.result[i].max()))
-            file.write('|')
-        file.write('\n')
-        file.close()
+            if self.result[i].t == t:
+                file.write(' %+*.*E ' % (self.params.width, self.params.precision, self.result[i].max()))
+                file.write('|')
+        file.write('\n\n\n')

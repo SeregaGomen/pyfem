@@ -232,7 +232,7 @@ def console_dynamic():
     obj.add_initial_condition('0', INIT_U_T_T)
     obj.add_initial_condition('0', INIT_V_T_T)
     if obj.calc():
-        obj.print_result()
+        obj.print_result('mesh/' + obj.object_name() + '.res')
 
 
 # head3d()

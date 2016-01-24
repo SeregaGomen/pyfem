@@ -76,7 +76,7 @@ class TFEMDynamic(TFEMStatic):
             if not self.__solve__():
                 print('The system of equations is not solved!')
                 return False
-            u0, ut0, utt0 = self.__calc_dynamic_results__(u0, ut0, utt0)
+            u0, ut0, utt0 = self.__calc_dynamic_results__(u0, ut0, utt0, t)
             t += self.__params__.th
             if math.fabs(t - self.__params__.t1) < self.__params__.eps:
                 t = self.__params__.t1
@@ -124,9 +124,9 @@ class TFEMDynamic(TFEMStatic):
         return u0, ut0, utt0
 
     # Вычисление напряжений, деформаций, скоростей и ускорений
-    def __calc_dynamic_results__(self, u0, ut0, utt0):
+    def __calc_dynamic_results__(self, u0, ut0, utt0, t):
         # Вычисление деформаций и напряжений
-        super().__calc_results__()
+        super().__calc_results__(t)
         # Вычисление скоростей и ускорений (конечными разностями)
         th = self.__params__.th
         for i in range(0, len(self.__mesh__.x)):

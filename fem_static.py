@@ -178,7 +178,7 @@ class TFEMStatic(TFEM):
                         self.__global_load__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 2] += val[k]*rel_ve
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...)
-    def __calc_results__(self):
+    def __calc_results__(self, t=0):
         # Выделяем память для хранения результатов
         res = []
         for i in range(0, self.__num_result__()):
@@ -221,6 +221,7 @@ class TFEMStatic(TFEM):
             r = TResult()
             r.name = self.__params__.names[self.__index_result__(i)]
             r.results = res[i]
+            r.t = t
             self.__result__.append(r)
 
     # Задание граничных условий
