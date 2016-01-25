@@ -250,9 +250,9 @@ def console_dynamic():
 # cylinder()
 # quad()
 # console4()
-cube_test()
+# cube_test()
 
-# console_dynamic()
+console_dynamic()
 
 """
 1. Добавить загрузку названий функций в объект
