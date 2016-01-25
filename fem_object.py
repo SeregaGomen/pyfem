@@ -208,5 +208,8 @@ class TObject:
         plt.tricontour(tri_refi, z_test_refi, levels=levels,
                        colors=['0.25', '0.5', '0.5', '0.5', '0.5'],
                        linewidths=[1.0, 0.5, 0.5, 0.5, 0.5])
+
+        if self.params.problem_type == 'dynamic':
+            fun_name += ' (t = %5.2f)' % t
         plt.title(fun_name)
         plt.show()
