@@ -4,6 +4,9 @@
 #              Параметры решения задачи с помощью МКЭ
 ###################################################################
 
+from fem_error import TFEMException
+
+
 # Тип задачи: статика или динамика
 ProblemType = [
     'static',
@@ -108,3 +111,13 @@ class TFEMParams:
 
     def add_variable(self, var, val):
         self.var_list.setdefault(var, val)
+
+    def check_params(self):
+        if self.solve_method == '':
+            raise TFEMException('solve_method_err')
+        if self.problem_type == '':
+            raise TFEMException('problem_type_err')
+        if not len(self.e) or self.e[0] == 0:
+            raise TFEMException('elasticity_err')
+        if self.problem_type == 'dynamic' and (self.t0 == self.t1 or self.th <= 0):
+            raise TFEMException('time_err')

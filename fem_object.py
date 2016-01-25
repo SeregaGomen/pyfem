@@ -6,12 +6,21 @@
 
 import os
 import sys
+import matplotlib.tri as tri
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import numpy as np
 from math import fabs
 from fem_mesh import TMesh
+from fem_fem import TFEM
 from fem_params import TFEMParams
-from fem_error import TFEMException
 from fem_static import TFEMStatic
 from fem_dynamic import TFEMDynamic
+
+
+# Вывод сообщения об ошибке
+def error(err_msg):
+    print('\033[1;31m%s\033[1;m' % err_msg)
 
 
 class TObject:
@@ -83,15 +92,7 @@ class TObject:
         self.params.add_variable(var, val)
 
     def calc(self):
-        if self.params.solve_method == '':
-            raise TFEMException('solve_method_err')
-        if self.params.problem_type == '':
-            raise TFEMException('problem_type_err')
-        if not len(self.params.e) or self.params.e[0] == 0 or self.params.m[0] == 0:
-            raise TFEMException('elasticity_err')
-        if self.params.problem_type == 'dynamic':
-            if self.params.t0 == self.params.t1 or self.params.th <= 0:
-                raise TFEMException('time_err')
+        fem = TFEM()
         if self.params.problem_type == 'static':
             fem = TFEMStatic()
         elif self.params.problem_type == 'dynamic':
@@ -110,7 +111,8 @@ class TObject:
             if len(argv) == 1:
                 file = open(argv[0], 'w')
         except IOError:
-            raise TFEMException('read_file_err')
+            error('Error: unable to open file %s' % argv[0])
+            return
         if self.params.problem_type == 'static':
             self.__print__(file)
         else:
@@ -177,3 +179,34 @@ class TObject:
                 file.write(' %+*.*E ' % (self.params.width, self.params.precision, self.result[i].max()))
                 file.write('|')
         file.write('\n\n\n')
+
+    # Визуализация заданной функции
+    def plot(self, fun_name, t=0):
+        # Поиск индекса функции в списке результатов
+        index = -1
+        for i in range(0, len(self.result)):
+            if self.result[i].name == fun_name and self.result[i].t == t:
+                index = i
+                break
+        if index == -1:
+            error('Error: \'%s\' is not a recognized function name' % fun_name)
+            return
+
+        plt.figure()
+        plt.gca().set_aspect('equal')
+
+        min_u = self.result[index].min()
+        max_u = self.result[index].max()
+        triang = tri.Triangulation(self.mesh.x, self.mesh.y)
+        refiner = tri.UniformTriRefiner(triang)
+        tri_refi, z_test_refi = refiner.refine_field(self.result[index].results, subdiv=3)
+
+        plt.triplot(triang, lw=0.5, color='white')
+        levels = np.arange(min_u, max_u, (max_u - min_u)/16.0)
+        cmap = cm.get_cmap(name='terrain', lut=None)
+        plt.tricontourf(tri_refi, z_test_refi, levels=levels, cmap=cmap)
+        plt.tricontour(tri_refi, z_test_refi, levels=levels,
+                       colors=['0.25', '0.5', '0.5', '0.5', '0.5'],
+                       linewidths=[1.0, 0.5, 0.5, 0.5, 0.5])
+        plt.title(fun_name)
+        plt.show()

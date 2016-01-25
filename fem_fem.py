@@ -81,6 +81,8 @@ class TFEM:
     # Запуск процедуры расчета
     def calc(self):
         try:
+            # Проверка наличия и соответствия необходимых параметров расчета
+            self.__params__.check_params()
             ret = self.__calc_problem__()
         except TFEMException as err:
             ret = False
