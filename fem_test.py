@@ -54,6 +54,7 @@ def cube_test():
     obj.add_surface_load('-1000', 'y=1', DIR_Y)
     if obj.calc():
         obj.print_result()
+        obj.plot('U', 0.0)
 
 
 def beam():
@@ -218,7 +219,7 @@ def console_dynamic():
     obj.set_problem_type('dynamic')
     obj.set_solve_method('direct')
     obj.set_damping(1.0E+3)
-    obj.set_time(0, 1.0, 1)
+    obj.set_time(0, 1.0, 0.25)
     obj.set_width(10)
     obj.set_precision(5)
 #    obj.set_solve_method('iterative')
@@ -233,7 +234,11 @@ def console_dynamic():
     obj.add_initial_condition('0', INIT_V_T_T)
     if obj.calc():
         obj.print_result('mesh/' + obj.object_name() + '.res')
-        obj.plot('Exx')
+        obj.plot('U', 0.0)
+        obj.plot('U', 0.25)
+        obj.plot('U', 0.5)
+        obj.plot('U', 0.75)
+        obj.plot('U', 1.0)
 
 
 # head3d()
@@ -245,9 +250,9 @@ def console_dynamic():
 # cylinder()
 # quad()
 # console4()
-# cube_test()
+cube_test()
 
-console_dynamic()
+# console_dynamic()
 
 """
 1. Добавить загрузку названий функций в объект

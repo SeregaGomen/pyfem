@@ -205,9 +205,12 @@ class TObject:
         levels = np.arange(min_u, max_u, (max_u - min_u)/16.0)
         cmap = cm.get_cmap(name='terrain', lut=None)
         plt.tricontourf(tri_refi, z_test_refi, levels=levels, cmap=cmap)
-        plt.tricontour(tri_refi, z_test_refi, levels=levels,
-                       colors=['0.25', '0.5', '0.5', '0.5', '0.5'],
-                       linewidths=[1.0, 0.5, 0.5, 0.5, 0.5])
+#        plt.tricontour(tri_refi, z_test_refi, levels=levels,
+#                       colors=['0.25', '0.5', '0.5', '0.5', '0.5'],
+#                       linewidths=[1.0, 0.5, 0.5, 0.5, 0.5])
+
+
+        plt.colorbar()
 
         if self.params.problem_type == 'dynamic':
             fun_name += ' (t = %5.2f)' % t
