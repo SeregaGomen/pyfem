@@ -9,6 +9,8 @@ import sys
 import matplotlib.tri as tri
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 import numpy as np
 from math import fabs
 from fem_mesh import TMesh
@@ -183,6 +185,13 @@ class TObject:
 
     # Визуализация заданной функции
     def plot(self, fun_name, t=0):
+        if self.__mesh__.fe_type == 'fe_2d_3':
+            self.__plot_2d_tri__(fun_name, t)
+        elif self.__mesh__.fe_type == 'fe_3d_4':
+            self.__plot_3d_tet__(fun_name, t)
+
+    # Визуализация заданной функции в случае плоской треугольной сетки
+    def __plot_2d_tri__(self, fun_name, t=0):
         # Поиск индекса функции в списке результатов
         index = -1
         for i in range(0, len(self.__results__)):
@@ -211,6 +220,29 @@ class TObject:
 #                       linewidths=[1.0, 0.5, 0.5, 0.5, 0.5])
 
         plt.colorbar()
+        if self.__params__.problem_type == 'dynamic':
+            fun_name += ' (t = %5.2f)' % t
+        plt.title(fun_name)
+        plt.show()
+
+    # Визуализация заданной функции в случае КЭ в форме тетраэдра
+    def __plot_3d_tet__(self, fun_name, t=0):
+        # Поиск индекса функции в списке результатов
+        index = -1
+        for i in range(0, len(self.__results__)):
+            if self.__results__[i].name == fun_name and self.__results__[i].t == t:
+                index = i
+                break
+        if index == -1:
+            error('Error: \'%s\' is not a recognized function name' % fun_name)
+            return
+
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1, projection='3d')
+        ax.plot_trisurf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.z, triangles=self.__mesh__.surface,
+                        cmap=plt.cm.Spectral)
+        ax.set_zlim(-1, 1)
+
         if self.__params__.problem_type == 'dynamic':
             fun_name += ' (t = %5.2f)' % t
         plt.title(fun_name)
