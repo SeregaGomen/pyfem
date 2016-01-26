@@ -242,6 +242,34 @@ def console_dynamic():
         obj.plot('U', 1.0)
 
 
+
+
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+from numpy import linspace, interp, meshgrid, sin, cos, pi
+numel_circum = 120
+L = 38.
+rb, rt = (38., 16.)
+t1, t2 = (0, 2*pi)
+rav = ( rb - rt )*rt/rb + rt
+perav = (t2-t1) * rav
+elsize_L = perav / numel_circum
+numel_L = int(round(L/elsize_L,0))
+ts = linspace(t1, t2, numel_circum)
+r = lambda z: interp( z, [0, L], [rb, rt] )
+zs = linspace(0, L, numel_L)
+ts, zs = meshgrid( ts, zs )
+ys = r(zs)*sin(ts)
+xs = r(zs)*cos(ts)
+# plotting
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+surf = ax.plot_trisurf(xs.flatten(), ys.flatten(), zs.flatten(),
+                cmap=cm.jet, linewidth=0.2)
+plt.colorbar(surf)
+plt.show()
+
 # head3d()
 # body1d()
 # cube()

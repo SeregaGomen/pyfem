@@ -239,9 +239,11 @@ class TObject:
 
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1, projection='3d')
-        ax.plot_trisurf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.z, triangles=self.__mesh__.surface,
+
+        surf = ax.plot_trisurf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.z, triangles=self.__mesh__.surface,
                         cmap=plt.cm.Spectral)
-        ax.set_zlim(-1, 1)
+        ax.set_zlim(min(self.__mesh__.z), max(self.__mesh__.z))
+        plt.colorbar(surf)
 
         if self.__params__.problem_type == 'dynamic':
             fun_name += ' (t = %5.2f)' % t
