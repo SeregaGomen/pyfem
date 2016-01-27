@@ -251,7 +251,7 @@ if __name__ == "__main__":
     # cube()
     # console()
     # tank3()
-    # cylinder()
+    cylinder()
     # quad()
     # console4()
     # cube_test()

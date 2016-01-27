@@ -248,7 +248,7 @@ class TObject:
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1, projection='3d')
 
-        surf = ax.plot_trisurf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.z, triangles=self.__mesh__.surface)
+        surf = ax.plot_trisurf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.z, triangles=self.__mesh__.surface, cmap=cm.jet)
         ax.set_zlim(min(self.__mesh__.z), max(self.__mesh__.z))
         plt.colorbar(surf)
 
