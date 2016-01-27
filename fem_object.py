@@ -18,6 +18,7 @@ from fem_fem import TFEM
 from fem_params import TFEMParams
 from fem_static import TFEMStatic
 from fem_dynamic import TFEMDynamic
+from fem_defs import eps
 
 
 # Вывод сообщения об ошибке
@@ -185,6 +186,12 @@ class TObject:
 
     # Визуализация заданной функции
     def plot(self, fun_name, t=0):
+        # Проверка корректности задания времени
+        if self.__params__.problem_type == 'dynamic' and \
+                ((t < self.__params__.t0 or t > self.__params__.t1) or t % self.__params__.th > eps):
+            error('Error: incorrectly specified the time: %5.2f' % t)
+            return
+        # Визуализация результата
         if self.__mesh__.fe_type == 'fe_2d_3':
             self.__plot_2d_tri__(fun_name, t)
         elif self.__mesh__.fe_type == 'fe_3d_4':
@@ -213,7 +220,8 @@ class TObject:
 
         plt.triplot(triang, lw=0.5, color='white')
         levels = np.arange(min_u, max_u, (max_u - min_u)/16.0)
-        cmap = cm.get_cmap(name='terrain', lut=None)
+#        cmap = cm.get_cmap(name='terrain', lut=None)
+        cmap = cm.get_cmap(name='spectral', lut=None)
         plt.tricontourf(tri_refi, z_test_refi, levels=levels, cmap=cmap)
 #        plt.tricontour(tri_refi, z_test_refi, levels=levels,
 #                       colors=['0.25', '0.5', '0.5', '0.5', '0.5'],
@@ -240,8 +248,7 @@ class TObject:
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1, projection='3d')
 
-        surf = ax.plot_trisurf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.z, triangles=self.__mesh__.surface,
-                        cmap=plt.cm.Spectral)
+        surf = ax.plot_trisurf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.z, triangles=self.__mesh__.surface)
         ax.set_zlim(min(self.__mesh__.z), max(self.__mesh__.z))
         plt.colorbar(surf)
 
