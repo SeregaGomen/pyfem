@@ -191,6 +191,7 @@ def tank3():
     obj.add_surface_load('5.0e+3*z*(1.3260378897^2)/(((3*x*(1.3260378897^2))^2+(y-2.8163434974)^2+(3*z*(1.3260378897^2))^2)^0.5)','(y>-1.944 and y < -0.6431) and abs(y-((x^2+z^2)^0.5)*(1.3260378897)+2.8163434974)<=eps',DIR_Z)
     if obj.calc():
         obj.print_result('mesh/' + obj.object_name() + '.res')
+        obj.plot('U')
 
 
 def head3d():
@@ -250,8 +251,8 @@ if __name__ == "__main__":
     # body1d()
     # cube()
     # console()
-    # tank3()
-    cylinder()
+    tank3()
+    # cylinder()
     # quad()
     # console4()
     # cube_test()

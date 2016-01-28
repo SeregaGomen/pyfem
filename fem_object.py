@@ -254,7 +254,7 @@ class TObject:
         midpoints = np.average(triangle_vertices, axis=1)
         facecolors = [self.find_color_for_point(pt) for pt in midpoints]  # smooth gradient
         # facecolors = [np.random.random(3) for pt in midpoints]  # random colors
-        coll = Poly3DCollection(triangle_vertices, facecolors=facecolors, edgecolors='black')
+        coll = Poly3DCollection(triangle_vertices, facecolors=facecolors, edgecolors='none')
         surf = ax.add_collection(coll)
 
         #surf = ax.plot_trisurf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.z, triangles=self.__mesh__.surface, cmap=cm.jet)
@@ -268,7 +268,8 @@ class TObject:
         plt.title(fun_name)
         plt.show()
 
+    # http://matplotlib.1069221.n5.nabble.com/trisurf-plots-with-independent-color-data-td44741.html
     def find_color_for_point(self, pt):
         x, y, z = pt
-        col = [(y+1)/2, (1-y)/2, fabs(z)]
+        col = [fabs(y+1)/10, fabs(1-y)/10, fabs(z)/10]
         return col
