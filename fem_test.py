@@ -259,38 +259,58 @@ if __name__ == "__main__":
 
     from mpl_toolkits.mplot3d import Axes3D
     from matplotlib import cm
-    from matplotlib.ticker import LinearLocator
     import matplotlib.pyplot as plt
     import numpy as np
 
+    from matplotlib.tri import Triangulation
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+    n_angles = 36
+    n_radii = 8
+
+    # An array of radii
+    # Does not include radius r=0, this is to eliminate duplicate points
+    radii = np.linspace(0.125, 1.0, n_radii)
+
+    # An array of angles
+    angles = np.linspace(0, 2*np.pi, n_angles, endpoint=False)
+
+    # Repeat all angles for each radius
+    angles = np.repeat(angles[...,np.newaxis], n_radii, axis=1)
+
+    # Convert polar (radii, angles) coords to cartesian (x, y) coords
+    # (0, 0) is added here. There are no duplicate points in the (x, y) plane
+    x = np.append(0, (radii*np.cos(angles)).flatten())
+    y = np.append(0, (radii*np.sin(angles)).flatten())
+
+    # Pringle surface
+    z = np.sin(-x*y)
+
+    tri = Triangulation(x, y)  # NOTE: This assumes that there is a nice projection of the surface into the x/y-plane!
+    triangle_vertices = np.array([np.array([[x[T[0]], y[T[0]], z[T[0]]],
+                                            [x[T[1]], y[T[1]], z[T[1]]],
+                                            [x[T[2]], y[T[2]], z[T[2]]]]) for T in tri.triangles])
+    midpoints = np.average(triangle_vertices, axis=1)
+
+    def find_color_for_point(pt):
+        x, y, z = pt
+        col = [(y+1)/2, (1-y)/2, 0]
+        return col
+
+    facecolors = [find_color_for_point(pt) for pt in midpoints]  # smooth gradient
+    #facecolors = [np.random.random(3) for pt in midpoints]  # random colors
+
+    coll = Poly3DCollection(triangle_vertices, facecolors=facecolors, edgecolors='black')
+
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    X = np.arange(-5, 5, 0.25)
-    xlen = len(X)
-    Y = np.arange(-5, 5, 0.25)
-    ylen = len(Y)
-    X, Y = np.meshgrid(X, Y)
-    R = np.sqrt(X**2 + Y**2)
-    Z = np.sin(R)
-
-    colortuple = ('y', 'b')
-    colors = np.empty(X.shape, dtype=str)
-    for y in range(ylen):
-        for x in range(xlen):
-            colors[x, y] = colortuple[(x **2 ) % len(colortuple)]
-
-    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=colors,
-                           linewidth=0, antialiased=False)
-
-    ax.set_zlim3d(-1, 1)
-    ax.w_zaxis.set_major_locator(LinearLocator(6))
+    ax.add_collection(coll)
+    ax.set_xlim(-1, 1)
+    ax.set_ylim(-1, 1)
+    ax.set_zlim(-1, 1)
+    ax.elev = 50
 
     plt.show()
-
-
-
-
-
 
 """
 1. Добавить загрузку названий функций в объект

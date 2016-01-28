@@ -9,9 +9,10 @@ import sys
 import matplotlib.tri as tri
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
-import numpy as np
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from math import fabs
 from fem_mesh import TMesh
 from fem_fem import TFEM
@@ -248,11 +249,26 @@ class TObject:
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1, projection='3d')
 
-        surf = ax.plot_trisurf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.z, triangles=self.__mesh__.surface, cmap=cm.jet)
+
+        triangle_vertices = np.array([np.array([[self.__mesh__.x[T[0]], self.__mesh__.y[T[0]], self.__mesh__.z[T[0]]],[self.__mesh__.x[T[1]], self.__mesh__.y[T[1]], self.__mesh__.z[T[1]]],[self.__mesh__.x[T[2]], self.__mesh__.y[T[2]], self.__mesh__.z[T[2]]]]) for T in self.__mesh__.surface])
+        midpoints = np.average(triangle_vertices, axis=1)
+        facecolors = [self.find_color_for_point(pt) for pt in midpoints]  # smooth gradient
+        # facecolors = [np.random.random(3) for pt in midpoints]  # random colors
+        coll = Poly3DCollection(triangle_vertices, facecolors=facecolors, edgecolors='black')
+        surf = ax.add_collection(coll)
+
+        #surf = ax.plot_trisurf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.z, triangles=self.__mesh__.surface, cmap=cm.jet)
+        ax.set_xlim(min(self.__mesh__.x), max(self.__mesh__.x))
+        ax.set_ylim(min(self.__mesh__.y), max(self.__mesh__.y))
         ax.set_zlim(min(self.__mesh__.z), max(self.__mesh__.z))
-        plt.colorbar(surf)
+#        plt.colorbar(surf)
 
         if self.__params__.problem_type == 'dynamic':
             fun_name += ' (t = %5.2f)' % t
         plt.title(fun_name)
         plt.show()
+
+    def find_color_for_point(self, pt):
+        x, y, z = pt
+        col = [(y+1)/2, (1-y)/2, fabs(z)]
+        return col
