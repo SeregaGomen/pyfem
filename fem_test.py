@@ -100,9 +100,17 @@ def console():
 #    obj.set_solve_method('iterative')
     obj.set_elasticity(e, m)
     obj.add_boundary_condition('0', 'x=0', DIR_X | DIR_Y)
-    obj.add_concentrated_load('-1.0E+5', 'x=10', DIR_X)
+    obj.add_concentrated_load('-1.0E+6', 'x=10', DIR_X)
     if obj.calc():
         obj.print_result()
+        obj.plot('U')
+        obj.plot('V')
+        obj.plot('Exx')
+        obj.plot('Eyy')
+        obj.plot('Exy')
+        obj.plot('Sxx')
+        obj.plot('Syy')
+        obj.plot('Sxy')
 
 
 def console4():
@@ -275,11 +283,11 @@ def console_dynamic():
 
 
 if __name__ == "__main__":
-    beam()
+    # beam()
     # head3d()
     # body1d()
     # cube()
-    # console()
+    console()
     # tank3()
     # cylinder()
     # quad()

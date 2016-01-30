@@ -214,17 +214,11 @@ class TObject:
         min_u = self.__results__[index].min()
         max_u = self.__results__[index].max()
         triang = tri.Triangulation(self.__mesh__.x, self.__mesh__.y)
-        refiner = tri.UniformTriRefiner(triang)
-        tri_refi, z_test_refi = refiner.refine_field(self.__results__[index].results, subdiv=3)
 
         plt.triplot(triang, lw=0.5, color='white')
-        levels = np.arange(min_u, max_u, (max_u - min_u)/16.0)
 #        cmap = cm.get_cmap(name='terrain', lut=None)
         cmap = cm.get_cmap(name='spectral', lut=None)
-        plt.tricontourf(tri_refi, z_test_refi, levels=levels, cmap=cmap)
-#        plt.tricontour(tri_refi, z_test_refi, levels=levels,
-#                       colors=['0.25', '0.5', '0.5', '0.5', '0.5'],
-#                       linewidths=[1.0, 0.5, 0.5, 0.5, 0.5])
+        plt.tricontourf(triang, self.__results__[index].results, cmap=cmap)
 
         plt.colorbar()
         if self.__params__.problem_type == 'dynamic':
