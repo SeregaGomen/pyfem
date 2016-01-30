@@ -339,4 +339,7 @@ class TObject:
         ax.set_zlim(min(self.__mesh__.z), max(self.__mesh__.z))
 
         plt.colorbar(c_map)
+        if self.__params__.problem_type == 'dynamic':
+            fun_name += ' (t = %5.2f)' % t
+        plt.title(fun_name)
         plt.show()
