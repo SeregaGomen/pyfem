@@ -275,13 +275,13 @@ def console_dynamic():
 
 
 if __name__ == "__main__":
-    # beam()
+    beam()
     # head3d()
     # body1d()
     # cube()
     # console()
     # tank3()
-    cylinder()
+    # cylinder()
     # quad()
     # console4()
     # cube_test()

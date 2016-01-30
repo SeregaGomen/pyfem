@@ -274,19 +274,19 @@ class TObject:
     # Определене цвета грани
     def get_color(self, res):
         colors = [
-                    [1.00, 0.00, 0.00],
+                    [1.00, 0.00, 0.00],     # красный - желтый
                     [1.00, 0.25, 0.00],
                     [1.00, 0.50, 0.00],
                     [1.00, 0.75, 0.00],
-                    [1.00, 1.00, 0.00],
+                    [1.00, 1.00, 0.00],     # желтый - зеленый
                     [0.75, 1.00, 0.00],
                     [0.50, 1.00, 0.00],
                     [0.25, 1.00, 0.00],
-                    [0.00, 1.00, 0.00],
+                    [0.00, 1.00, 0.00],     # зеленый - фиолетовый
                     [0.00, 1.00, 0.25],
                     [0.00, 1.00, 0.50],
                     [0.00, 1.00, 0.75],
-                    [0.00, 1.00, 1.00],
+                    [0.00, 1.00, 1.00],     # фиолетовый - синий
                     [0.00, 0.75, 1.00],
                     [0.00, 0.50, 1.00],
                     [0.00, 0.00, 1.00]
@@ -299,9 +299,8 @@ class TObject:
             for j in range(0, len(self.__mesh__.surface[i])):
                 umid += res[self.__mesh__.surface[i][j]]
             umid /= len(self.__mesh__.surface[i])
-            val = floor((umid - umin)/((umax - umin)/16.0))
-            if val > 15:
-                val = 15
-            col = colors[val]
-            facecolors.append(col)
+            index = floor((umid - umin)/((umax - umin)/16.0))
+            if index > 15:
+                index = 15
+            facecolors.append(colors[index])
         return facecolors
