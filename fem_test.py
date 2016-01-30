@@ -72,6 +72,20 @@ def beam():
     if obj.calc():
         obj.print_result()
         obj.plot('U')
+        obj.plot('V')
+        obj.plot('W')
+        obj.plot('Exx')
+        obj.plot('Eyy')
+        obj.plot('Ezz')
+        obj.plot('Exy')
+        obj.plot('Exz')
+        obj.plot('Eyz')
+        obj.plot('Sxx')
+        obj.plot('Syy')
+        obj.plot('Szz')
+        obj.plot('Sxy')
+        obj.plot('Sxz')
+        obj.plot('Syz')
 
 
 def console():
@@ -148,7 +162,18 @@ def cylinder():
         obj.plot('U')
         obj.plot('V')
         obj.plot('W')
+        obj.plot('Exx')
+        obj.plot('Eyy')
+        obj.plot('Ezz')
+        obj.plot('Exy')
+        obj.plot('Exz')
+        obj.plot('Eyz')
         obj.plot('Sxx')
+        obj.plot('Syy')
+        obj.plot('Szz')
+        obj.plot('Sxy')
+        obj.plot('Sxz')
+        obj.plot('Syz')
 
 
 def tank3():

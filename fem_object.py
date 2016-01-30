@@ -300,6 +300,8 @@ class TObject:
                 umid += res[self.__mesh__.surface[i][j]]
             umid /= len(self.__mesh__.surface[i])
             val = floor((umid - umin)/((umax - umin)/16.0))
+            if val > 15:
+                val = 15
             col = colors[val]
             facecolors.append(col)
         return facecolors
