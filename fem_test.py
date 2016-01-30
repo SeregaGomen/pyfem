@@ -237,7 +237,7 @@ def console_dynamic():
     obj.add_initial_condition('0', INIT_V_T_T)
     if obj.calc():
         obj.print_result('mesh/' + obj.object_name() + '.res')
-        obj.plot('U', 0.110)
+        obj.plot('U', 0.0)
         obj.plot('U', 0.25)
         obj.plot('U', 0.5)
         obj.plot('U', 0.75)
@@ -246,20 +246,20 @@ def console_dynamic():
 
 if __name__ == "__main__":
     # beam()
-    # console_dynamic()
     # head3d()
     # body1d()
     # cube()
     # console()
-    tank3()
+    # tank3()
     # cylinder()
     # quad()
     # console4()
     # cube_test()
     # console_dynamic()
 
-    from mpl_toolkits.mplot3d import Axes3D
-    from matplotlib import cm
+
+    # from mpl_toolkits.mplot3d import Axes3D
+    # from matplotlib import cm
     import matplotlib.pyplot as plt
     import numpy as np
 
@@ -316,6 +316,7 @@ if __name__ == "__main__":
 """
 1. Добавить загрузку названий функций в объект
 2. Визуализация 2d и 3d
+3. OpenGL
 """
 
 
