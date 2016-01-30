@@ -256,11 +256,11 @@ if __name__ == "__main__":
     # cube()
     # console()
     # tank3()
-    # cylinder()
+    cylinder()
     # quad()
     # console4()
     # cube_test()
-    console_dynamic()
+    # console_dynamic()
 
 """
 1. Добавить загрузку названий функций в объект
