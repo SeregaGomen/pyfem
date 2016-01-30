@@ -6,7 +6,6 @@
 
 import os
 import sys
-import matplotlib.tri as tri
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import cm
@@ -195,6 +194,8 @@ class TObject:
             self.__plot_2d_tri__(fun_name, t)
         elif self.__mesh__.fe_type == 'fe_3d_4':
             self.__plot_3d_tet__(fun_name, t)
+        elif self.__mesh__.fe_type == 'fe_3d_8':
+            self.__plot_3d_hex__(fun_name, t)
 
     # Визуализация заданной функции в случае плоской треугольной сетки
     def __plot_2d_tri__(self, fun_name, t=0):
@@ -242,12 +243,11 @@ class TObject:
                                       for T in self.__mesh__.surface])
 
         c_map = cm.ScalarMappable(cmap=cm.jet)
-#        map.set_array(self.__results__[index].results)
         c_map.set_array([self.__results__[index].min(), self.__results__[index].max()])
 
         facecolors = self.get_color(self.__results__[index].results)
         coll = Poly3DCollection(triangle_vertices, facecolors=facecolors, edgecolors='none')
-        surf = ax.add_collection(coll)
+        ax.add_collection(coll)
 
         ax.set_xlim(min(self.__mesh__.x), max(self.__mesh__.x))
         ax.set_ylim(min(self.__mesh__.y), max(self.__mesh__.y))
@@ -293,3 +293,50 @@ class TObject:
                 index = 15
             facecolors.append(colors[index])
         return facecolors
+
+    # Визуализация заданной функции в случае кубического КЭ
+    def __plot_3d_hex__(self, fun_name, t=0):
+        # Поиск индекса функции в списке результатов
+        index = -1
+        for i in range(0, len(self.__results__)):
+            if self.__results__[i].name == fun_name and self.__results__[i].t == t:
+                index = i
+                break
+        if index == -1:
+            error('Error: \'%s\' is not a recognized function name' % fun_name)
+            return
+
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.set_aspect("auto")
+        ax.set_autoscale_on(True)
+
+        # for i in range(0, len(self.__mesh__.surface)):
+        #     for j in range(0, len(self.__mesh__.surface[i])):
+        #         ind1 = j
+        #         ind2 = j + 1 if j < len(self.__mesh__.surface[i]) - 1 else 0
+        #         x = [self.__mesh__.x[self.__mesh__.surface[i][ind1]], self.__mesh__.x[self.__mesh__.surface[i][ind2]]]
+        #         y = [self.__mesh__.y[self.__mesh__.surface[i][ind1]], self.__mesh__.y[self.__mesh__.surface[i][ind2]]]
+        #         z = [self.__mesh__.z[self.__mesh__.surface[i][ind1]], self.__mesh__.z[self.__mesh__.surface[i][ind2]]]
+        #         ax.plot3D(x, y, z, color="w")
+
+        triangle_vertices1 = np.array([np.array([[self.__mesh__.x[T[0]], self.__mesh__.y[T[0]], self.__mesh__.z[T[0]]],
+                                                 [self.__mesh__.x[T[1]], self.__mesh__.y[T[1]], self.__mesh__.z[T[1]]],
+                                                 [self.__mesh__.x[T[2]], self.__mesh__.y[T[2]], self.__mesh__.z[T[2]]],
+                                                 [self.__mesh__.x[T[0]], self.__mesh__.y[T[0]], self.__mesh__.z[T[0]]],
+                                                 [self.__mesh__.x[T[2]], self.__mesh__.y[T[2]], self.__mesh__.z[T[2]]],
+                                                 [self.__mesh__.x[T[3]], self.__mesh__.y[T[3]], self.__mesh__.z[T[3]]]])
+                                       for T in self.__mesh__.surface])
+
+        c_map = cm.ScalarMappable(cmap=cm.jet)
+        c_map.set_array([self.__results__[index].min(), self.__results__[index].max()])
+        facecolors = self.get_color(self.__results__[index].results)
+        coll = Poly3DCollection(triangle_vertices1, facecolors=facecolors, edgecolors='none')
+        ax.add_collection(coll)
+
+        ax.set_xlim(min(self.__mesh__.x), max(self.__mesh__.x))
+        ax.set_ylim(min(self.__mesh__.y), max(self.__mesh__.y))
+        ax.set_zlim(min(self.__mesh__.z), max(self.__mesh__.z))
+
+        plt.colorbar(c_map)
+        plt.show()

@@ -38,6 +38,7 @@ def cube():
 #    obj.add_concentrated_load('-1000', 'z=1', DIR_Z)
     if obj.calc():
         obj.print_result()
+        obj.plot('U')
 
 
 def cube_test():
@@ -55,6 +56,20 @@ def cube_test():
     if obj.calc():
         obj.print_result()
         obj.plot('U')
+        obj.plot('V')
+        obj.plot('W')
+        obj.plot('Exx')
+        obj.plot('Eyy')
+        obj.plot('Ezz')
+        obj.plot('Exy')
+        obj.plot('Exz')
+        obj.plot('Eyz')
+        obj.plot('Sxx')
+        obj.plot('Syy')
+        obj.plot('Szz')
+        obj.plot('Sxy')
+        obj.plot('Sxz')
+        obj.plot('Syz')
 
 
 def beam():
@@ -286,8 +301,8 @@ if __name__ == "__main__":
     # beam()
     # head3d()
     # body1d()
-    # cube()
-    console()
+    cube()
+    # console()
     # tank3()
     # cylinder()
     # quad()
