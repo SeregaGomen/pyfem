@@ -252,8 +252,9 @@ class TObject:
                                                 [self.__mesh__.x[T[2]], self.__mesh__.y[T[2]], self.__mesh__.z[T[2]]]])
                                       for T in self.__mesh__.surface])
 
-        map = cm.ScalarMappable(cmap=cm.jet)
-        map.set_array(self.__results__[index].results)
+        c_map = cm.ScalarMappable(cmap=cm.jet)
+#        map.set_array(self.__results__[index].results)
+        c_map.set_array([self.__results__[index].min(), self.__results__[index].max()])
 
         facecolors = self.get_color(self.__results__[index].results)
         coll = Poly3DCollection(triangle_vertices, facecolors=facecolors, edgecolors='none')
@@ -263,7 +264,7 @@ class TObject:
         ax.set_ylim(min(self.__mesh__.y), max(self.__mesh__.y))
         ax.set_zlim(min(self.__mesh__.z), max(self.__mesh__.z))
 
-        plt.colorbar(map)
+        plt.colorbar(c_map)
 
         if self.__params__.problem_type == 'dynamic':
             fun_name += ' (t = %5.2f)' % t
@@ -272,6 +273,24 @@ class TObject:
 
     # Определене цвета грани
     def get_color(self, res):
+        colors = [
+                    [1.00, 0.00, 0.00],
+                    [1.00, 0.25, 0.00],
+                    [1.00, 0.50, 0.00],
+                    [1.00, 0.75, 0.00],
+                    [1.00, 1.00, 0.00],
+                    [0.75, 1.00, 0.00],
+                    [0.50, 1.00, 0.00],
+                    [0.25, 1.00, 0.00],
+                    [0.00, 1.00, 0.00],
+                    [0.00, 1.00, 0.25],
+                    [0.00, 1.00, 0.50],
+                    [0.00, 1.00, 0.75],
+                    [0.00, 1.00, 1.00],
+                    [0.00, 0.75, 1.00],
+                    [0.00, 0.50, 1.00],
+                    [0.00, 0.00, 1.00]
+                 ]
         umin = min(res)
         umax = max(res)
         facecolors = []
@@ -281,6 +300,7 @@ class TObject:
                 umid += res[self.__mesh__.surface[i][j]]
             umid /= len(self.__mesh__.surface[i])
             val = floor((umid - umin)/((umax - umin)/16.0))
-            col = [val/16, val/16, val/16]
+            #col = [val/16, val/16, val/16]
+            col = colors[val]
             facecolors.append(col)
         return facecolors
