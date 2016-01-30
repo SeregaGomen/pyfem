@@ -211,15 +211,10 @@ class TObject:
         plt.figure()
         plt.gca().set_aspect('equal')
 
-        min_u = self.__results__[index].min()
-        max_u = self.__results__[index].max()
-        triang = tri.Triangulation(self.__mesh__.x, self.__mesh__.y)
-
-        plt.triplot(triang, lw=0.5, color='white')
 #        cmap = cm.get_cmap(name='terrain', lut=None)
         cmap = cm.get_cmap(name='spectral', lut=None)
-        plt.tricontourf(triang, self.__results__[index].results, cmap=cmap)
-
+        plt.triplot(self.__mesh__.x, self.__mesh__.y, self.__mesh__.fe, lw=0.5, color='white')
+        plt.tricontourf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.fe, self.__results__[index].results, cmap=cmap)
         plt.colorbar()
         if self.__params__.problem_type == 'dynamic':
             fun_name += ' (t = %5.2f)' % t
