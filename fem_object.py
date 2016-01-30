@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import cm
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from math import fabs
+from math import fabs, floor
 from fem_mesh import TMesh
 from fem_fem import TFEM
 from fem_params import TFEMParams
@@ -251,25 +251,36 @@ class TObject:
                                                 [self.__mesh__.x[T[1]], self.__mesh__.y[T[1]], self.__mesh__.z[T[1]]],
                                                 [self.__mesh__.x[T[2]], self.__mesh__.y[T[2]], self.__mesh__.z[T[2]]]])
                                       for T in self.__mesh__.surface])
-        midpoints = np.average(triangle_vertices, axis=1)
-        facecolors = [self.find_color_for_point(pt) for pt in midpoints]  # smooth gradient
-        # facecolors = [np.random.random(3) for pt in midpoints]  # random colors
+
+        map = cm.ScalarMappable(cmap=cm.jet)
+        map.set_array(self.__results__[index].results)
+
+        facecolors = self.get_color(self.__results__[index].results)
         coll = Poly3DCollection(triangle_vertices, facecolors=facecolors, edgecolors='none')
         surf = ax.add_collection(coll)
 
-        # surf = ax.plot_trisurf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.z, triangles=self.__mesh__.surface, cmap=cm.jet)
         ax.set_xlim(min(self.__mesh__.x), max(self.__mesh__.x))
         ax.set_ylim(min(self.__mesh__.y), max(self.__mesh__.y))
         ax.set_zlim(min(self.__mesh__.z), max(self.__mesh__.z))
-        # plt.colorbar(surf)
+
+        plt.colorbar(map)
 
         if self.__params__.problem_type == 'dynamic':
             fun_name += ' (t = %5.2f)' % t
         plt.title(fun_name)
         plt.show()
 
-    # http://matplotlib.1069221.n5.nabble.com/trisurf-plots-with-independent-color-data-td44741.html
-    def find_color_for_point(self, pt):
-        x, y, z = pt
-        col = [fabs(y+1)/2, fabs(1-y)/2, fabs(z)/2]
-        return col
+    # Определене цвета грани
+    def get_color(self, res):
+        umin = min(res)
+        umax = max(res)
+        facecolors = []
+        for i in range(0, len(self.__mesh__.surface)):
+            umid = 0
+            for j in range(0, len(self.__mesh__.surface[i])):
+                umid += res[self.__mesh__.surface[i][j]]
+            umid /= len(self.__mesh__.surface[i])
+            val = floor((umid - umin)/((umax - umin)/16.0))
+            col = [val/16, val/16, val/16]
+            facecolors.append(col)
+        return facecolors

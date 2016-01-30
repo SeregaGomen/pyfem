@@ -145,6 +145,9 @@ def cylinder():
     obj.add_surface_load('1.0e+4*sin(atan2(y,z))', 'abs(y^2 + z^2 - 0.25^2) <= eps', DIR_Y)
     if obj.calc():
         obj.print_result()
+        obj.plot('U')
+        obj.plot('V')
+        obj.plot('W')
         obj.plot('Sxx')
 
 
@@ -192,6 +195,8 @@ def tank3():
     if obj.calc():
         obj.print_result('mesh/' + obj.object_name() + '.res')
         obj.plot('U')
+        obj.plot('V')
+        obj.plot('W')
 
 
 def head3d():
@@ -259,7 +264,7 @@ if __name__ == "__main__":
 
 
     # from mpl_toolkits.mplot3d import Axes3D
-    # from matplotlib import cm
+    from matplotlib import cm
     import matplotlib.pyplot as plt
     import numpy as np
 
@@ -298,7 +303,11 @@ if __name__ == "__main__":
         col = [(y+1)/2, (1-y)/2, 0]
         return col
 
-    facecolors = [find_color_for_point(pt) for pt in midpoints]  # smooth gradient
+    map = cm.ScalarMappable(cmap=cm.jet)
+    map.set_array(midpoints)
+
+    facecolors = [map.to_rgba(midpoints)[pt][0] for pt in range(0, len(midpoints))]
+    #facecolors = [find_color_for_point(pt) for pt in midpoints]  # smooth gradient
     #facecolors = [np.random.random(3) for pt in midpoints]  # random colors
 
     coll = Poly3DCollection(triangle_vertices, facecolors=facecolors, edgecolors='black')
@@ -310,6 +319,9 @@ if __name__ == "__main__":
     ax.set_ylim(-1, 1)
     ax.set_zlim(-1, 1)
     ax.elev = 50
+
+    plt.colorbar(map)
+
 
     plt.show()
 
