@@ -143,6 +143,9 @@ def console4():
 #    obj.add_volume_load('-1.0E+5', '', DIR_Y)
     if obj.calc():
         obj.print_result()
+        obj.plot('U')
+        obj.plot('V')
+        obj.plot('Exx')
 
 
 def quad():
@@ -264,6 +267,7 @@ def head3d():
     obj.add_surface_load('-1*sin(atan2(z,x))', 'abs(x^2 + z^2 - 210^2) <= 0.001', DIR_Z)
     if obj.calc():
         obj.print_result()
+        obj.plot('U')
 
 
 def console_dynamic():
@@ -300,12 +304,12 @@ if __name__ == "__main__":
     # beam()
     # head3d()
     # body1d()
-    cube()
+    # cube()
     # console()
     # tank3()
     # cylinder()
     # quad()
-    # console4()
+    console4()
     # cube_test()
     # console_dynamic()
 
@@ -314,6 +318,4 @@ if __name__ == "__main__":
 2. Визуализация 2d и 3d
 3. OpenGL
 """
-
-
 

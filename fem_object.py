@@ -192,6 +192,8 @@ class TObject:
         # Визуализация результата
         if self.__mesh__.fe_type == 'fe_2d_3':
             self.__plot_2d_tri__(fun_name, t)
+        elif self.__mesh__.fe_type == 'fe_2d_4':
+            self.__plot_2d_quad__(fun_name, t)
         elif self.__mesh__.fe_type == 'fe_3d_4':
             self.__plot_3d_tet__(fun_name, t)
         elif self.__mesh__.fe_type == 'fe_3d_8':
@@ -216,6 +218,33 @@ class TObject:
         cmap = cm.get_cmap(name='spectral', lut=None)
         plt.triplot(self.__mesh__.x, self.__mesh__.y, self.__mesh__.fe, lw=0.5, color='white')
         plt.tricontourf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.fe, self.__results__[index].results, cmap=cmap)
+        plt.colorbar()
+        if self.__params__.problem_type == 'dynamic':
+            fun_name += ' (t = %5.2f)' % t
+        plt.title(fun_name)
+        plt.show()
+
+    # Визуализация заданной функции в случае плоской четырехугольной сетки
+    def __plot_2d_quad__(self, fun_name, t=0):
+        # Поиск индекса функции в списке результатов
+        index = -1
+        for i in range(0, len(self.__results__)):
+            if self.__results__[i].name == fun_name and self.__results__[i].t == t:
+                index = i
+                break
+        if index == -1:
+            error('Error: \'%s\' is not a recognized function name' % fun_name)
+            return
+
+        plt.figure()
+        plt.gca().set_aspect('equal')
+
+#        cmap = cm.get_cmap(name='terrain', lut=None)
+        cmap = cm.get_cmap(name='spectral', lut=None)
+        tri = np.array([np.array([T[0], T[1], T[2]]) for T in self.__mesh__.fe])
+        plt.tricontourf(self.__mesh__.x, self.__mesh__.y, tri, self.__results__[index].results, cmap=cmap)
+        tri = np.array([np.array([T[0], T[2], T[3]]) for T in self.__mesh__.fe])
+        plt.tricontourf(self.__mesh__.x, self.__mesh__.y, tri, self.__results__[index].results, cmap=cmap)
         plt.colorbar()
         if self.__params__.problem_type == 'dynamic':
             fun_name += ' (t = %5.2f)' % t
