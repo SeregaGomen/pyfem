@@ -190,7 +190,9 @@ class TObject:
             error('Error: incorrectly specified the time: %5.2f' % t)
             return
         # Визуализация результата
-        if self.__mesh__.fe_type == 'fe_2d_3':
+        if self.__mesh__.fe_type == 'fe_1d_2':
+            self.__plot_1d_linear__(fun_name, t)
+        elif self.__mesh__.fe_type == 'fe_2d_3':
             self.__plot_2d_tri__(fun_name, t)
         elif self.__mesh__.fe_type == 'fe_2d_4':
             self.__plot_2d_quad__(fun_name, t)
@@ -198,6 +200,24 @@ class TObject:
             self.__plot_3d_tet__(fun_name, t)
         elif self.__mesh__.fe_type == 'fe_3d_8':
             self.__plot_3d_hex__(fun_name, t)
+
+    # Визуализация заданной функции в случае одномерного линейного КЭ
+    def __plot_1d_linear__(self, fun_name, t=0):
+        # Поиск индекса функции в списке результатов
+        index = -1
+        for i in range(0, len(self.__results__)):
+            if self.__results__[i].name == fun_name and self.__results__[i].t == t:
+                index = i
+                break
+        if index == -1:
+            error('Error: \'%s\' is not a recognized function name' % fun_name)
+            return
+
+        plt.plot(self.__mesh__.x, self.__results__[index].results, '-', linewidth=2)
+        if self.__params__.problem_type == 'dynamic':
+            fun_name += ' (t = %5.2f)' % t
+        plt.title(fun_name)
+        plt.show()
 
     # Визуализация заданной функции в случае плоской треугольной сетки
     def __plot_2d_tri__(self, fun_name, t=0):

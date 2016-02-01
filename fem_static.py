@@ -103,6 +103,8 @@ class TFEMStatic(TFEM):
 
     # Вычисление поверхностных нагрузок
     def __prepare_surface_load__(self, t=0):
+        if not len(self.__mesh__.surface):
+            return
         x = [0]*len(self.__mesh__.surface[0])
         y = [0]*len(self.__mesh__.surface[0])
         z = [0]*len(self.__mesh__.surface[0])

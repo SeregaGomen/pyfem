@@ -20,6 +20,9 @@ def body1d():
     obj.add_concentrated_load('-1.0E+5', 'x=1', DIR_X)
     if obj.calc():
         obj.print_result()
+        obj.plot('U')
+        obj.plot('Exx')
+        obj.plot('Sxx')
 
 
 def cube():
@@ -303,13 +306,13 @@ def console_dynamic():
 if __name__ == "__main__":
     # beam()
     # head3d()
-    # body1d()
+    body1d()
     # cube()
     # console()
     # tank3()
     # cylinder()
     # quad()
-    console4()
+    # console4()
     # cube_test()
     # console_dynamic()
 
