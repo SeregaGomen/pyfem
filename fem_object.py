@@ -250,7 +250,7 @@ class TObject:
                                                 [self.__mesh__.x[T[2]], self.__mesh__.y[T[2]], self.__mesh__.z[T[2]]]])
                                       for T in self.__mesh__.surface])
 
-        c_map = cm.ScalarMappable(cmap=cm.jet)
+        c_map = cm.ScalarMappable()
         c_map.set_array([self.__results__[index].min(), self.__results__[index].max()])
         facecolors = self.get_color(self.__results__[index].results)
         coll = Poly3DCollection(triangle_vertices, facecolors=facecolors, edgecolors='none')
@@ -284,7 +284,7 @@ class TObject:
                                                  [self.__mesh__.x[T[3]], self.__mesh__.y[T[3]], self.__mesh__.z[T[3]]]])
                                        for T in self.__mesh__.surface])
 
-        c_map = cm.ScalarMappable(cmap=cm.jet)
+        c_map = cm.ScalarMappable()
         c_map.set_array([self.__results__[index].min(), self.__results__[index].max()])
         facecolors = self.get_color(self.__results__[index].results)
         coll = Poly3DCollection(triangle_vertices1, facecolors=facecolors, edgecolors='none')
