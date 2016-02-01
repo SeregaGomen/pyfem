@@ -124,7 +124,6 @@ class TObject:
                 t += self.__params__.th
                 if fabs(t - self.__params__.t1) < self.__params__.eps:
                     t = self.__params__.t1
-
         file.close()
 
     # Вывод результатов расчета для одного момента времени
@@ -223,22 +222,21 @@ class TObject:
     def __plot_2d_tri__(self, index):
         plt.figure()
         plt.gca().set_aspect('equal')
-#        cmap = cm.get_cmap(name='terrain', lut=None)
-        cmap = cm.get_cmap(name='spectral', lut=None)
+#        c_map = cm.get_cmap(name='terrain', lut=None)
+        c_map = cm.get_cmap(name='spectral', lut=None)
         plt.triplot(self.__mesh__.x, self.__mesh__.y, self.__mesh__.fe, lw=0.5, color='white')
-        plt.tricontourf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.fe, self.__results__[index].results, cmap=cmap)
+        plt.tricontourf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.fe, self.__results__[index].results, cmap=c_map)
         plt.colorbar()
 
     # Визуализация заданной функции в случае плоской четырехугольной сетки
     def __plot_2d_quad__(self, index):
         plt.figure()
         plt.gca().set_aspect('equal')
-#        cmap = cm.get_cmap(name='terrain', lut=None)
-        cmap = cm.get_cmap(name='spectral', lut=None)
+        c_map = cm.get_cmap(name='spectral', lut=None)
         tri = np.array([np.array([T[0], T[1], T[2]]) for T in self.__mesh__.fe])
-        plt.tricontourf(self.__mesh__.x, self.__mesh__.y, tri, self.__results__[index].results, cmap=cmap)
+        plt.tricontourf(self.__mesh__.x, self.__mesh__.y, tri, self.__results__[index].results, cmap=c_map)
         tri = np.array([np.array([T[0], T[2], T[3]]) for T in self.__mesh__.fe])
-        plt.tricontourf(self.__mesh__.x, self.__mesh__.y, tri, self.__results__[index].results, cmap=cmap)
+        plt.tricontourf(self.__mesh__.x, self.__mesh__.y, tri, self.__results__[index].results, cmap=c_map)
         plt.colorbar()
 
     # Визуализация заданной функции в случае КЭ в форме тетраэдра
@@ -252,8 +250,8 @@ class TObject:
 
         c_map = cm.ScalarMappable()
         c_map.set_array([self.__results__[index].min(), self.__results__[index].max()])
-        facecolors = self.get_color(self.__results__[index].results)
-        coll = Poly3DCollection(triangle_vertices, facecolors=facecolors, edgecolors='none')
+        face_colors = self.get_surface_color(self.__results__[index].results)
+        coll = Poly3DCollection(triangle_vertices, facecolors=face_colors, edgecolors='none')
         ax.add_collection(coll)
         ax.set_xlim(min(self.__mesh__.x), max(self.__mesh__.x))
         ax.set_ylim(min(self.__mesh__.y), max(self.__mesh__.y))
@@ -286,8 +284,8 @@ class TObject:
 
         c_map = cm.ScalarMappable()
         c_map.set_array([self.__results__[index].min(), self.__results__[index].max()])
-        facecolors = self.get_color(self.__results__[index].results)
-        coll = Poly3DCollection(triangle_vertices1, facecolors=facecolors, edgecolors='none')
+        face_colors = self.get_surface_color(self.__results__[index].results)
+        coll = Poly3DCollection(triangle_vertices1, facecolors=face_colors, edgecolors='none')
         ax.add_collection(coll)
 
         ax.set_xlim(min(self.__mesh__.x), max(self.__mesh__.x))
@@ -295,8 +293,9 @@ class TObject:
         ax.set_zlim(min(self.__mesh__.z), max(self.__mesh__.z))
         plt.colorbar(c_map)
 
-    # Определене цвета грани
-    def get_color(self, res):
+    # Определене цвета поверхностной грани
+    def get_surface_color(self, res):
+        # Градации цвета (спектр)
         colors = [
                     [1.00, 0.00, 0.00],     # красный - желтый
                     [1.00, 0.25, 0.00],
@@ -315,16 +314,16 @@ class TObject:
                     [0.00, 0.50, 1.00],
                     [0.00, 0.00, 1.00]
                  ]
-        umin = min(res)
-        umax = max(res)
-        facecolors = []
+        u_min = min(res)
+        u_max = max(res)
+        face_colors = []
         for i in range(0, len(self.__mesh__.surface)):
-            umid = 0
+            u = 0
             for j in range(0, len(self.__mesh__.surface[i])):
-                umid += res[self.__mesh__.surface[i][j]]
-            umid /= len(self.__mesh__.surface[i])
-            index = floor((umid - umin)/((umax - umin)/16.0))
+                u += res[self.__mesh__.surface[i][j]]
+            u /= len(self.__mesh__.surface[i])
+            index = floor((u - u_min)/((u_max - u_min)/16.0))
             if index > 15:
                 index = 15
-            facecolors.append(colors[index])
-        return facecolors
+            face_colors.append(colors[index])
+        return face_colors
