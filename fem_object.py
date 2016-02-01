@@ -189,20 +189,6 @@ class TObject:
                 ((t < self.__params__.t0 or t > self.__params__.t1) or t % self.__params__.th > eps):
             error('Error: incorrectly specified the time: %5.2f' % t)
             return
-        # Визуализация результата
-        if self.__mesh__.fe_type == 'fe_1d_2':
-            self.__plot_1d_linear__(fun_name, t)
-        elif self.__mesh__.fe_type == 'fe_2d_3':
-            self.__plot_2d_tri__(fun_name, t)
-        elif self.__mesh__.fe_type == 'fe_2d_4':
-            self.__plot_2d_quad__(fun_name, t)
-        elif self.__mesh__.fe_type == 'fe_3d_4':
-            self.__plot_3d_tet__(fun_name, t)
-        elif self.__mesh__.fe_type == 'fe_3d_8':
-            self.__plot_3d_hex__(fun_name, t)
-
-    # Визуализация заданной функции в случае одномерного линейного КЭ
-    def __plot_1d_linear__(self, fun_name, t=0):
         # Поиск индекса функции в списке результатов
         index = -1
         for i in range(0, len(self.__results__)):
@@ -212,53 +198,41 @@ class TObject:
         if index == -1:
             error('Error: \'%s\' is not a recognized function name' % fun_name)
             return
-
-        plt.plot(self.__mesh__.x, self.__results__[index].results, '-', linewidth=2)
+        # Визуализация результата
+        if self.__mesh__.fe_type == 'fe_1d_2':
+            self.__plot_1d_linear__(index)
+        elif self.__mesh__.fe_type == 'fe_2d_3':
+            self.__plot_2d_tri__(index)
+        elif self.__mesh__.fe_type == 'fe_2d_4':
+            self.__plot_2d_quad__(index)
+        elif self.__mesh__.fe_type == 'fe_3d_4':
+            self.__plot_3d_tet__(index)
+        elif self.__mesh__.fe_type == 'fe_3d_8':
+            self.__plot_3d_hex__(index)
+        # Задание заголовка
         if self.__params__.problem_type == 'dynamic':
             fun_name += ' (t = %5.2f)' % t
         plt.title(fun_name)
         plt.show()
 
-    # Визуализация заданной функции в случае плоской треугольной сетки
-    def __plot_2d_tri__(self, fun_name, t=0):
-        # Поиск индекса функции в списке результатов
-        index = -1
-        for i in range(0, len(self.__results__)):
-            if self.__results__[i].name == fun_name and self.__results__[i].t == t:
-                index = i
-                break
-        if index == -1:
-            error('Error: \'%s\' is not a recognized function name' % fun_name)
-            return
+    # Визуализация заданной функции в случае одномерного линейного КЭ
+    def __plot_1d_linear__(self, index):
+        plt.plot(self.__mesh__.x, self.__results__[index].results, '-', linewidth=2)
 
+    # Визуализация заданной функции в случае плоской треугольной сетки
+    def __plot_2d_tri__(self, index):
         plt.figure()
         plt.gca().set_aspect('equal')
-
 #        cmap = cm.get_cmap(name='terrain', lut=None)
         cmap = cm.get_cmap(name='spectral', lut=None)
         plt.triplot(self.__mesh__.x, self.__mesh__.y, self.__mesh__.fe, lw=0.5, color='white')
         plt.tricontourf(self.__mesh__.x, self.__mesh__.y, self.__mesh__.fe, self.__results__[index].results, cmap=cmap)
         plt.colorbar()
-        if self.__params__.problem_type == 'dynamic':
-            fun_name += ' (t = %5.2f)' % t
-        plt.title(fun_name)
-        plt.show()
 
     # Визуализация заданной функции в случае плоской четырехугольной сетки
-    def __plot_2d_quad__(self, fun_name, t=0):
-        # Поиск индекса функции в списке результатов
-        index = -1
-        for i in range(0, len(self.__results__)):
-            if self.__results__[i].name == fun_name and self.__results__[i].t == t:
-                index = i
-                break
-        if index == -1:
-            error('Error: \'%s\' is not a recognized function name' % fun_name)
-            return
-
+    def __plot_2d_quad__(self, index):
         plt.figure()
         plt.gca().set_aspect('equal')
-
 #        cmap = cm.get_cmap(name='terrain', lut=None)
         cmap = cm.get_cmap(name='spectral', lut=None)
         tri = np.array([np.array([T[0], T[1], T[2]]) for T in self.__mesh__.fe])
@@ -266,26 +240,11 @@ class TObject:
         tri = np.array([np.array([T[0], T[2], T[3]]) for T in self.__mesh__.fe])
         plt.tricontourf(self.__mesh__.x, self.__mesh__.y, tri, self.__results__[index].results, cmap=cmap)
         plt.colorbar()
-        if self.__params__.problem_type == 'dynamic':
-            fun_name += ' (t = %5.2f)' % t
-        plt.title(fun_name)
-        plt.show()
 
     # Визуализация заданной функции в случае КЭ в форме тетраэдра
-    def __plot_3d_tet__(self, fun_name, t=0):
-        # Поиск индекса функции в списке результатов
-        index = -1
-        for i in range(0, len(self.__results__)):
-            if self.__results__[i].name == fun_name and self.__results__[i].t == t:
-                index = i
-                break
-        if index == -1:
-            error('Error: \'%s\' is not a recognized function name' % fun_name)
-            return
-
+    def __plot_3d_tet__(self, index):
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1, projection='3d')
-
         triangle_vertices = np.array([np.array([[self.__mesh__.x[T[0]], self.__mesh__.y[T[0]], self.__mesh__.z[T[0]]],
                                                 [self.__mesh__.x[T[1]], self.__mesh__.y[T[1]], self.__mesh__.z[T[1]]],
                                                 [self.__mesh__.x[T[2]], self.__mesh__.y[T[2]], self.__mesh__.z[T[2]]]])
@@ -293,21 +252,48 @@ class TObject:
 
         c_map = cm.ScalarMappable(cmap=cm.jet)
         c_map.set_array([self.__results__[index].min(), self.__results__[index].max()])
-
         facecolors = self.get_color(self.__results__[index].results)
         coll = Poly3DCollection(triangle_vertices, facecolors=facecolors, edgecolors='none')
+        ax.add_collection(coll)
+        ax.set_xlim(min(self.__mesh__.x), max(self.__mesh__.x))
+        ax.set_ylim(min(self.__mesh__.y), max(self.__mesh__.y))
+        ax.set_zlim(min(self.__mesh__.z), max(self.__mesh__.z))
+        plt.colorbar(c_map)
+
+    # Визуализация заданной функции в случае кубического КЭ
+    def __plot_3d_hex__(self, index):
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.set_aspect("auto")
+        ax.set_autoscale_on(True)
+
+        # for i in range(0, len(self.__mesh__.surface)):
+        #     for j in range(0, len(self.__mesh__.surface[i])):
+        #         ind1 = j
+        #         ind2 = j + 1 if j < len(self.__mesh__.surface[i]) - 1 else 0
+        #         x = [self.__mesh__.x[self.__mesh__.surface[i][ind1]], self.__mesh__.x[self.__mesh__.surface[i][ind2]]]
+        #         y = [self.__mesh__.y[self.__mesh__.surface[i][ind1]], self.__mesh__.y[self.__mesh__.surface[i][ind2]]]
+        #         z = [self.__mesh__.z[self.__mesh__.surface[i][ind1]], self.__mesh__.z[self.__mesh__.surface[i][ind2]]]
+        #         ax.plot3D(x, y, z, color="w")
+
+        triangle_vertices1 = np.array([np.array([[self.__mesh__.x[T[0]], self.__mesh__.y[T[0]], self.__mesh__.z[T[0]]],
+                                                 [self.__mesh__.x[T[1]], self.__mesh__.y[T[1]], self.__mesh__.z[T[1]]],
+                                                 [self.__mesh__.x[T[2]], self.__mesh__.y[T[2]], self.__mesh__.z[T[2]]],
+                                                 [self.__mesh__.x[T[0]], self.__mesh__.y[T[0]], self.__mesh__.z[T[0]]],
+                                                 [self.__mesh__.x[T[2]], self.__mesh__.y[T[2]], self.__mesh__.z[T[2]]],
+                                                 [self.__mesh__.x[T[3]], self.__mesh__.y[T[3]], self.__mesh__.z[T[3]]]])
+                                       for T in self.__mesh__.surface])
+
+        c_map = cm.ScalarMappable(cmap=cm.jet)
+        c_map.set_array([self.__results__[index].min(), self.__results__[index].max()])
+        facecolors = self.get_color(self.__results__[index].results)
+        coll = Poly3DCollection(triangle_vertices1, facecolors=facecolors, edgecolors='none')
         ax.add_collection(coll)
 
         ax.set_xlim(min(self.__mesh__.x), max(self.__mesh__.x))
         ax.set_ylim(min(self.__mesh__.y), max(self.__mesh__.y))
         ax.set_zlim(min(self.__mesh__.z), max(self.__mesh__.z))
-
         plt.colorbar(c_map)
-
-        if self.__params__.problem_type == 'dynamic':
-            fun_name += ' (t = %5.2f)' % t
-        plt.title(fun_name)
-        plt.show()
 
     # Определене цвета грани
     def get_color(self, res):
@@ -342,53 +328,3 @@ class TObject:
                 index = 15
             facecolors.append(colors[index])
         return facecolors
-
-    # Визуализация заданной функции в случае кубического КЭ
-    def __plot_3d_hex__(self, fun_name, t=0):
-        # Поиск индекса функции в списке результатов
-        index = -1
-        for i in range(0, len(self.__results__)):
-            if self.__results__[i].name == fun_name and self.__results__[i].t == t:
-                index = i
-                break
-        if index == -1:
-            error('Error: \'%s\' is not a recognized function name' % fun_name)
-            return
-
-        fig = plt.figure()
-        ax = fig.gca(projection='3d')
-        ax.set_aspect("auto")
-        ax.set_autoscale_on(True)
-
-        # for i in range(0, len(self.__mesh__.surface)):
-        #     for j in range(0, len(self.__mesh__.surface[i])):
-        #         ind1 = j
-        #         ind2 = j + 1 if j < len(self.__mesh__.surface[i]) - 1 else 0
-        #         x = [self.__mesh__.x[self.__mesh__.surface[i][ind1]], self.__mesh__.x[self.__mesh__.surface[i][ind2]]]
-        #         y = [self.__mesh__.y[self.__mesh__.surface[i][ind1]], self.__mesh__.y[self.__mesh__.surface[i][ind2]]]
-        #         z = [self.__mesh__.z[self.__mesh__.surface[i][ind1]], self.__mesh__.z[self.__mesh__.surface[i][ind2]]]
-        #         ax.plot3D(x, y, z, color="w")
-
-        triangle_vertices1 = np.array([np.array([[self.__mesh__.x[T[0]], self.__mesh__.y[T[0]], self.__mesh__.z[T[0]]],
-                                                 [self.__mesh__.x[T[1]], self.__mesh__.y[T[1]], self.__mesh__.z[T[1]]],
-                                                 [self.__mesh__.x[T[2]], self.__mesh__.y[T[2]], self.__mesh__.z[T[2]]],
-                                                 [self.__mesh__.x[T[0]], self.__mesh__.y[T[0]], self.__mesh__.z[T[0]]],
-                                                 [self.__mesh__.x[T[2]], self.__mesh__.y[T[2]], self.__mesh__.z[T[2]]],
-                                                 [self.__mesh__.x[T[3]], self.__mesh__.y[T[3]], self.__mesh__.z[T[3]]]])
-                                       for T in self.__mesh__.surface])
-
-        c_map = cm.ScalarMappable(cmap=cm.jet)
-        c_map.set_array([self.__results__[index].min(), self.__results__[index].max()])
-        facecolors = self.get_color(self.__results__[index].results)
-        coll = Poly3DCollection(triangle_vertices1, facecolors=facecolors, edgecolors='none')
-        ax.add_collection(coll)
-
-        ax.set_xlim(min(self.__mesh__.x), max(self.__mesh__.x))
-        ax.set_ylim(min(self.__mesh__.y), max(self.__mesh__.y))
-        ax.set_zlim(min(self.__mesh__.z), max(self.__mesh__.z))
-
-        plt.colorbar(c_map)
-        if self.__params__.problem_type == 'dynamic':
-            fun_name += ' (t = %5.2f)' % t
-        plt.title(fun_name)
-        plt.show()
