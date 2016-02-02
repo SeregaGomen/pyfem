@@ -17,6 +17,7 @@ from fem_params import TFEMParams
 from fem_static import TFEMStatic
 from fem_dynamic import TFEMDynamic
 from fem_defs import eps
+from fem_error import TFEMException
 
 
 # Вывод сообщения об ошибке
@@ -31,11 +32,15 @@ class TObject:
         self.__results__ = []           # Список результатов расчета для перемещений, деформаций, ...
 
     def set_mesh(self, name):
-        self.__mesh__.load(name)
-        print('Object: %s' % self.object_name())
-        print('Points: %d' % len(self.__mesh__.x))
-        print('FE: %d - %s' % (len(self.__mesh__.fe), self.__mesh__.fe_name()))
-#        print('FE type: %s' % self.__mesh__.fe_type)
+        try:
+            self.__mesh__.load(name)
+            print('Object: %s' % self.object_name())
+            print('Points: %d' % len(self.__mesh__.x))
+            print('FE: %d - %s' % (len(self.__mesh__.fe), self.__mesh__.fe_name()))
+        except TFEMException as err:
+            err.print_error()
+            return False
+        return True
 
     # Название объекта
     def object_name(self):
