@@ -426,8 +426,8 @@ class TFE2D4(TFE):
                 ])
             # Вспомогательная матрица для построения матриц масс и демпфирования
             c = array([
-                [shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[2], 0.0],
-                [0.0, shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[2]]
+                [shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[3], 0.0],
+                [0.0, shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[3]]
                 ])
             bt = b.conj().transpose()
             local_k += bt.dot(d).dot(b)*jacobian*w[i]
