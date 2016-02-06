@@ -232,8 +232,7 @@ class TFE2D3(TFE):
             [shape_dy[0], shape_dx[0], shape_dy[1], shape_dx[1], shape_dy[2], shape_dx[2]]
         ])
         # Формирование локальных матриц жесткости, масс и демпфирования
-        bt = b.conj().transpose()
-        local_k = bt.dot(d).dot(b)*self.__square__()
+        local_k = b.conj().transpose().dot(d).dot(b)*self.__square__()
         for i in range(0, 6):
             for j in range(i, 6):
                 self.K[i][j] = local_k[i][j]
@@ -329,8 +328,7 @@ class TFE3D4(TFE):
              0.0, shape_dx[3]]
         ])
         # Формирование локальных матриц жесткости, масс и демпфирования
-        bt = b.conj().transpose()
-        local_k = bt.dot(d).dot(b)*self.__volume__()
+        local_k = b.conj().transpose().dot(d).dot(b)*self.__volume__()
         for i in range(0, 12):
             if len(self.vx) or len(self.vy) or len(self.vz):
                 if i % 3 == 0:
@@ -429,11 +427,9 @@ class TFE2D4(TFE):
                 [shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[3], 0.0],
                 [0.0, shape[0], 0.0, shape[1], 0.0, shape[2], 0.0, shape[3]]
                 ])
-            bt = b.conj().transpose()
-            local_k += bt.dot(d).dot(b)*jacobian*w[i]
+            local_k += b.conj().transpose().dot(d).dot(b)*jacobian*w[i]
             if not is_static:
-                ct = c.conj().transpose()
-                local_m += ct.dot(c)*jacobian*w[i]
+                local_m += c.conj().transpose().dot(c)*jacobian*w[i]
             # Учет объемной нагрузки
             if len(self.vx) or len(self.vy):
                 for j in range(0, 4):
@@ -447,7 +443,7 @@ class TFE2D4(TFE):
                     self.M[i][j] = self.density*local_m[i][j]
                     self.D[i][j] = self.damping*local_m[i][j]
             self.K[i][8] = volume_load[i]
-#        import sys
+        import sys
 #        print('*******************************')
 #        for i in range(0, len(self.K)):
 #            for j in range(0, len(self.K[0])):
@@ -599,8 +595,7 @@ class TFE3D8(TFE):
                  shape_dz[3], 0.0, shape_dx[3], shape_dz[4], 0.0, shape_dx[4], shape_dz[5], 0.0, shape_dx[5],
                  shape_dz[6], 0.0, shape_dx[6], shape_dz[7], 0.0, shape_dx[7]],
                 ])
-            bt = b.conj().transpose()
-            local_k += bt.dot(d).dot(b)*jacobian*w[i]
+            local_k += b.conj().transpose().dot(d).dot(b)*jacobian*w[i]
             if not is_static:
                 # Вспомогательная матрица для построения матриц масс и демпфирования
                 c = array([
@@ -611,8 +606,7 @@ class TFE3D8(TFE):
                     [0.0, 0.0, shape[0], 0.0, 0.0, shape[1], 0.0, 0.0, shape[2], 0.0, 0.0, shape[2], 0.0, 0.0, shape[3],
                      0.0, 0.0, shape[4], 0.0, 0.0, shape[5], 0.0, 0.0, shape[6], 0.0, 0.0, shape[7]]
                     ])
-                ct = c.conj().transpose()
-                local_m += ct.dot(c)*jacobian*w[i]
+                local_m += c.conj().transpose().dot(c)*jacobian*w[i]
             # Учет объемной нагрузки
             if len(self.vx) or len(self.vy) or len(self.vz):
                 for j in range(0, self.size):
