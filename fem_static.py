@@ -105,10 +105,6 @@ class TFEMStatic(TFEM):
     def __prepare_surface_load__(self, t=0):
         if not len(self.__mesh__.surface):
             return
-        x = [0]*len(self.__mesh__.surface[0])
-        y = [0]*len(self.__mesh__.surface[0])
-        z = [0]*len(self.__mesh__.surface[0])
-        val = [0]*len(self.__mesh__.surface[0])
         parser = self.__create_parser__()
         counter = 0
         for i in range(0, len(self.__params__.bc_list)):
@@ -128,19 +124,19 @@ class TFEMStatic(TFEM):
                     continue
                 rel_se = self.__mesh__.square(j)/float(len(self.__mesh__.surface[j]))
                 for k in range(0, len(self.__mesh__.surface[j])):
-                    x[k], y[k], z[k] = self.__mesh__.get_coord(self.__mesh__.surface[j][k])
-                    parser.set_variable(self.__params__.names[0], x[k])
-                    parser.set_variable(self.__params__.names[1], y[k])
-                    parser.set_variable(self.__params__.names[2], z[k])
+                    x, y, z = self.__mesh__.get_coord(self.__mesh__.surface[j][k])
+                    parser.set_variable(self.__params__.names[0], x)
+                    parser.set_variable(self.__params__.names[1], y)
+                    parser.set_variable(self.__params__.names[2], z)
                     parser.set_variable(self.__params__.names[3], t)
                     parser.set_code(self.__params__.bc_list[i].expression)
-                    val[k] = parser.run()
+                    val = parser.run()
                     if self.__params__.bc_list[i].direct & DIR_X:
-                        self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 0] += val[k]*rel_se
+                        self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 0] += val*rel_se
                     if self.__params__.bc_list[i].direct & DIR_Y:
-                        self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 1] += val[k]*rel_se
+                        self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 1] += val*rel_se
                     if self.__params__.bc_list[i].direct & DIR_Z:
-                        self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 2] += val[k]*rel_se
+                        self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 2] += val*rel_se
 
     # Вычисление объемных нагрузок
     def __prepare_volume_load__(self, t=0):
