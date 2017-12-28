@@ -3,6 +3,7 @@
 
 from core.fem_defs import DIR_X, DIR_Y, DIR_Z, INIT_U, INIT_V, INIT_U_T, INIT_V_T, INIT_U_T_T, INIT_V_T_T
 from core.fem_object import TObject
+from plot.simpleplot import TSimplePlot
 
 
 def body1d():
@@ -251,6 +252,7 @@ def tank3():
         obj.add_surface_load('5.0e+3*z*(1.3260378897^2)/(((3*x*(1.3260378897^2))^2+(y-2.8163434974)^2+(3*z*(1.3260378897^2))^2)^0.5)','(y>-1.944 and y < -0.6431) and abs(y-((x^2+z^2)^0.5)*(1.3260378897)+2.8163434974)<=eps',DIR_Z)
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
+            obj.save_json('tank3.json')
             obj.plot('U')
             obj.plot('V')
             obj.plot('W')
@@ -301,6 +303,10 @@ def console_dynamic():
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.save_json('console_dynamic.json')
+
+            plot = TSimplePlot()
+            plot.set_file('console_dynamic.json')
+
             obj.plot('U', 0.0)
             obj.plot('U', 0.25)
             obj.plot('U', 0.5)

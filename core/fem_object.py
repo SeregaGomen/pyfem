@@ -141,8 +141,8 @@ class TObject:
                                                  self.__mesh__.mesh_file.rfind('.')]
         header['type'] = self.__params__.problem_type
         header['date_time'] = str(datetime.now().day) + '.' + str(datetime.now().month) + '.' + \
-                              str(datetime.now().year) + " " + str(datetime.now().hour) + ':' + \
-                              str(datetime.now().minute) + ':' + str(datetime.now().second)
+                                str(datetime.now().year) + " " + str(datetime.now().hour) + ':' + \
+                                str(datetime.now().minute) + ':' + str(datetime.now().second)
 
         mesh = dict()
         mesh['fe_type'] = self.__mesh__.fe_type
