@@ -11,8 +11,8 @@ from numpy import array
 from numpy import zeros
 from numpy.linalg import det
 from numpy.linalg import inv
-from fem_error import TFEMException
-from fem_defs import eps
+from core.fem_error import TFEMException
+from core.fem_defs import eps
 
 
 # Абстрактный базовый класс, описывающий конечный элемент (КЭ)

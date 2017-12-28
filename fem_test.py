@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from fem_defs import DIR_X, DIR_Y, DIR_Z, INIT_U, INIT_V, INIT_U_T, INIT_V_T, INIT_U_T_T, INIT_V_T_T
-from fem_object import TObject
+from core.fem_defs import DIR_X, DIR_Y, DIR_Z, INIT_U, INIT_V, INIT_U_T, INIT_V_T, INIT_U_T_T, INIT_V_T_T
+from core.fem_object import TObject
 
 
 def body1d():
@@ -72,6 +72,7 @@ def cube_test():
         obj.add_surface_load('-1000', 'y=1', DIR_Y)
         if obj.calc():
             obj.print_result()
+            obj.plot('U')
 
 
 def beam():
@@ -120,6 +121,7 @@ def console():
         obj.add_concentrated_load('-1.0E+6', 'x=10', DIR_Y)
         if obj.calc():
             obj.print_result()
+            obj.save_json('console.json')
             obj.plot('U')
             obj.plot('V')
             obj.plot('Exx')
@@ -165,6 +167,8 @@ def quad():
         obj.add_concentrated_load('-1.0E+5', 'y=1', DIR_Y)
         if obj.calc():
             obj.print_result()
+            obj.plot('U')
+            obj.plot('V')
 
 
 def cylinder():
@@ -296,6 +300,7 @@ def console_dynamic():
         obj.add_initial_condition('0', INIT_V_T_T)
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
+            obj.save_json('console_dynamic.json')
             obj.plot('U', 0.0)
             obj.plot('U', 0.25)
             obj.plot('U', 0.5)
@@ -312,9 +317,9 @@ if __name__ == "__main__":
     # tank3()
     # cylinder()
     # quad()
-    console4()
+    # console4()
     # cube_test()
-    # console_dynamic()
+    console_dynamic()
 
 """
 1. Добавить загрузку названий функций в объект

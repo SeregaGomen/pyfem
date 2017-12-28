@@ -5,12 +5,12 @@
 #######################################################################
 
 from abc import abstractmethod
-from fem_mesh import TMesh
-from fem_params import TFEMParams
-from fem_progress import TProgress
-from fem_fe import TFE, TFE1D2, TFE2D3, TFE2D4, TFE3D4, TFE3D8
-from fem_parser import TParser
-from fem_error import TFEMException
+from core.fem_mesh import TMesh
+from core.fem_params import TFEMParams
+from core.fem_progress import TProgress
+from core.fem_fe import TFE, TFE1D2, TFE2D3, TFE2D4, TFE3D4, TFE3D8
+from core.fem_parser import TParser
+from core.fem_error import TFEMException
 
 
 # Абстрактный базовый класс, реализующий МКЭ

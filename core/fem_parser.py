@@ -4,8 +4,8 @@
 # Реализация интерпретатора арифметических и логических выражений
 ###################################################################
 
-from fem_error import TFEMException
-from fem_tree import TTree
+from core.fem_error import TFEMException
+from core.fem_tree import TTree
 
 # Типы лексем
 token = [

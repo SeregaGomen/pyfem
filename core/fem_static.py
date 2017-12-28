@@ -6,9 +6,9 @@
 
 from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve, bicgstab, ArpackError
-from fem_fem import TFEM
-from fem_defs import DIR_X, DIR_Y, DIR_Z
-from fem_result import TResult
+from core.fem_fem import TFEM
+from core.fem_defs import DIR_X, DIR_Y, DIR_Z
+from core.fem_result import TResult
 
 
 class TFEMStatic(TFEM):
@@ -103,7 +103,7 @@ class TFEMStatic(TFEM):
 
     # Вычисление поверхностных нагрузок
     def __prepare_surface_load__(self, t=0):
-        if not len(self.__mesh__.surface):
+        if not len(self.__mesh__.be):
             return
         parser = self.__create_parser__()
         counter = 0
@@ -112,19 +112,19 @@ class TFEMStatic(TFEM):
                 counter += 1
         if not counter:
             return
-        self.__progress__.set_process('Computation of surface load...', 1, counter*len(self.__mesh__.surface))
+        self.__progress__.set_process('Computation of surface load...', 1, counter*len(self.__mesh__.be))
         counter = 1
         for i in range(0, len(self.__params__.bc_list)):
             if self.__params__.bc_list[i].type != 'surface':
                 continue
-            for j in range(0, len(self.__mesh__.surface)):
+            for j in range(0, len(self.__mesh__.be)):
                 self.__progress__.set_progress(counter)
                 counter += 1
                 if not self.__check_boundary_elements__(j, self.__params__.bc_list[i].predicate):
                     continue
-                rel_se = self.__mesh__.square(j)/float(len(self.__mesh__.surface[j]))
-                for k in range(0, len(self.__mesh__.surface[j])):
-                    x, y, z = self.__mesh__.get_coord(self.__mesh__.surface[j][k])
+                rel_se = self.__mesh__.square(j)/float(len(self.__mesh__.be[j]))
+                for k in range(0, len(self.__mesh__.be[j])):
+                    x, y, z = self.__mesh__.get_coord(self.__mesh__.be[j][k])
                     parser.set_variable(self.__params__.names[0], x)
                     parser.set_variable(self.__params__.names[1], y)
                     parser.set_variable(self.__params__.names[2], z)
@@ -132,11 +132,11 @@ class TFEMStatic(TFEM):
                     parser.set_code(self.__params__.bc_list[i].expression)
                     val = parser.run()
                     if self.__params__.bc_list[i].direct & DIR_X:
-                        self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 0] += val*rel_se
+                        self.__global_load__[self.__mesh__.be[j][k]*self.__mesh__.freedom + 0] += val*rel_se
                     if self.__params__.bc_list[i].direct & DIR_Y:
-                        self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 1] += val*rel_se
+                        self.__global_load__[self.__mesh__.be[j][k]*self.__mesh__.freedom + 1] += val*rel_se
                     if self.__params__.bc_list[i].direct & DIR_Z:
-                        self.__global_load__[self.__mesh__.surface[j][k]*self.__mesh__.freedom + 2] += val*rel_se
+                        self.__global_load__[self.__mesh__.be[j][k]*self.__mesh__.freedom + 2] += val*rel_se
 
     # Вычисление объемных нагрузок
     def __prepare_volume_load__(self, t=0):
@@ -283,8 +283,8 @@ class TFEMStatic(TFEM):
         if not len(predicate):
             return True
         parser = self.__create_parser__()
-        for k in range(0, len(self.__mesh__.surface[0])):
-            x, y, z = self.__mesh__.get_coord(self.__mesh__.surface[i][k])
+        for k in range(0, len(self.__mesh__.be[0])):
+            x, y, z = self.__mesh__.get_coord(self.__mesh__.be[i][k])
             parser.set_variable(self.__params__.names[0], x)
             parser.set_variable(self.__params__.names[1], y)
             parser.set_variable(self.__params__.names[2], z)

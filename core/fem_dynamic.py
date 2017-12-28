@@ -7,8 +7,8 @@
 import math
 from scipy.sparse import lil_matrix, coo_matrix
 from numpy import zeros, savez, load
-from fem_defs import INIT_U, INIT_V, INIT_W, INIT_U_T, INIT_V_T, INIT_W_T, INIT_U_T_T, INIT_V_T_T, INIT_W_T_T
-from fem_static import TFEMStatic
+from core.fem_defs import INIT_U, INIT_V, INIT_W, INIT_U_T, INIT_V_T, INIT_W_T, INIT_U_T_T, INIT_V_T_T, INIT_W_T_T
+from core.fem_static import TFEMStatic
 
 
 # Сохранение разреженной матрицы в файл
