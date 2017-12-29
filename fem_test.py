@@ -21,9 +21,13 @@ def body1d():
         obj.add_concentrated_load('-1.0E+5', 'x=1', DIR_X)
         if obj.calc():
             obj.print_result()
-            obj.plot('U')
-            obj.plot('Exx')
-            obj.plot('Sxx')
+            obj.save_result('body1d')
+
+            plt = TSimplePlot()
+            if plt.set_results('body1d'):
+                plt.plot('U')
+                plt.plot('Exx')
+                plt.plot('Sxx')
 
 
 def cube():
@@ -42,21 +46,6 @@ def cube():
     #    obj.add_concentrated_load('-1000', 'z=1', DIR_Z)
         if obj.calc():
             obj.print_result()
-            obj.plot('U')
-            obj.plot('V')
-            obj.plot('W')
-            obj.plot('Exx')
-            obj.plot('Eyy')
-            obj.plot('Ezz')
-            obj.plot('Exy')
-            obj.plot('Exz')
-            obj.plot('Eyz')
-            obj.plot('Sxx')
-            obj.plot('Syy')
-            obj.plot('Szz')
-            obj.plot('Sxy')
-            obj.plot('Sxz')
-            obj.plot('Syz')
 
 
 def cube_test():
@@ -73,7 +62,6 @@ def cube_test():
         obj.add_surface_load('-1000', 'y=1', DIR_Y)
         if obj.calc():
             obj.print_result()
-            obj.plot('U')
 
 
 def beam():
@@ -90,21 +78,6 @@ def beam():
         obj.add_volume_load('-1.0E+5', '', DIR_Y)
         if obj.calc():
             obj.print_result()
-            obj.plot('U')
-            obj.plot('V')
-            obj.plot('W')
-            obj.plot('Exx')
-            obj.plot('Eyy')
-            obj.plot('Ezz')
-            obj.plot('Exy')
-            obj.plot('Exz')
-            obj.plot('Eyz')
-            obj.plot('Sxx')
-            obj.plot('Syy')
-            obj.plot('Szz')
-            obj.plot('Sxy')
-            obj.plot('Sxz')
-            obj.plot('Syz')
 
 
 def console():
@@ -122,15 +95,18 @@ def console():
         obj.add_concentrated_load('-1.0E+6', 'x=10', DIR_Y)
         if obj.calc():
             obj.print_result()
-            obj.save_json('console.json')
-            obj.plot('U')
-            obj.plot('V')
-            obj.plot('Exx')
-            obj.plot('Eyy')
-            obj.plot('Exy')
-            obj.plot('Sxx')
-            obj.plot('Syy')
-            obj.plot('Sxy')
+            obj.save_result('console')
+
+            plt = TSimplePlot()
+            if plt.set_results('console'):
+                plt.plot('U')
+                plt.plot('V')
+                plt.plot('Exx')
+                plt.plot('Eyy')
+                plt.plot('Exy')
+                plt.plot('Sxx')
+                plt.plot('Syy')
+                plt.plot('Sxy')
 
 
 def console4():
@@ -149,9 +125,6 @@ def console4():
         obj.add_volume_load('-1.0E+5', '', DIR_Y)
         if obj.calc():
             obj.print_result()
-            obj.plot('U')
-            obj.plot('V')
-            obj.plot('Exx')
 
 
 def quad():
@@ -168,8 +141,6 @@ def quad():
         obj.add_concentrated_load('-1.0E+5', 'y=1', DIR_Y)
         if obj.calc():
             obj.print_result()
-            obj.plot('U')
-            obj.plot('V')
 
 
 def cylinder():
@@ -191,22 +162,27 @@ def cylinder():
         obj.add_concentrated_load('1.0e+4*cos(atan2(y,z))', 'abs(y^2 + z^2 - 0.25^2) <= eps', DIR_Z)
         obj.add_concentrated_load('1.0e+4*sin(atan2(y,z))', 'abs(y^2 + z^2 - 0.25^2) <= eps', DIR_Y)
         if obj.calc():
+            # obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.print_result()
-            obj.plot('U')
-            obj.plot('V')
-            obj.plot('W')
-            obj.plot('Exx')
-            obj.plot('Eyy')
-            obj.plot('Ezz')
-            obj.plot('Exy')
-            obj.plot('Exz')
-            obj.plot('Eyz')
-            obj.plot('Sxx')
-            obj.plot('Syy')
-            obj.plot('Szz')
-            obj.plot('Sxy')
-            obj.plot('Sxz')
-            obj.plot('Syz')
+            obj.save_result('cylinder')
+
+            plt = TSimplePlot()
+            if plt.set_results('cylinder'):
+                plt.plot('U')
+                plt.plot('V')
+                plt.plot('W')
+                plt.plot('Exx')
+                plt.plot('Eyy')
+                plt.plot('Ezz')
+                plt.plot('Exy')
+                plt.plot('Exz')
+                plt.plot('Eyz')
+                plt.plot('Sxx')
+                plt.plot('Syy')
+                plt.plot('Szz')
+                plt.plot('Sxy')
+                plt.plot('Sxz')
+                plt.plot('Syz')
 
 
 def tank3():
@@ -224,38 +200,76 @@ def tank3():
         obj.add_boundary_condition('0', 'y=-0.598 and abs(x^2+z^2-1.6635^2)<=eps', DIR_X | DIR_Y | DIR_Z)
         obj.add_boundary_condition('0', 'x=0', DIR_X)
         obj.add_boundary_condition('0', 'z=0', DIR_Z)
-        obj.add_surface_load('1.0e+4*cos(atan2(z,x))','(y <= 0 and y>=-0.2690) and (abs(x^2 + z^2 - (1.037-min)^2) <= eps)',DIR_X)
-        obj.add_surface_load('1.0e+4*sin(atan2(z,x))','(y <= 0 and y>=-0.2690) and (abs(x^2 + z^2 - (1.037-min)^2) <= eps)',DIR_Z)
-        obj.add_surface_load('1.0e+4*cos(atan2(z,x))*sin(atan2((x^2+z^2)^0.5,(y + 0.2690)))','(y < -0.2690) and (abs(x^2 + z^2 + (y + 0.2690)^2 - (1.037-min)^2) <= eps)',DIR_X)
-        obj.add_surface_load('1.0e+4*cos(atan2((x^2+z^2)^0.5,(y + 0.2690)))','(y < -0.2690) and (abs(x^2 + z^2 + (y + 0.2690)^2 - (1.037-min)^2) <= eps)',DIR_Y)
-        obj.add_surface_load('1.0e+4*sin(atan2(z,x))*sin(atan2((x^2+z^2)^0.5,(y + 0.2690)))','(y < -0.2690) and (abs(x^2 + z^2 + (y + 0.2690)^2 - (1.037-min)^2) <= eps)',DIR_Z)
-        obj.add_surface_load('1.0e+4*cos(atan2(z,x))*sin(atan2((x^2+z^2)^0.5,y))','(y > 0) and (abs(x^2 + y^2 + z^2 - (1.037-min)^2) <= eps)',DIR_X)
-        obj.add_surface_load('1.0e+4*cos(atan2((x^2+z^2)^0.5,y))','(y > 0) and (abs(x^2 + y^2 + z^2 - (1.037-min)^2) <= eps)',DIR_Y)
-        obj.add_surface_load('1.0e+4*sin(atan2(z,x))*sin(atan2((x^2+z^2)^0.5,y))','(y > 0) and (abs(x^2 + y^2 + z^2 - (1.037-min)^2) <= eps)',DIR_Z)
-        obj.add_surface_load('-5.0e+3*cos(atan2(z,x))','(y <= 0 and y>=-0.2690) and (abs(x^2 + z^2 - (1.037)^2) <= eps)',DIR_X)
-        obj.add_surface_load('-5.0e+3*sin(atan2(z,x))','(y <= 0 and y>=-0.2690) and (abs(x^2 + z^2 - (1.037)^2) <= eps)',DIR_Z)
-        obj.add_surface_load('-5.0e+3*cos(atan2(z,x))*sin(atan2((x^2+z^2)^0.5,(y + 0.2690)))','(y < -0.2690) and (abs(x^2 + z^2 + (y + 0.2690)^2 - (1.037)^2) <= eps)',DIR_X)
-        obj.add_surface_load('-5.0e+3*cos(atan2((x^2+z^2)^0.5,(y + 0.2690)))','(y < -0.2690) and (abs(x^2 + z^2 + (y + 0.2690)^2 - (1.037)^2) <= eps)',DIR_Y)
-        obj.add_surface_load('-5.0e+3*sin(atan2(z,x))*sin(atan2((x^2+z^2)^0.5,(y + 0.2690)))','(y < -0.2690) and (abs(x^2 + z^2 + (y + 0.2690)^2 - (1.037)^2) <= eps)',DIR_Z)
-        obj.add_surface_load('-5.e+3','(y=-1.7235) and (x^2+z^2 - 0.34205^2 <= eps)',DIR_Y)
-        obj.add_surface_load('-5.e+3','(y=-1.944) and (x^2+z^2 - 0.657857^2 <= eps and x^2+z^2 - 0.562143^2 >= eps)',DIR_Y)
-        obj.add_surface_load('5.0e+3*cos(atan2(z,x))','abs(y+0.6431) <= eps and abs(x^2 + z^2 - 1.6389^2) <= eps',DIR_X)
-        obj.add_surface_load('5.0e+3*sin(atan2(z,x))','abs(y+0.6431) <= eps and abs(x^2 + z^2 - 1.6389^2) <= eps',DIR_Z)
-        obj.add_surface_load('5.0e+3*x*(1.0644108554^2)/(((x*(1.0644108554^2))^2+(y+1.1013629509)^2+(z*(1.0644108554^2))^2)^0.5)','(y>-0.6431 and y <-0.0234) and abs(y-((x^2+z^2)^0.5)*(-1.0644108554)-1.1013629509)<=eps',DIR_X)
-        obj.add_surface_load('5.0e+3*(y+1.1013629509)/(((x*(1.0644108554^2))^2+(y+1.1013629509)^2+(z*(1.0644108554^2))^2)^0.5)','(y>-0.6431 and y <-0.0234) and abs(y-((x^2+z^2)^0.5)*(-1.0644108554)-1.1013629509)<=eps',DIR_Y)
-        obj.add_surface_load('5.0e+3*z*(1.0644108554^2)/(((x*(1.0644108554^2))^2+(y+1.1013629509)^2+(z*(1.0644108554^2))^2)^0.5)','(y>-0.6431 and y <-0.0234) and abs(y-((x^2+z^2)^0.5)*(-1.0644108554)-1.1013629509)<=eps',DIR_Z)
-        obj.add_surface_load('-5.0e+3*x*(1.0018498686^2)/(((x*(1.0018498686^2))^2+(z*(1.0018498686^2))^2+(y-1.3808172524)^2)^0.5)','(y>-1.944 and y <-1.7235) and abs(y - ((x^2+z^2)^0.5)*(-1.0018498686)+1.3808172524)<=eps',DIR_X)
-        obj.add_surface_load('5.0e+3*(y-1.3808172524)/(((x*(1.0018498686^2))^2+(z*(1.0018498686^2))^2+(y-1.3808172524)^2)^0.5)','(y>-1.944 and y <-1.7235) and abs(y - ((x^2+z^2)^0.5)*(-1.0018498686)+1.3808172524)<=eps',DIR_Y)
-        obj.add_surface_load('-5.0e+3*z*(1.0018498686^2)/(((x*(1.0018498686^2))^2+(z*(1.0018498686^2))^2+(y-1.3808172524)^2)^0.5)','(y>-1.944 and y <-1.7235) and abs(y - ((x^2+z^2)^0.5)*(-1.0018498686)+1.3808172524)<=eps',DIR_Z)
-        obj.add_surface_load('5.0e+3*x*(1.3260378897^2)/(((3*x*(1.3260378897^2))^2+(y-2.8163434974)^2+(3*z*(1.3260378897^2))^2)^0.5)','(y>-1.944 and y < -0.6431) and abs(y-((x^2+z^2)^0.5)*(1.3260378897)+2.8163434974)<=eps',DIR_X)
-        obj.add_surface_load('5.0e+3*(y-2.8163434974)/(((3*x*(1.3260378897^2))^2+(y-2.8163434974)^2+(3*z*(1.3260378897^2))^2)^0.5)','(y>-1.944 and y < -0.6431) and abs(y-((x^2+z^2)^0.5)*(1.3260378897)+2.8163434974)<=eps',DIR_Y)
-        obj.add_surface_load('5.0e+3*z*(1.3260378897^2)/(((3*x*(1.3260378897^2))^2+(y-2.8163434974)^2+(3*z*(1.3260378897^2))^2)^0.5)','(y>-1.944 and y < -0.6431) and abs(y-((x^2+z^2)^0.5)*(1.3260378897)+2.8163434974)<=eps',DIR_Z)
+        obj.add_surface_load('1.0e+4*cos(atan2(z,x))',
+                             '(y <= 0 and y>=-0.2690) and (abs(x^2 + z^2 - (1.037-min)^2) <= eps)', DIR_X)
+        obj.add_surface_load('1.0e+4*sin(atan2(z,x))',
+                             '(y <= 0 and y>=-0.2690) and (abs(x^2 + z^2 - (1.037-min)^2) <= eps)', DIR_Z)
+        obj.add_surface_load('1.0e+4*cos(atan2(z,x))*sin(atan2((x^2+z^2)^0.5,(y + 0.2690)))',
+                             '(y < -0.2690) and (abs(x^2 + z^2 + (y + 0.2690)^2 - (1.037-min)^2) <= eps)', DIR_X)
+        obj.add_surface_load('1.0e+4*cos(atan2((x^2+z^2)^0.5,(y + 0.2690)))',
+                             '(y < -0.2690) and (abs(x^2 + z^2 + (y + 0.2690)^2 - (1.037-min)^2) <= eps)', DIR_Y)
+        obj.add_surface_load('1.0e+4*sin(atan2(z,x))*sin(atan2((x^2+z^2)^0.5,(y + 0.2690)))',
+                             '(y < -0.2690) and (abs(x^2 + z^2 + (y + 0.2690)^2 - (1.037-min)^2) <= eps)', DIR_Z)
+        obj.add_surface_load('1.0e+4*cos(atan2(z,x))*sin(atan2((x^2+z^2)^0.5,y))',
+                             '(y > 0) and (abs(x^2 + y^2 + z^2 - (1.037-min)^2) <= eps)', DIR_X)
+        obj.add_surface_load('1.0e+4*cos(atan2((x^2+z^2)^0.5,y))',
+                             '(y > 0) and (abs(x^2 + y^2 + z^2 - (1.037-min)^2) <= eps)', DIR_Y)
+        obj.add_surface_load('1.0e+4*sin(atan2(z,x))*sin(atan2((x^2+z^2)^0.5,y))',
+                             '(y > 0) and (abs(x^2 + y^2 + z^2 - (1.037-min)^2) <= eps)', DIR_Z)
+        obj.add_surface_load('-5.0e+3*cos(atan2(z,x))', '(y <= 0 and y>=-0.2690) and (abs(x^2 + z^2 - \
+        (1.037)^2) <= eps)', DIR_X)
+        obj.add_surface_load('-5.0e+3*sin(atan2(z,x))', '(y <= 0 and y>=-0.2690) and (abs(x^2 + z^2 - \
+        (1.037)^2) <= eps)', DIR_Z)
+        obj.add_surface_load('-5.0e+3*cos(atan2(z,x))*sin(atan2((x^2+z^2)^0.5,(y + 0.2690)))',
+                             '(y < -0.2690) and (abs(x^2 + z^2 + (y + 0.2690)^2 - (1.037)^2) <= eps)', DIR_X)
+        obj.add_surface_load('-5.0e+3*cos(atan2((x^2+z^2)^0.5,(y + 0.2690)))',
+                             '(y < -0.2690) and (abs(x^2 + z^2 + (y + 0.2690)^2 - (1.037)^2) <= eps)', DIR_Y)
+        obj.add_surface_load('-5.0e+3*sin(atan2(z,x))*sin(atan2((x^2+z^2)^0.5,(y + 0.2690)))',
+                             '(y < -0.2690) and (abs(x^2 + z^2 + (y + 0.2690)^2 - (1.037)^2) <= eps)', DIR_Z)
+        obj.add_surface_load('-5.e+3', '(y=-1.7235) and (x^2+z^2 - 0.34205^2 <= eps)', DIR_Y)
+        obj.add_surface_load('-5.e+3', '(y=-1.944) and (x^2+z^2 - 0.657857^2 <= eps and x^2+z^2 - 0.562143^2 >= eps)',
+                             DIR_Y)
+        obj.add_surface_load('5.0e+3*cos(atan2(z,x))', 'abs(y+0.6431) <= eps and abs(x^2 + z^2 - 1.6389^2) <= eps',
+                             DIR_X)
+        obj.add_surface_load('5.0e+3*sin(atan2(z,x))', 'abs(y+0.6431) <= eps and abs(x^2 + z^2 - 1.6389^2) <= eps',
+                             DIR_Z)
+        obj.add_surface_load('5.0e+3*x*(1.0644108554^2)/(((x*(1.0644108554^2))^2+(y+1.1013629509)^2+\
+        (z*(1.0644108554^2))^2)^0.5)',
+                             '(y>-0.6431 and y <-0.0234) and abs(y-((x^2+z^2)^0.5)*(-1.0644108554)-1.1013629509)<=eps',
+                             DIR_X)
+        obj.add_surface_load('5.0e+3*(y+1.1013629509)/(((x*(1.0644108554^2))^2+(y+1.1013629509)^2+\
+        (z*(1.0644108554^2))^2)^0.5)', '(y>-0.6431 and y <-0.0234) and abs(y-((x^2+z^2)^0.5)*\
+        (-1.0644108554)-1.1013629509)<=eps', DIR_Y)
+        obj.add_surface_load('5.0e+3*z*(1.0644108554^2)/(((x*(1.0644108554^2))^2+(y+1.1013629509)^2+\
+        (z*(1.0644108554^2))^2)^0.5)', '(y>-0.6431 and y <-0.0234) and abs(y-((x^2+z^2)^0.5)*\
+        (-1.0644108554)-1.1013629509)<=eps', DIR_Z)
+        obj.add_surface_load('-5.0e+3*x*(1.0018498686^2)/(((x*(1.0018498686^2))^2+(z*(1.0018498686^2))^2+\
+        (y-1.3808172524)^2)^0.5)', '(y>-1.944 and y <-1.7235) and abs(y - ((x^2+z^2)^0.5)*\
+        (-1.0018498686)+1.3808172524)<=eps', DIR_X)
+        obj.add_surface_load('5.0e+3*(y-1.3808172524)/(((x*(1.0018498686^2))^2+(z*(1.0018498686^2))^2+\
+        (y-1.3808172524)^2)^0.5)', '(y>-1.944 and y <-1.7235) and abs(y - ((x^2+z^2)^0.5)*(-1.0018498686)+\
+        1.3808172524)<=eps', DIR_Y)
+        obj.add_surface_load('-5.0e+3*z*(1.0018498686^2)/(((x*(1.0018498686^2))^2+(z*(1.0018498686^2))^2+\
+        (y-1.3808172524)^2)^0.5)', '(y>-1.944 and y <-1.7235) and abs(y - ((x^2+z^2)^0.5)*(-1.0018498686)+\
+        1.3808172524)<=eps', DIR_Z)
+        obj.add_surface_load('5.0e+3*x*(1.3260378897^2)/(((3*x*(1.3260378897^2))^2+(y-2.8163434974)^2+\
+        (3*z*(1.3260378897^2))^2)^0.5)', '(y>-1.944 and y < -0.6431) and abs(y-((x^2+z^2)^0.5)*(1.3260378897)+\
+        2.8163434974)<=eps', DIR_X)
+        obj.add_surface_load('5.0e+3*(y-2.8163434974)/(((3*x*(1.3260378897^2))^2+(y-2.8163434974)^2+\
+        (3*z*(1.3260378897^2))^2)^0.5)', '(y>-1.944 and y < -0.6431) and abs(y-((x^2+z^2)^0.5)*(1.3260378897)+\
+        2.8163434974)<=eps', DIR_Y)
+        obj.add_surface_load('5.0e+3*z*(1.3260378897^2)/(((3*x*(1.3260378897^2))^2+(y-2.8163434974)^2+\
+        (3*z*(1.3260378897^2))^2)^0.5)', '(y>-1.944 and y < -0.6431) and abs(y-((x^2+z^2)^0.5)*(1.3260378897)+\
+        2.8163434974)<=eps', DIR_Z)
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
-            obj.save_json('tank3.json')
-            obj.plot('U')
-            obj.plot('V')
-            obj.plot('W')
+            obj.save_result('tank3')
+
+            plt = TSimplePlot()
+            if plt.set_results('tank3'):
+                plt.plot('U')
+                plt.plot('V')
+                plt.plot('W')
 
 
 def head3d():
@@ -275,8 +289,12 @@ def head3d():
         obj.add_surface_load('-1*cos(atan2(z,x))', 'abs(x^2 + z^2 - 210^2) <=0.001', DIR_X)
         obj.add_surface_load('-1*sin(atan2(z,x))', 'abs(x^2 + z^2 - 210^2) <= 0.001', DIR_Z)
         if obj.calc():
-            obj.print_result()
-            obj.plot('U')
+            obj.save_result('head3d')
+            plt = TSimplePlot()
+            if plt.set_results('head3d'):
+                plt.plot('U')
+                plt.plot('V')
+                plt.plot('W')
 
 
 def console_dynamic():
@@ -302,16 +320,15 @@ def console_dynamic():
         obj.add_initial_condition('0', INIT_V_T_T)
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
-            obj.save_json('console_dynamic.json')
+            obj.save_result('console_dynamic')
 
-            plot = TSimplePlot()
-            plot.set_file('console_dynamic.json')
-
-            obj.plot('U', 0.0)
-            obj.plot('U', 0.25)
-            obj.plot('U', 0.5)
-            obj.plot('U', 0.75)
-            obj.plot('U', 1.0)
+            plt = TSimplePlot()
+            if plt.set_results('console_dynamic'):
+                plt.plot('U', 0.0)
+                plt.plot('U', 0.25)
+                plt.plot('U', 0.5)
+                plt.plot('U', 0.75)
+                plt.plot('U', 1.0)
 
 
 if __name__ == "__main__":
@@ -319,13 +336,13 @@ if __name__ == "__main__":
     # head3d()
     # body1d()
     # cube()
-    # console()
     # tank3()
-    # cylinder()
+    cylinder()
     # quad()
     # console4()
     # cube_test()
-    console_dynamic()
+    # console_dynamic()
+    # console()
 
 """
 1. Добавить загрузку названий функций в объект
