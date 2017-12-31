@@ -4,6 +4,7 @@
 from core.fem_defs import DIR_X, DIR_Y, DIR_Z, INIT_U, INIT_V, INIT_U_T, INIT_V_T, INIT_U_T_T, INIT_V_T_T
 from core.fem_object import TObject
 from plot.simpleplot import TSimplePlot
+from plot.plot3d import TPlot3d
 
 
 def body1d():
@@ -322,13 +323,14 @@ def console_dynamic():
             obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.save_result('console_dynamic')
 
-            plt = TSimplePlot()
+            plt = TPlot3d()
             if plt.set_results('console_dynamic'):
                 plt.plot('U', 0.0)
-                plt.plot('U', 0.25)
-                plt.plot('U', 0.5)
-                plt.plot('U', 0.75)
-                plt.plot('U', 1.0)
+                # plt.plot('U', 0.0)
+                # plt.plot('U', 0.25)
+                # plt.plot('U', 0.5)
+                # plt.plot('U', 0.75)
+                # plt.plot('U', 1.0)
 
 
 if __name__ == "__main__":
@@ -337,11 +339,11 @@ if __name__ == "__main__":
     # body1d()
     # cube()
     # tank3()
-    cylinder()
+    # cylinder()
     # quad()
     # console4()
     # cube_test()
-    # console_dynamic()
+    console_dynamic()
     # console()
 
 """

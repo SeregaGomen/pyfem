@@ -14,7 +14,7 @@ class TFEMException(Exception):
         if self.error == 'brackets_err':
             err_msg += 'unbalanced or unexpected bracket'
         elif self.error == 'syntax_err':
-            err_msg += 'syntax error'
+            err_msg += 'syntax print_error'
         elif self.error == 'undef_err':
             err_msg += 'undefined variable or function'
         elif self.error == 'redefinition_err':
@@ -22,7 +22,7 @@ class TFEMException(Exception):
         elif self.error == 'incorrect_fe_err':
             err_msg += 'incorrect finite element'
         elif self.error == 'read_file_err':
-            err_msg += 'read file error'
+            err_msg += 'read file print_error'
         elif self.error == 'unknown_fe_err':
             err_msg += 'unknown finite element type'
         elif self.error == 'solve_method_err':

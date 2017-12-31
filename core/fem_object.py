@@ -18,7 +18,7 @@ from core.fem_error import TFEMException
 
 
 # Вывод сообщения об ошибке
-def error(err_msg):
+def print_error(err_msg):
     print('\033[1;31m%s\033[1;m' % err_msg)
 
 
@@ -114,7 +114,7 @@ class TObject:
             if len(argv) == 1:
                 file = open(argv[0], 'w')
         except IOError:
-            error('Error: unable to open file %s' % argv[0])
+            print_error('Error: unable to open file %s' % argv[0])
             return
         if self.__params__.problem_type == 'static':
             self.__print__(file)

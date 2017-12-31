@@ -12,7 +12,7 @@ from math import floor
 from matplotlib import cm
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from core.fem_result import TResult
-from core.fem_object import error
+from core.fem_object import print_error
 
 
 class TSimplePlot:
@@ -31,7 +31,7 @@ class TSimplePlot:
             file_name += '.json'
 
         if not os.path.exists(file_name):
-            error('Unable open file ' + file_name)
+            print_error('Unable open file ' + file_name)
             return False
 
         with open(file_name, 'r') as file:
@@ -63,7 +63,7 @@ class TSimplePlot:
                 index = i
                 break
         if index == -1:
-            error('Error: \'%s\' is not a recognized function name or incorrect time' % fun_name)
+            print_error('Error: \'%s\' is not a recognized function name or incorrect time' % fun_name)
             return
         # Визуализация результата
         if self.__fe_type__ == 'fe_1d_2':

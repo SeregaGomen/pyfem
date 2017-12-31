@@ -303,5 +303,5 @@ class TParser:
 # parser.add_variable('y', 0)
 # parser.add_variable('R', 2)
 # parser.set_code(code)
-# if parser.error == '':
+# if parser.print_error == '':
 #   print(parser.run())
