@@ -98,16 +98,17 @@ def console():
             obj.print_result()
             obj.save_result('console')
 
-            plt = TSimplePlot()
+            plt = TPlot3d()
             if plt.set_results('console'):
-                plt.plot('U')
+
+                # plt.plot('U')
                 plt.plot('V')
-                plt.plot('Exx')
-                plt.plot('Eyy')
-                plt.plot('Exy')
-                plt.plot('Sxx')
-                plt.plot('Syy')
-                plt.plot('Sxy')
+                # plt.plot('Exx')
+                # plt.plot('Eyy')
+                # plt.plot('Exy')
+                # plt.plot('Sxx')
+                # plt.plot('Syy')
+                # plt.plot('Sxy')
 
 
 def console4():
@@ -126,6 +127,11 @@ def console4():
         obj.add_volume_load('-1.0E+5', '', DIR_Y)
         if obj.calc():
             obj.print_result()
+            obj.save_result('console4')
+
+            plt = TPlot3d()
+            if plt.set_results('console4'):
+                plt.plot('V')
 
 
 def quad():
@@ -325,7 +331,7 @@ def console_dynamic():
 
             plt = TPlot3d()
             if plt.set_results('console_dynamic'):
-                plt.plot('U', 0.0)
+                plt.plot('V', 0.0)
                 # plt.plot('U', 0.0)
                 # plt.plot('U', 0.25)
                 # plt.plot('U', 0.5)
@@ -341,10 +347,10 @@ if __name__ == "__main__":
     # tank3()
     # cylinder()
     # quad()
-    # console4()
     # cube_test()
-    console_dynamic()
-    # console()
+    # console_dynamic()
+    console()
+    #console4()
 
 """
 1. Добавить загрузку названий функций в объект
