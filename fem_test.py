@@ -24,11 +24,11 @@ def body1d():
             obj.print_result()
             obj.save_result('body1d')
 
-            plt = TSimplePlot()
+            plt = TPlot3d()
             if plt.set_results('body1d'):
-                plt.plot('U')
+                # plt.plot('U')
                 plt.plot('Exx')
-                plt.plot('Sxx')
+                # plt.plot('Sxx')
 
 
 def cube():
@@ -131,7 +131,7 @@ def console4():
 
             plt = TPlot3d()
             if plt.set_results('console4'):
-                plt.plot('V')
+                plt.plot('Syy')
 
 
 def quad():
@@ -342,7 +342,6 @@ def console_dynamic():
 if __name__ == "__main__":
     # beam()
     # head3d()
-    # body1d()
     # cube()
     # tank3()
     # cylinder()
@@ -350,7 +349,8 @@ if __name__ == "__main__":
     # cube_test()
     # console_dynamic()
     # console()
-    console4()
+    # console4()
+    body1d()
 
 """
 1. Добавить загрузку названий функций в объект

@@ -29,7 +29,9 @@ class TOpenGLWidget(QWidget):
         self.min_u = min(self.results)
         self.max_u = max(self.results)
         self.is_light = False
+        self.is_legend = True
         self.is_fe_border = False
+        self.is_object_border = False
         self.diffuse = 0.8
         self.ambient = 0.8
         self.specular = 0.6
@@ -164,24 +166,27 @@ class TOpenGLWidget(QWidget):
             step = ind[2] - ind[0] + 1
             p02 = []
             x = [tri[0][0], tri[0][1], tri[0][2], ind[0]]
-            h = [(tri[2][0] - tri[0][0])/step, (tri[2][1] - tri[0][1])/step, (tri[2][2] - tri[0][2])/step]
+            h = [(tri[2][0] - tri[0][0])/step, (tri[2][1] - tri[0][1])/step, (tri[2][2] - tri[0][2])/step,
+                 (ind[2] - ind[0])/step]
             for i in range(0, step):
-                p02.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], ind[0] + i])
+                p02.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], ind[0] + i*h[3]])
             p02.append([tri[2][0], tri[2][1], tri[2][2], ind[2]])
 
             step = ind[1] - ind[0] + 1
             p012 = []
             x = [tri[0][0], tri[0][1], tri[0][2], ind[0]]
-            h = [(tri[1][0] - tri[0][0])/step, (tri[1][1] - tri[0][1])/step, (tri[1][2] - tri[0][2])/step]
+            h = [(tri[1][0] - tri[0][0])/step, (tri[1][1] - tri[0][1])/step, (tri[1][2] - tri[0][2])/step,
+                 (ind[1] - ind[0])/step]
             for i in range(1, step):
-                p012.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], ind[0] + i])
+                p012.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], ind[0] + i*h[3]])
             p012.append([tri[1][0], tri[1][1], tri[1][2], ind[1]])
 
             step = ind[2] - ind[1] + 1
             x = [tri[1][0], tri[1][1], tri[1][2], ind[1]]
-            h = [(tri[2][0] - tri[1][0])/step, (tri[2][1] - tri[1][1])/step, (tri[2][2] - tri[1][2])/step]
+            h = [(tri[2][0] - tri[1][0])/step, (tri[2][1] - tri[1][1])/step, (tri[2][2] - tri[1][2])/step,
+                 (ind[2] - ind[1])/step]
             for i in range(1, step):
-                p012.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], ind[1] + i])
+                p012.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], ind[1] + i*h[3]])
 
             for i in range(0, len(p02) - 1):
                 if i < len(p012):
@@ -204,10 +209,63 @@ class TOpenGLWidget(QWidget):
                         glEnd()
 
 
-# Визуализация плоской задачи
-class TPlot2d34(TOpenGLWidget):
+# Визуализация одномерной задачи
+class TPlot1d(TOpenGLWidget):
     def __init__(self, x, fe, be, results, index):
-        super(TPlot2d34, self).__init__(x, fe, be, results, index)
+        super(TPlot1d, self).__init__(x, fe, be, results, index)
+        self.gl.paintGL = self.__paint__
+
+    def __paint__(self):
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glLoadIdentity()
+        glEnable(GL_POLYGON_OFFSET_FILL)
+        glPolygonOffset(1.0, 1.0)
+        if self.is_light:
+            glDisable(GL_COLOR_MATERIAL)
+            glEnable(GL_LIGHTING)
+        else:
+            glDisable(GL_LIGHTING)
+            glEnable(GL_COLOR_MATERIAL)
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glNormal3d(1, 0, 0)
+        # Изображение КЭ
+        for i in range(0, len(self.fe)):
+            rod = []
+            for j in range(0, len(self.fe[0])):
+                rod.append([self.x[self.fe[i][j]][0], self.results[self.fe[i][j]]])
+            rod = sorted(rod, key=lambda item: item[1])
+            ind = []
+            for j in range(0, 2):
+                ind.append(self.__get_color_index__(rod[j][1]))
+            if ind[0] == ind[1]:
+                self.set_color(self.color_table[ind[0]][0], self.color_table[ind[0]][1], self.color_table[ind[0]][2], 1)
+                glBegin(GL_LINES)
+                glVertex2f(rod[0][0] - self.x_c[0])
+                glVertex2f(rod[1][0])
+                glEnd()
+            else:
+                step = abs(ind[1] - ind[0]) + 1
+                x = rod[0][0]
+                h = (rod[1][0] - rod[0][0])/step
+                clr = ind[0]
+                for j in range(0, step):
+                    self.set_color(self.color_table[clr][0], self.color_table[clr][1], self.color_table[clr][2], 1)
+                    glBegin(GL_LINES)
+                    glVertex2f(x - self.x_c[0], 0)
+                    glVertex2f(x + h - self.x_c[0], 0)
+                    glEnd()
+                    x += h
+                    clr += 1
+        # Изображение цветовой шкалы
+        if self.is_legend:
+            self.show_legend()
+
+
+# Визуализация плоской задачи
+class TPlot2d(TOpenGLWidget):
+    def __init__(self, x, fe, be, results, index):
+        super(TPlot2d, self).__init__(x, fe, be, results, index)
         self.gl.paintGL = self.__paint__
 
     def __paint__(self):
@@ -224,13 +282,6 @@ class TPlot2d34(TOpenGLWidget):
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glNormal3d(0, 0, 1)
-        # Изображение границы области
-        for i in range(0, len(self.be)):
-            self.set_color(1, 1, 1, 1)
-            glBegin(GL_LINE_LOOP)
-            glVertex2f(self.x[self.be[i][0]][0] - self.x_c[0], self.x[self.be[i][0]][1] - self.x_c[1])
-            glVertex2f(self.x[self.be[i][1]][0] - self.x_c[0], self.x[self.be[i][1]][1] - self.x_c[1])
-            glEnd()
         # Изображение КЭ
         for i in range(0, len(self.fe)):
             tri = []
@@ -243,7 +294,17 @@ class TPlot2d34(TOpenGLWidget):
                 self.__paint_triangle__([tri[0], tri[3], tri[2]])
             if self.is_fe_border:
                 self.__paint_fe_border__(tri)
-        self.show_legend()
+        # Изображение границы области
+        if self.is_object_border:
+            for i in range(0, len(self.be)):
+                self.set_color(1, 1, 1, 1)
+                glBegin(GL_LINE_LOOP)
+                glVertex2f(self.x[self.be[i][0]][0] - self.x_c[0], self.x[self.be[i][0]][1] - self.x_c[1])
+                glVertex2f(self.x[self.be[i][1]][0] - self.x_c[0], self.x[self.be[i][1]][1] - self.x_c[1])
+                glEnd()
+        # Изображение цветовой шкалы
+        if self.is_legend:
+            self.show_legend()
 
     def __paint_fe_border__(self, tri):
         self.set_color(1, 1, 1, 1)
@@ -310,9 +371,9 @@ class TPlot3d:
         # Визуализация результата
         app = QApplication(sys.argv)
         if self.__fe_type__ == 'fe_1d_2':
-            window = TPlot1d2(self.__x__, self.__fe__, self.__be__, self.__results__, index)
+            window = TPlot1d(self.__x__, self.__fe__, self.__be__, self.__results__, index)
         elif self.__fe_type__ == 'fe_2d_3' or self.__fe_type__ == 'fe_2d_4':
-            window = TPlot2d34(self.__x__, self.__fe__, self.__be__, self.__results__, index)
+            window = TPlot2d(self.__x__, self.__fe__, self.__be__, self.__results__, index)
         elif self.__fe_type__ == 'fe_3d_4':
             window = TPlot3d4(self.__x__, self.__fe__, self.__be__, self.__results__, index)
         else:
