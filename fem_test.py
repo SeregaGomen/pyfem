@@ -101,8 +101,8 @@ def console():
             plt = TPlot3d()
             if plt.set_results('console'):
 
-                # plt.plot('U')
-                plt.plot('V')
+                plt.plot('U')
+                # plt.plot('V')
                 # plt.plot('Exx')
                 # plt.plot('Eyy')
                 # plt.plot('Exy')
@@ -349,8 +349,8 @@ if __name__ == "__main__":
     # quad()
     # cube_test()
     # console_dynamic()
-    console()
-    #console4()
+    # console()
+    console4()
 
 """
 1. Добавить загрузку названий функций в объект

@@ -29,7 +29,7 @@ class TOpenGLWidget(QWidget):
         self.min_u = min(self.results)
         self.max_u = max(self.results)
         self.is_light = False
-        self.is_fe_border = True
+        self.is_fe_border = False
         self.diffuse = 0.8
         self.ambient = 0.8
         self.specular = 0.6
@@ -119,9 +119,6 @@ class TOpenGLWidget(QWidget):
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [self.specular, self.specular, self.specular, a])
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, [0, 0, 0, a])
 
-#    def __get_color_index__(self, u):
-#        ret = int(floor((u - self.min_u)/((self.max_u - self.min_u)/self.num_color))) - 1
-#        return ret - 1 if ret >= 0 else 0
     def __get_color_index__(self, u):
         ret = int(floor((u - self.min_u)/((self.max_u - self.min_u)/self.num_color))) - 1
         return ret - 1 if ret > 0 else 0
@@ -165,49 +162,45 @@ class TOpenGLWidget(QWidget):
         else:
             # Изолинии проходят по треугольнику
             step = ind[2] - ind[0] + 1
-            if step == 0:
-                print(ind)
-                print(tri)
             p02 = []
-            x = [tri[0][0], tri[0][1], tri[0][2]]
+            x = [tri[0][0], tri[0][1], tri[0][2], ind[0]]
             h = [(tri[2][0] - tri[0][0])/step, (tri[2][1] - tri[0][1])/step, (tri[2][2] - tri[0][2])/step]
             for i in range(0, step):
-                p02.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2]])
-            p02.append([tri[2][0], tri[2][1], tri[2][2]])
+                p02.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], ind[0] + i])
+            p02.append([tri[2][0], tri[2][1], tri[2][2], ind[2]])
 
             step = ind[1] - ind[0] + 1
-            if step == 0:
-                print(ind)
-                print(tri)
             p012 = []
-            x = [tri[0][0], tri[0][1], tri[0][2]]
+            x = [tri[0][0], tri[0][1], tri[0][2], ind[0]]
             h = [(tri[1][0] - tri[0][0])/step, (tri[1][1] - tri[0][1])/step, (tri[1][2] - tri[0][2])/step]
             for i in range(1, step):
-                p012.append([x[0] + i * h[0], x[1] + i * h[1], x[2] + i * h[2]])
-            p012.append([tri[1][0], tri[1][1], tri[1][2]])
+                p012.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], ind[0] + i])
+            p012.append([tri[1][0], tri[1][1], tri[1][2], ind[1]])
 
             step = ind[2] - ind[1] + 1
-            x = [tri[1][0], tri[1][1], tri[1][2]]
+            x = [tri[1][0], tri[1][1], tri[1][2], ind[1]]
             h = [(tri[2][0] - tri[1][0])/step, (tri[2][1] - tri[1][1])/step, (tri[2][2] - tri[1][2])/step]
             for i in range(1, step):
-                p012.append([x[0] + i * h[0], x[1] + i * h[1], x[2] + i * h[2]])
+                p012.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], ind[1] + i])
 
-            clr = ind[0]
             for i in range(0, len(p02) - 1):
                 if i < len(p012):
+                    clr = round((p02[i][3] + p02[i + 1][3] + p012[i][3])/3)
                     self.set_color(self.color_table[clr][0], self.color_table[clr][1], self.color_table[clr][2], 1)
                     glBegin(GL_TRIANGLES)
                     glVertex3f(p02[i][0] - self.x_c[0], p02[i][1] - self.x_c[1], p02[i][2] - self.x_c[2])
                     glVertex3f(p02[i + 1][0] - self.x_c[0], p02[i + 1][1] - self.x_c[1], p02[i + 1][2] - self.x_c[2])
                     glVertex3f(p012[i][0] - self.x_c[0], p012[i][1] - self.x_c[1], p012[i][2] - self.x_c[2])
                     glEnd()
-                    clr += 1
                     if i + 1 < len(p012):
+                        clr = round((p02[i + 1][3] + p012[i][3] + p012[i + 1][3])/3)
                         self.set_color(self.color_table[clr][0], self.color_table[clr][1], self.color_table[clr][2], 1)
                         glBegin(GL_TRIANGLES)
-                        glVertex3f(p02[i + 1][0] - self.x_c[0], p02[i + 1][1] - self.x_c[1], p02[i + 1][2] - self.x_c[2])
+                        glVertex3f(p02[i + 1][0] - self.x_c[0], p02[i + 1][1] - self.x_c[1], p02[i + 1][2] -
+                                   self.x_c[2])
                         glVertex3f(p012[i][0] - self.x_c[0], p012[i][1] - self.x_c[1], p012[i][2] - self.x_c[2])
-                        glVertex3f(p012[i + 1][0] - self.x_c[0], p012[i + 1][1] - self.x_c[1], p012[i + 1][2] - self.x_c[2])
+                        glVertex3f(p012[i + 1][0] - self.x_c[0], p012[i + 1][1] - self.x_c[1], p012[i + 1][2] -
+                                   self.x_c[2])
                         glEnd()
 
 
