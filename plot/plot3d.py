@@ -32,6 +32,7 @@ class TOpenGLWidget(QWidget):
         self.is_legend = True
         self.is_fe_border = False
         self.is_object_border = False
+        self.alpha = 1.0
         self.diffuse = 0.8
         self.ambient = 0.8
         self.specular = 0.6
@@ -110,6 +111,8 @@ class TOpenGLWidget(QWidget):
         gluLookAt(0, 0, self.radius, 0, 0, 0, 0, 1, 0)
         glViewport(0, 0, w, h)
         glMatrixMode(GL_MODELVIEW)
+        if self.is_light:
+            self.__setup_light__()
 
     def __make_material__(self, r, g, b, a):
         glLightfv(GL_LIGHT0, GL_AMBIENT, [0.4, 0.4, 0.4, 1.0])
@@ -156,7 +159,8 @@ class TOpenGLWidget(QWidget):
             ind.append(self.__get_color_index__(tri[i][3]))
         # Треугольник одного цвета
         if ind[0] == ind[1] == ind[2]:
-            self.set_color(self.color_table[ind[0]][0], self.color_table[ind[0]][1], self.color_table[ind[0]][2], 1)
+            self.set_color(self.color_table[ind[0]][0], self.color_table[ind[0]][1], self.color_table[ind[0]][2],
+                           self.alpha)
             glBegin(GL_TRIANGLES)
             for i in range(0, 3):
                 glVertex3f(tri[i][0] - self.x_c[0], tri[i][1] - self.x_c[1], tri[i][2] - self.x_c[2])
@@ -191,7 +195,8 @@ class TOpenGLWidget(QWidget):
             for i in range(0, len(p02) - 1):
                 if i < len(p012):
                     clr = round((p02[i][3] + p02[i + 1][3] + p012[i][3])/3)
-                    self.set_color(self.color_table[clr][0], self.color_table[clr][1], self.color_table[clr][2], 1)
+                    self.set_color(self.color_table[clr][0], self.color_table[clr][1], self.color_table[clr][2],
+                                   self.alpha)
                     glBegin(GL_TRIANGLES)
                     glVertex3f(p02[i][0] - self.x_c[0], p02[i][1] - self.x_c[1], p02[i][2] - self.x_c[2])
                     glVertex3f(p02[i + 1][0] - self.x_c[0], p02[i + 1][1] - self.x_c[1], p02[i + 1][2] - self.x_c[2])
@@ -199,7 +204,8 @@ class TOpenGLWidget(QWidget):
                     glEnd()
                     if i + 1 < len(p012):
                         clr = round((p02[i + 1][3] + p012[i][3] + p012[i + 1][3])/3)
-                        self.set_color(self.color_table[clr][0], self.color_table[clr][1], self.color_table[clr][2], 1)
+                        self.set_color(self.color_table[clr][0], self.color_table[clr][1], self.color_table[clr][2],
+                                       self.alpha)
                         glBegin(GL_TRIANGLES)
                         glVertex3f(p02[i + 1][0] - self.x_c[0], p02[i + 1][1] - self.x_c[1], p02[i + 1][2] -
                                    self.x_c[2])
@@ -207,6 +213,20 @@ class TOpenGLWidget(QWidget):
                         glVertex3f(p012[i + 1][0] - self.x_c[0], p012[i + 1][1] - self.x_c[1], p012[i + 1][2] -
                                    self.x_c[2])
                         glEnd()
+
+    def __setup_light__(self):
+        ambient = 0.3
+        diffuse = 0.7
+        specular = 1.0
+        glLightfv(GL_LIGHT0, GL_AMBIENT, [ambient, ambient, ambient])
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, [diffuse, diffuse, diffuse])
+        glLightfv(GL_LIGHT0, GL_SPECULAR, [specular, specular, specular])
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [1, 1, 1, 1])
+        glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_FALSE)
+        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
+        glEnable(GL_LIGHTING)
+        glEnable(GL_LIGHT0)
 
 
 # Визуализация одномерной задачи
@@ -239,7 +259,8 @@ class TPlot1d(TOpenGLWidget):
             for j in range(0, 2):
                 ind.append(self.__get_color_index__(rod[j][1]))
             if ind[0] == ind[1]:
-                self.set_color(self.color_table[ind[0]][0], self.color_table[ind[0]][1], self.color_table[ind[0]][2], 1)
+                self.set_color(self.color_table[ind[0]][0], self.color_table[ind[0]][1], self.color_table[ind[0]][2],
+                               self.alpha)
                 glBegin(GL_LINES)
                 glVertex2f(rod[0][0] - self.x_c[0])
                 glVertex2f(rod[1][0])
@@ -250,7 +271,8 @@ class TPlot1d(TOpenGLWidget):
                 h = (rod[1][0] - rod[0][0])/step
                 clr = ind[0]
                 for j in range(0, step):
-                    self.set_color(self.color_table[clr][0], self.color_table[clr][1], self.color_table[clr][2], 1)
+                    self.set_color(self.color_table[clr][0], self.color_table[clr][1], self.color_table[clr][2],
+                                   self.alpha)
                     glBegin(GL_LINES)
                     glVertex2f(x - self.x_c[0], 0)
                     glVertex2f(x + h - self.x_c[0], 0)
@@ -297,7 +319,7 @@ class TPlot2d(TOpenGLWidget):
         # Изображение границы области
         if self.is_object_border:
             for i in range(0, len(self.be)):
-                self.set_color(1, 1, 1, 1)
+                self.set_color(1, 1, 1, self.alpha)
                 glBegin(GL_LINE_LOOP)
                 glVertex2f(self.x[self.be[i][0]][0] - self.x_c[0], self.x[self.be[i][0]][1] - self.x_c[1])
                 glVertex2f(self.x[self.be[i][1]][0] - self.x_c[0], self.x[self.be[i][1]][1] - self.x_c[1])
@@ -307,15 +329,79 @@ class TPlot2d(TOpenGLWidget):
             self.show_legend()
 
     def __paint_fe_border__(self, tri):
-        self.set_color(1, 1, 1, 1)
+        self.set_color(1, 1, 1, self.alpha)
         glBegin(GL_LINE_LOOP)
         for i in range(0, len(tri)):
             glVertex2f(tri[i][0] - self.x_c[0], tri[i][1] - self.x_c[1])
         glEnd()
 
 
+# Визуализация пространственной задачи
+class TPlot3d(TOpenGLWidget):
+    def __init__(self, x, fe, be, results, index):
+        super(TPlot3d, self).__init__(x, fe, be, results, index)
+        self.gl.paintGL = self.__paint__
+        self.__normal__ = self.__create_normal__()
+
+    def __paint__(self):
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+        glEnable(GL_DEPTH_TEST)
+        glShadeModel(GL_SMOOTH)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+        glEnable(GL_NORMALIZE)
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+        glLoadIdentity()
+        glEnable(GL_POLYGON_OFFSET_FILL)
+        glPolygonOffset(1.0, 1.0)
+        if self.is_light:
+            glDisable(GL_COLOR_MATERIAL)
+            glEnable(GL_LIGHTING)
+        else:
+            glDisable(GL_LIGHTING)
+            glEnable(GL_COLOR_MATERIAL)
+
+        glRotate(30, 1, 1, 1)
+
+        # Изображение поверхности
+        for i in range(0, len(self.be)):
+            glNormal3d(self.__normal__[i][0], self.__normal__[i][1], self.__normal__[i][2])
+            tri = []
+            for j in range(0, len(self.be[0])):
+                tri.append([self.x[self.be[i][j]][0], self.x[self.be[i][j]][1], self.x[self.be[i][j]][2],
+                            self.results[self.be[i][j]]])
+            if len(tri) == 3:
+                self.__paint_triangle__(tri)
+            else:
+                self.__paint_triangle__([tri[0], tri[1], tri[2]])
+                self.__paint_triangle__([tri[0], tri[3], tri[2]])
+            if self.is_fe_border:
+                self.__paint_fe_border__(tri)
+        # Изображение цветовой шкалы
+        if self.is_legend:
+            self.show_legend()
+
+    def __create_normal__(self):
+        normal = []
+        for i in range(0, len(self.be)):
+            x = []
+            for j in range(0, 3):
+                x.append([self.x[self.be[i][j]][0], self.x[self.be[i][j]][1], self.x[self.be[i][j]][2]])
+            a = (x[1][1] - x[0][1])*(x[2][2] - x[0][2]) - (x[2][1] - x[0][1])*(x[1][2] - x[0][2])
+            b = (x[2][0] - x[0][0])*(x[1][2] - x[0][2]) - (x[1][0] - x[0][0])*(x[2][2] - x[0][2])
+            c = (x[1][0] - x[0][0])*(x[2][1] - x[0][1]) - (x[2][0] - x[0][0])*(x[1][1] - x[0][2])
+            d = (a**2 + b**2 + c**2)**0.5
+            if d == 0:
+                d = 1
+            normal.append([a/d, b/d, c/d])
+        return normal
+
+
 # Класс, реализующий визуализацию расчета
-class TPlot3d:
+class TPlot:
     def __init__(self):
         self.__name__ = ''          # Название задачи
         self.__task_type__ = ''     # Тип задачи
@@ -374,10 +460,8 @@ class TPlot3d:
             window = TPlot1d(self.__x__, self.__fe__, self.__be__, self.__results__, index)
         elif self.__fe_type__ == 'fe_2d_3' or self.__fe_type__ == 'fe_2d_4':
             window = TPlot2d(self.__x__, self.__fe__, self.__be__, self.__results__, index)
-        elif self.__fe_type__ == 'fe_3d_4':
-            window = TPlot3d4(self.__x__, self.__fe__, self.__be__, self.__results__, index)
         else:
-            window = TPlot3d8(self.__x__, self.__fe__, self.__be__, self.__results__, index)
+            window = TPlot3d(self.__x__, self.__fe__, self.__be__, self.__results__, index)
         window.resize(500, 500)
         window.setWindowTitle(fun_name)
         window.show()

@@ -4,7 +4,7 @@
 from core.fem_defs import DIR_X, DIR_Y, DIR_Z, INIT_U, INIT_V, INIT_U_T, INIT_V_T, INIT_U_T_T, INIT_V_T_T
 from core.fem_object import TObject
 from plot.simpleplot import TSimplePlot
-from plot.plot3d import TPlot3d
+from plot.plot3d import TPlot
 
 
 def body1d():
@@ -24,7 +24,7 @@ def body1d():
             obj.print_result()
             obj.save_result('body1d')
 
-            plt = TPlot3d()
+            plt = TPlot()
             if plt.set_results('body1d'):
                 # plt.plot('U')
                 plt.plot('Exx')
@@ -47,6 +47,11 @@ def cube():
     #    obj.add_concentrated_load('-1000', 'z=1', DIR_Z)
         if obj.calc():
             obj.print_result()
+            obj.save_result('cube')
+
+            plt = TPlot()
+            if plt.set_results('cube'):
+                plt.plot('U')
 
 
 def cube_test():
@@ -98,7 +103,7 @@ def console():
             obj.print_result()
             obj.save_result('console')
 
-            plt = TPlot3d()
+            plt = TPlot()
             if plt.set_results('console'):
 
                 plt.plot('U')
@@ -129,7 +134,7 @@ def console4():
             obj.print_result()
             obj.save_result('console4')
 
-            plt = TPlot3d()
+            plt = TPlot()
             if plt.set_results('console4'):
                 plt.plot('Syy')
 
@@ -173,23 +178,9 @@ def cylinder():
             obj.print_result()
             obj.save_result('cylinder')
 
-            plt = TSimplePlot()
+            plt = TPlot()
             if plt.set_results('cylinder'):
                 plt.plot('U')
-                plt.plot('V')
-                plt.plot('W')
-                plt.plot('Exx')
-                plt.plot('Eyy')
-                plt.plot('Ezz')
-                plt.plot('Exy')
-                plt.plot('Exz')
-                plt.plot('Eyz')
-                plt.plot('Sxx')
-                plt.plot('Syy')
-                plt.plot('Szz')
-                plt.plot('Sxy')
-                plt.plot('Sxz')
-                plt.plot('Syz')
 
 
 def tank3():
@@ -272,11 +263,9 @@ def tank3():
             obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.save_result('tank3')
 
-            plt = TSimplePlot()
+            plt = TPlot()
             if plt.set_results('tank3'):
                 plt.plot('U')
-                plt.plot('V')
-                plt.plot('W')
 
 
 def head3d():
@@ -329,7 +318,7 @@ def console_dynamic():
             obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.save_result('console_dynamic')
 
-            plt = TPlot3d()
+            plt = TPlot()
             if plt.set_results('console_dynamic'):
                 plt.plot('V', 0.0)
                 # plt.plot('U', 0.0)
@@ -344,13 +333,13 @@ if __name__ == "__main__":
     # head3d()
     # cube()
     # tank3()
-    # cylinder()
+    cylinder()
     # quad()
     # cube_test()
     # console_dynamic()
     # console()
     # console4()
-    body1d()
+    # body1d()
 
 """
 1. Добавить загрузку названий функций в объект
