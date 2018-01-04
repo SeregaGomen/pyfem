@@ -30,7 +30,7 @@ class TOpenGLWidget(QWidget):
         self.max_u = max(self.results)
         self.is_light = False
         self.is_legend = True
-        self.is_fe_border = False
+        self.is_fe_border = True
         self.is_object_border = False
         self.alpha = 1.0
         self.diffuse = 0.8
@@ -228,6 +228,13 @@ class TOpenGLWidget(QWidget):
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
 
+    def __paint_fe_border__(self, tri):
+        self.set_color(1, 1, 1, self.alpha)
+        glBegin(GL_LINE_LOOP)
+        for i in range(0, len(tri)):
+            glVertex2f(tri[i][0] - self.x_c[0], tri[i][1] - self.x_c[1])
+        glEnd()
+
 
 # Визуализация одномерной задачи
 class TPlot1d(TOpenGLWidget):
@@ -243,12 +250,12 @@ class TPlot1d(TOpenGLWidget):
         if self.is_light:
             glDisable(GL_COLOR_MATERIAL)
             glEnable(GL_LIGHTING)
+            glNormal3d(1, 0, 0)
         else:
             glDisable(GL_LIGHTING)
             glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glNormal3d(1, 0, 0)
         # Изображение КЭ
         for i in range(0, len(self.fe)):
             rod = []
@@ -298,12 +305,12 @@ class TPlot2d(TOpenGLWidget):
         if self.is_light:
             glDisable(GL_COLOR_MATERIAL)
             glEnable(GL_LIGHTING)
+            glNormal3d(0, 0, 1)
         else:
             glDisable(GL_LIGHTING)
             glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glNormal3d(0, 0, 1)
         # Изображение КЭ
         for i in range(0, len(self.fe)):
             tri = []
@@ -328,13 +335,6 @@ class TPlot2d(TOpenGLWidget):
         if self.is_legend:
             self.show_legend()
 
-    def __paint_fe_border__(self, tri):
-        self.set_color(1, 1, 1, self.alpha)
-        glBegin(GL_LINE_LOOP)
-        for i in range(0, len(tri)):
-            glVertex2f(tri[i][0] - self.x_c[0], tri[i][1] - self.x_c[1])
-        glEnd()
-
 
 # Визуализация пространственной задачи
 class TPlot3d(TOpenGLWidget):
@@ -344,9 +344,7 @@ class TPlot3d(TOpenGLWidget):
         self.__normal__ = self.__create_normal__()
 
     def __paint__(self):
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
         glEnable(GL_DEPTH_TEST)
         glShadeModel(GL_SMOOTH)
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
@@ -378,6 +376,7 @@ class TPlot3d(TOpenGLWidget):
             else:
                 self.__paint_triangle__([tri[0], tri[1], tri[2]])
                 self.__paint_triangle__([tri[0], tri[3], tri[2]])
+            # Изображение границы ГЭ
             if self.is_fe_border:
                 self.__paint_fe_border__(tri)
         # Изображение цветовой шкалы
