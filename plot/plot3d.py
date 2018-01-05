@@ -28,22 +28,20 @@ class TOpenGLWidget(QWidget):
         self.min_x, self.max_x, self.x_c, self.radius = self.__get_coord_info__()
         self.min_u = min(self.results)
         self.max_u = max(self.results)
-        self.is_light = False
+        self.is_light = True
         self.is_legend = True
         self.is_fe_border = True
-        self.is_object_border = False
         self.alpha = 1.0
         self.diffuse = 0.8
         self.ambient = 0.8
         self.specular = 0.6
         self.num_color = 16
-        self.color_table = []
-        self.gl = QGLWidget(self)
-        self.gl.initializeGL()
-        self.gl.resizeGL = self.__resize__
-        vb_layout = QVBoxLayout(self)
-        vb_layout.addWidget(self.gl)
+        self.__color_table__ = []
+        self.__gl__ = QGLWidget(self)
+        self.__gl__.initializeGL()
+        self.__gl__.resizeGL = self.__resize__
         self.__init_color_table__()
+        QVBoxLayout(self).addWidget(self.__gl__)
 
     def __get_coord_info__(self):
         min_x = [0, 0, 0]
@@ -67,41 +65,44 @@ class TOpenGLWidget(QWidget):
         for i in range(0, self.num_color):
             if i < step:
                 # фиолетовый-синий
-                self.color_table.append([red, 0, 1, u])
+                self.__color_table__.append([red, 0, 1, u])
                 red -= h
                 if red < 0:
                     red = 0
             elif step <= i < 2*step:
                 # синий-голубой
-                self.color_table.append([0, green, 1, u])
+                self.__color_table__.append([0, green, 1, u])
                 green += h
                 if green > 1:
                     green = 1
             elif 2*step <= i < 3*step:
                 # голубой-зеленый
-                self.color_table.append([0, 1, blue, u])
+                self.__color_table__.append([0, 1, blue, u])
                 blue -= h
                 if blue < 0:
                     blue = 0
             elif 3*step <= i < 4*step:
                 # зеленый-желтый
-                self.color_table.append([red, 1, 0, u])
+                self.__color_table__.append([red, 1, 0, u])
                 red += h
                 if red > 1:
                     red = 1
             elif i > 4*step:
                 # желтый-оранжевый-красный
-                self.color_table.append([1, green, 0, u])
+                self.__color_table__.append([1, green, 0, u])
                 green -= 0.5*h
                 if green < 0:
                     green = 0
             u += h_u
 
-    def set_color(self, r, g, b, a):
+    def color(self, index):
+        r = self.__color_table__[index][0] if index >= 0 else 1
+        g = self.__color_table__[index][1] if index >= 0 else 1
+        b = self.__color_table__[index][2] if index >= 0 else 1
         if self.is_light:
-            self.__make_material__(r, g, b, a)
+            self.__make_material__(r, g, b, self.alpha)
         else:
-            glColor4f(r, g, b, a)
+            glColor4f(r, g, b, self.alpha)
 
     def __resize__(self, w, h):
         aspect = w/h
@@ -144,23 +145,22 @@ class TOpenGLWidget(QWidget):
             if k == n - 1:
                 v = stop
             i = self.__get_color_index__(v)
-            glColor3f(self.color_table[i][0], self.color_table[i][1], self.color_table[i][2])
+            glColor3f(self.__color_table__[i][0], self.__color_table__[i][1], self.__color_table__[i][2])
             font.setStyleStrategy(QFont.OpenGLCompatible)
-            self.gl.renderText(self.rect().width() - font_w1 - font_w2 - 50, cy, '█', font)
+            self.__gl__.renderText(self.rect().width() - font_w1 - font_w2 - 50, cy, '█', font)
             glColor3f(1, 1, 1)
-            self.gl.renderText(self.rect().width() - font_w2 - 50, cy, '{:+0.5E}'.format(v), font)
+            self.__gl__.renderText(self.rect().width() - font_w2 - 50, cy, '{:+0.5E}'.format(v), font)
             cy += font_h
             v -= step
 
-    def __paint_triangle__(self, tri):
+    def draw_triangle_3d(self, tri):
         tri = sorted(tri, key=lambda item: item[3])
         ind = []
         for i in range(0, 3):
             ind.append(self.__get_color_index__(tri[i][3]))
         # Треугольник одного цвета
         if ind[0] == ind[1] == ind[2]:
-            self.set_color(self.color_table[ind[0]][0], self.color_table[ind[0]][1], self.color_table[ind[0]][2],
-                           self.alpha)
+            self.color(ind[0])
             glBegin(GL_TRIANGLES)
             for i in range(0, 3):
                 glVertex3f(tri[i][0] - self.x_c[0], tri[i][1] - self.x_c[1], tri[i][2] - self.x_c[2])
@@ -195,8 +195,7 @@ class TOpenGLWidget(QWidget):
             for i in range(0, len(p02) - 1):
                 if i < len(p012):
                     clr = round((p02[i][3] + p02[i + 1][3] + p012[i][3])/3)
-                    self.set_color(self.color_table[clr][0], self.color_table[clr][1], self.color_table[clr][2],
-                                   self.alpha)
+                    self.color(clr)
                     glBegin(GL_TRIANGLES)
                     glVertex3f(p02[i][0] - self.x_c[0], p02[i][1] - self.x_c[1], p02[i][2] - self.x_c[2])
                     glVertex3f(p02[i + 1][0] - self.x_c[0], p02[i + 1][1] - self.x_c[1], p02[i + 1][2] - self.x_c[2])
@@ -204,8 +203,7 @@ class TOpenGLWidget(QWidget):
                     glEnd()
                     if i + 1 < len(p012):
                         clr = round((p02[i + 1][3] + p012[i][3] + p012[i + 1][3])/3)
-                        self.set_color(self.color_table[clr][0], self.color_table[clr][1], self.color_table[clr][2],
-                                       self.alpha)
+                        self.color(clr)
                         glBegin(GL_TRIANGLES)
                         glVertex3f(p02[i + 1][0] - self.x_c[0], p02[i + 1][1] - self.x_c[1], p02[i + 1][2] -
                                    self.x_c[2])
@@ -215,12 +213,9 @@ class TOpenGLWidget(QWidget):
                         glEnd()
 
     def __setup_light__(self):
-        ambient = 0.3
-        diffuse = 0.7
-        specular = 1.0
-        glLightfv(GL_LIGHT0, GL_AMBIENT, [ambient, ambient, ambient])
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, [diffuse, diffuse, diffuse])
-        glLightfv(GL_LIGHT0, GL_SPECULAR, [specular, specular, specular])
+        glLightfv(GL_LIGHT0, GL_AMBIENT, [self.ambient, self.ambient, self.ambient])
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, [self.diffuse, self.diffuse, self.diffuse])
+        glLightfv(GL_LIGHT0, GL_SPECULAR, [self.specular, self.specular, self.specular])
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50)
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [1, 1, 1, 1])
         glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_FALSE)
@@ -228,19 +223,24 @@ class TOpenGLWidget(QWidget):
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
 
-    def __paint_fe_border__(self, tri):
-        self.set_color(1, 1, 1, self.alpha)
+    def draw_fe_border(self, tri):
+        glDisable(GL_LIGHTING)
+        glEnable(GL_COLOR_MATERIAL)
+        glColor4f(0, 0, 0, self.alpha)
         glBegin(GL_LINE_LOOP)
         for i in range(0, len(tri)):
-            glVertex2f(tri[i][0] - self.x_c[0], tri[i][1] - self.x_c[1])
+            glVertex3f(tri[i][0] - self.x_c[0], tri[i][1] - self.x_c[1], tri[i][2] - self.x_c[2])
         glEnd()
+        if self.is_light:
+            glDisable(GL_COLOR_MATERIAL)
+            glEnable(GL_LIGHTING)
 
 
 # Визуализация одномерной задачи
 class TPlot1d(TOpenGLWidget):
     def __init__(self, x, fe, be, results, index):
         super(TPlot1d, self).__init__(x, fe, be, results, index)
-        self.gl.paintGL = self.__paint__
+        self.__gl__.paintGL = self.__paint__
 
     def __paint__(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -265,9 +265,9 @@ class TPlot1d(TOpenGLWidget):
             ind = []
             for j in range(0, 2):
                 ind.append(self.__get_color_index__(rod[j][1]))
+            clr = ind[0]
             if ind[0] == ind[1]:
-                self.set_color(self.color_table[ind[0]][0], self.color_table[ind[0]][1], self.color_table[ind[0]][2],
-                               self.alpha)
+                self.color(clr)
                 glBegin(GL_LINES)
                 glVertex2f(rod[0][0] - self.x_c[0])
                 glVertex2f(rod[1][0])
@@ -276,10 +276,8 @@ class TPlot1d(TOpenGLWidget):
                 step = abs(ind[1] - ind[0]) + 1
                 x = rod[0][0]
                 h = (rod[1][0] - rod[0][0])/step
-                clr = ind[0]
                 for j in range(0, step):
-                    self.set_color(self.color_table[clr][0], self.color_table[clr][1], self.color_table[clr][2],
-                                   self.alpha)
+                    self.color(clr)
                     glBegin(GL_LINES)
                     glVertex2f(x - self.x_c[0], 0)
                     glVertex2f(x + h - self.x_c[0], 0)
@@ -295,7 +293,7 @@ class TPlot1d(TOpenGLWidget):
 class TPlot2d(TOpenGLWidget):
     def __init__(self, x, fe, be, results, index):
         super(TPlot2d, self).__init__(x, fe, be, results, index)
-        self.gl.paintGL = self.__paint__
+        self.__gl__.paintGL = self.__paint__
 
     def __paint__(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -317,20 +315,12 @@ class TPlot2d(TOpenGLWidget):
             for j in range(0, len(self.fe[0])):
                 tri.append([self.x[self.fe[i][j]][0], self.x[self.fe[i][j]][1], 0, self.results[self.fe[i][j]]])
             if len(tri) == 3:
-                self.__paint_triangle__(tri)
+                self.draw_triangle_3d(tri)
             else:
-                self.__paint_triangle__([tri[0], tri[1], tri[2]])
-                self.__paint_triangle__([tri[0], tri[3], tri[2]])
+                self.draw_triangle_3d([tri[0], tri[1], tri[2]])
+                self.draw_triangle_3d([tri[0], tri[3], tri[2]])
             if self.is_fe_border:
-                self.__paint_fe_border__(tri)
-        # Изображение границы области
-        if self.is_object_border:
-            for i in range(0, len(self.be)):
-                self.set_color(1, 1, 1, self.alpha)
-                glBegin(GL_LINE_LOOP)
-                glVertex2f(self.x[self.be[i][0]][0] - self.x_c[0], self.x[self.be[i][0]][1] - self.x_c[1])
-                glVertex2f(self.x[self.be[i][1]][0] - self.x_c[0], self.x[self.be[i][1]][1] - self.x_c[1])
-                glEnd()
+                self.draw_fe_border(tri)
         # Изображение цветовой шкалы
         if self.is_legend:
             self.show_legend()
@@ -340,7 +330,7 @@ class TPlot2d(TOpenGLWidget):
 class TPlot3d(TOpenGLWidget):
     def __init__(self, x, fe, be, results, index):
         super(TPlot3d, self).__init__(x, fe, be, results, index)
-        self.gl.paintGL = self.__paint__
+        self.__gl__.paintGL = self.__paint__
         self.__normal__ = self.__create_normal__()
 
     def __paint__(self):
@@ -372,13 +362,13 @@ class TPlot3d(TOpenGLWidget):
                 tri.append([self.x[self.be[i][j]][0], self.x[self.be[i][j]][1], self.x[self.be[i][j]][2],
                             self.results[self.be[i][j]]])
             if len(tri) == 3:
-                self.__paint_triangle__(tri)
+                self.draw_triangle_3d(tri)
             else:
-                self.__paint_triangle__([tri[0], tri[1], tri[2]])
-                self.__paint_triangle__([tri[0], tri[3], tri[2]])
+                self.draw_triangle_3d([tri[0], tri[1], tri[2]])
+                self.draw_triangle_3d([tri[0], tri[3], tri[2]])
             # Изображение границы ГЭ
             if self.is_fe_border:
-                self.__paint_fe_border__(tri)
+                self.draw_fe_border(tri)
         # Изображение цветовой шкалы
         if self.is_legend:
             self.show_legend()
