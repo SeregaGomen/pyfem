@@ -9,18 +9,46 @@ import simplejson as json
 from math import floor
 from core.fem_result import TResult
 from core.fem_object import print_error
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout
-from PyQt5.QtGui import QFont, QFontMetrics
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QAction)
+from PyQt5.QtGui import (QFont, QFontMetrics, QIcon)
 from PyQt5.QtOpenGL import QGLWidget
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 
+class TApp(QMainWindow):
+    def __init__(self, name, fe_type, x, fe, be, results):
+        super().__init__()
+        self.title = name
+        self.resize(640, 480)
+        self.__init_window__()
+        self.setCentralWidget(TGLWidget(fe_type, x, fe, be, results, 0))
+
+    def __init_window__(self):
+        self.setWindowTitle(self.title)
+#        self.setGeometry(self.left, self.top, self.width, self.height)
+
+        mainMenu = self.menuBar()
+        fileMenu = mainMenu.addMenu('File')
+        editMenu = mainMenu.addMenu('Edit')
+        viewMenu = mainMenu.addMenu('View')
+        searchMenu = mainMenu.addMenu('Search')
+        toolsMenu = mainMenu.addMenu('Tools')
+        helpMenu = mainMenu.addMenu('Help')
+
+        exitButton = QAction(QIcon('exit24.png'), 'Exit', self)
+        exitButton.setShortcut('Ctrl+Q')
+        exitButton.setStatusTip('Exit application')
+        exitButton.triggered.connect(self.close)
+        fileMenu.addAction(exitButton)
+        self.show()
+
 # Базовый класс, реализующий основной функционал OpenGL
-class TOpenGLWidget(QWidget):
-    def __init__(self, x, fe, be, results, index):
-        super(TOpenGLWidget, self).__init__()
+class TGLWidget(QWidget):
+    def __init__(self, fe_type, x, fe, be, results, index):
+        super(TGLWidget, self).__init__()
+        self.fe_type = fe_type
         self.x = x
         self.fe = fe
         self.be = be
@@ -43,10 +71,14 @@ class TOpenGLWidget(QWidget):
         self.__gl__ = QGLWidget(self)
         self.__gl__.initializeGL()
         self.__gl__.resizeGL = self.__resize__
+        self.__gl__.paintGL = self.__paint__
         self.__init_color_table__()
         QVBoxLayout(self).addWidget(self.__gl__)
         self.mousePressEvent = self.__mouse_press_event
         self.__gl__.mouseMoveEvent = self.__mouse_move__
+        # Создание нормалей
+        if self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_8':
+            self.__create_normal__()
 
     def __mouse_press_event(self, event):
         self.__last_pos__ = event.pos()
@@ -251,27 +283,41 @@ class TOpenGLWidget(QWidget):
             glDisable(GL_COLOR_MATERIAL)
             glEnable(GL_LIGHTING)
 
-
-# Визуализация одномерной задачи
-class TPlot1d(TOpenGLWidget):
-    def __init__(self, x, fe, be, results, index):
-        super(TPlot1d, self).__init__(x, fe, be, results, index)
-        self.__gl__.paintGL = self.__paint__
-
     def __paint__(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glEnable(GL_DEPTH_TEST)
         glLoadIdentity()
         glEnable(GL_POLYGON_OFFSET_FILL)
         glPolygonOffset(1.0, 1.0)
         if self.is_light:
             glDisable(GL_COLOR_MATERIAL)
             glEnable(GL_LIGHTING)
-            glNormal3d(1, 0, 0)
         else:
             glDisable(GL_LIGHTING)
             glEnable(GL_COLOR_MATERIAL)
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+        glPushMatrix()
+        glRotatef(self.angle_x, 1, 0, 0)
+        glRotatef(self.angle_y, 0, 1, 0)
+        glRotatef(self.angle_z, 0, 0, 1)
+
+        self.__display_object__()
+        glPopMatrix()
+        # Изображение цветовой шкалы
+        if self.is_legend:
+            self.show_legend()
+
+    # Визуализация результата
+    def __display_object__(self):
+        if self.fe_type == 'fe_1d_2':
+            self.__paint_1d__()
+        elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4':
+            self.__paint_2d__()
+        else:
+            self.__paint_3d__()
+
+    # Визуализация одномерной задачи
+    def __paint_1d__(self):
         # Изображение КЭ
         for i in range(0, len(self.fe)):
             rod = []
@@ -300,31 +346,9 @@ class TPlot1d(TOpenGLWidget):
                     glEnd()
                     x += h
                     clr += 1
-        # Изображение цветовой шкалы
-        if self.is_legend:
-            self.show_legend()
 
-
-# Визуализация плоской задачи
-class TPlot2d(TOpenGLWidget):
-    def __init__(self, x, fe, be, results, index):
-        super(TPlot2d, self).__init__(x, fe, be, results, index)
-        self.__gl__.paintGL = self.__paint__
-
-    def __paint__(self):
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glLoadIdentity()
-        glEnable(GL_POLYGON_OFFSET_FILL)
-        glPolygonOffset(1.0, 1.0)
-        if self.is_light:
-            glDisable(GL_COLOR_MATERIAL)
-            glEnable(GL_LIGHTING)
-            glNormal3d(0, 0, 1)
-        else:
-            glDisable(GL_LIGHTING)
-            glEnable(GL_COLOR_MATERIAL)
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+    # Визуализация плоской задачи
+    def __paint_2d__(self):
         # Изображение КЭ
         for i in range(0, len(self.fe)):
             tri = []
@@ -337,46 +361,9 @@ class TPlot2d(TOpenGLWidget):
                 self.draw_triangle_3d([tri[0], tri[3], tri[2]])
             if self.is_fe_border:
                 self.draw_fe_border(tri)
-        # Изображение цветовой шкалы
-        if self.is_legend:
-            self.show_legend()
 
-
-# Визуализация пространственной задачи
-class TPlot3d(TOpenGLWidget):
-    def __init__(self, x, fe, be, results, index):
-        super(TPlot3d, self).__init__(x, fe, be, results, index)
-        self.__gl__.paintGL = self.__paint__
-        self.__normal__ = self.__create_normal__()
-
-    def __paint__(self):
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glEnable(GL_DEPTH_TEST)
-#        glShadeModel(GL_SMOOTH)
-#        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-#        glEnable(GL_NORMALIZE)
-#        glEnable(GL_BLEND)
-#        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-#        glEnable(GL_CULL_FACE)
-#        glCullFace(GL_FRONT_AND_BACK)
-#        glCullFace(GL_FRONT)
-#        glFrontFace(GL_CCW)
-
-        glLoadIdentity()
-        glEnable(GL_POLYGON_OFFSET_FILL)
-        glPolygonOffset(1.0, 1.0)
-        if self.is_light:
-            glDisable(GL_COLOR_MATERIAL)
-            glEnable(GL_LIGHTING)
-        else:
-            glDisable(GL_LIGHTING)
-            glEnable(GL_COLOR_MATERIAL)
-
-        glPushMatrix()
-        glRotatef(self.angle_x, 1, 0, 0)
-        glRotatef(self.angle_y, 0, 1, 0)
-        glRotatef(self.angle_z, 0, 0, 1)
-
+    # Визуализация пространственной задачи
+    def __paint_3d__(self):
         # Изображение поверхности
         for i in range(0, len(self.be)):
             if self.is_light:
@@ -393,10 +380,6 @@ class TPlot3d(TOpenGLWidget):
             # Изображение границы ГЭ
             if self.is_fe_border:
                 self.draw_fe_border(tri)
-        glPopMatrix()
-        # Изображение цветовой шкалы
-        if self.is_legend:
-            self.show_legend()
 
     def __create_normal__(self):
         normal = []
@@ -416,7 +399,7 @@ class TPlot3d(TOpenGLWidget):
 
 # Класс, реализующий визуализацию расчета
 class TPlot:
-    def __init__(self):
+    def __init__(self, file_name):
         self.__name__ = ''          # Название задачи
         self.__task_type__ = ''     # Тип задачи
         self.__date_time__ = ''     # Время и дата рачета задачи
@@ -426,16 +409,27 @@ class TPlot:
         self.__be__ = []            # ... ГЭ
         self.__results__ = []       # Результаты расчета
 
-    def set_results(self, file_name):
+        # Считывание файла
+        if self.__load_file__(file_name):
+            self.__create_window__()
+
+    # Загрузка данных из файла
+    def __load_file__(self, file_name):
+        # Подготовка имени файла
         if len(file_name) < 5 or file_name[len(file_name) - 5:] != '.json':
             file_name += '.json'
-
+        # Проверка наличия файла
         if not os.path.exists(file_name):
             print_error('Unable open file ' + file_name)
             return False
-
-        with open(file_name, 'r') as file:
-            data = json.loads(json.load(file))
+        # Чтение файла
+        try:
+            with open(file_name, 'r') as file:
+                data = json.loads(json.load(file))
+        except IOError:
+            print_error('Unable read file ' + file_name)
+            return False
+        # Обработка данных
         header = data['header']
         self.__name__ = header['name']
         self.__task_type__ = header['type']
@@ -454,29 +448,12 @@ class TPlot:
             self.__results__.append(res)
         return True
 
-    # Визуализация заданной функции
-    def plot(self, fun_name, t=0):
-        # Поиск индекса функции в списке результатов
-        index = -1
-        for i in range(0, len(self.__results__)):
-            if self.__results__[i].name == fun_name and self.__results__[i].t == t:
-                index = i
-                break
-        if index == -1:
-            print_error('Error: \'%s\' is not a recognized function name or incorrect time' % fun_name)
-            return
-        # Задание заголовка
-        if self.__task_type__ == 'dynamic':
-            fun_name += ' (t = %5.2f)' % t
-        # Визуализация результата
+    # Создание главного окна
+    def __create_window__(self):
+        # Создание окна
         app = QApplication(sys.argv)
-        if self.__fe_type__ == 'fe_1d_2':
-            window = TPlot1d(self.__x__, self.__fe__, self.__be__, self.__results__, index)
-        elif self.__fe_type__ == 'fe_2d_3' or self.__fe_type__ == 'fe_2d_4':
-            window = TPlot2d(self.__x__, self.__fe__, self.__be__, self.__results__, index)
-        else:
-            window = TPlot3d(self.__x__, self.__fe__, self.__be__, self.__results__, index)
-        window.resize(500, 500)
-        window.setWindowTitle(fun_name)
+        window = TApp(self.__name__, self.__fe_type__, self.__x__, self.__fe__, self.__be__, self.__results__)
         window.show()
         sys.exit(app.exec_())
+
+
