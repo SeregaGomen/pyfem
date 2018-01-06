@@ -9,40 +9,116 @@ import simplejson as json
 from math import floor
 from core.fem_result import TResult
 from core.fem_object import print_error
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QAction)
-from PyQt5.QtGui import (QFont, QFontMetrics, QIcon)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup)
+from PyQt5.QtGui import (QFont, QFontMetrics)
 from PyQt5.QtOpenGL import QGLWidget
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 
-class TApp(QMainWindow):
-    def __init__(self, name, fe_type, x, fe, be, results):
+class TMainWindow(QMainWindow):
+    def __init__(self, file_name):
         super().__init__()
-        self.title = name
+        self.file_name = file_name  # Имя файла
+        self.fe_type = ''           # Тип КЭ
+        self.x = []                 # Координаты узлов
+        self.fe = []                # Связи КЭ
+        self.be = []                # ... ГЭ
+        self.results = []           # Результаты расчета
+        self.__index__ = 0          # Номер визуализируемой функции
+        # Загрузка данных
+        if self.__load_file__() is False:
+            QMessageBox.critical(self, 'Error', 'Error read data from file ' + file_name, QMessageBox.Ok)
+            return
+        # Настройка окна
+        self.__gl_widget__ = TGLWidget(self.fe_type, self.x, self.fe, self.be, self.results, self.__index__)
+        self.setWindowTitle(file_name)
         self.resize(640, 480)
-        self.__init_window__()
-        self.setCentralWidget(TGLWidget(fe_type, x, fe, be, results, 0))
+        self.__init_main_menu__()
+        self.setCentralWidget(self.__gl_widget__)
 
-    def __init_window__(self):
-        self.setWindowTitle(self.title)
-#        self.setGeometry(self.left, self.top, self.width, self.height)
+    # Загрузка данных из файла
+    def __load_file__(self):
+        # Подготовка имени файла
+        if len(self.file_name) < 5 or self.file_name[len(self.file_name) - 5:] != '.json':
+            self.file_name += '.json'
+        # Проверка наличия файла
+        if not os.path.exists(self.file_name):
+            print_error('Unable open file ' + self.file_name)
+            return False
+        # Чтение файла
+        try:
+            with open(self.file_name, 'r') as file:
+                data = json.loads(json.load(file))
+        except IOError:
+            print_error('Unable read file ' + self.file_name)
+            return False
+        # Обработка данных
+        mesh = data['mesh']
+        self.fe_type = mesh['fe_type']
+        self.x = mesh['vertex']
+        self.fe = mesh['fe']
+        self.be = mesh['be']
+        results = data['results']
+        for i in range(0, len(results)):
+            res = TResult()
+            res.name = results[i]['function']
+            res.t = results[i]['t']
+            res.results = results[i]['results']
+            self.results.append(res)
+        return True
+
+    def __init_main_menu__(self):
+        self.setWindowTitle(self.file_name)
+        self.statusBar().showMessage('')
 
         mainMenu = self.menuBar()
-        fileMenu = mainMenu.addMenu('File')
-        editMenu = mainMenu.addMenu('Edit')
-        viewMenu = mainMenu.addMenu('View')
-        searchMenu = mainMenu.addMenu('Search')
-        toolsMenu = mainMenu.addMenu('Tools')
-        helpMenu = mainMenu.addMenu('Help')
+        fileMenu = mainMenu.addMenu('&File')
+        functionMenu = mainMenu.addMenu('F&unction')
+        optionMenu = mainMenu.addMenu('&Option')
+        helpMenu = mainMenu.addMenu('&?')
 
-        exitButton = QAction(QIcon('exit24.png'), 'Exit', self)
-        exitButton.setShortcut('Ctrl+Q')
-        exitButton.setStatusTip('Exit application')
-        exitButton.triggered.connect(self.close)
-        fileMenu.addAction(exitButton)
+        # Настройка File
+        exit_action = QAction('E&xit', self)
+        exit_action.setStatusTip('Exit application')
+        exit_action.triggered.connect(self.close)
+        fileMenu.addAction(exit_action)
+
+        qa = QActionGroup(self)
+        # Настройка Function
+        for i in range(0, len(self.results)):
+            if i < 9:
+                fun = '&' + str(i + 1) + ' ' + self.results[i].name
+            else:
+                fun = '&' + chr(ord('A') + i - 9) + ' ' + self.results[i].name
+            function_action = QAction(fun, self)
+            function_action.setStatusTip('Visualization function ' + self.results[i].name)
+#            function_action.triggered.connect(self.fun_action)
+            function_action.setActionGroup(qa)
+            function_action.setCheckable(True)
+            if i == 0:
+                function_action.setChecked(True)
+            functionMenu.triggered.connect(self.__fun_action__)
+
+            functionMenu.addAction(function_action)
         self.show()
+
+    def __fun_action__(self, action):
+        fun_name = action.text()[3:]
+        self.__index__ = self.__get_fun_index__(fun_name)
+        self.setCentralWidget(TGLWidget(self.fe_type, self.x, self.fe, self.be, self.results, self.__index__))
+
+    # Поиск индекса функции по ее имени
+    def __get_fun_index__(self, fun_name, t=0):
+        # Поиск индекса функции в списке результатов
+        index = -1
+        for i in range(0, len(self.results)):
+            if self.results[i].name == fun_name and self.results[i].t == t:
+                index = i
+                break
+        return index
+
 
 # Базовый класс, реализующий основной функционал OpenGL
 class TGLWidget(QWidget):
@@ -400,59 +476,10 @@ class TGLWidget(QWidget):
 # Класс, реализующий визуализацию расчета
 class TPlot:
     def __init__(self, file_name):
-        self.__name__ = ''          # Название задачи
-        self.__task_type__ = ''     # Тип задачи
-        self.__date_time__ = ''     # Время и дата рачета задачи
-        self.__fe_type__ = ''       # Тип КЭ
-        self.__x__ = []             # Координаты узлов
-        self.__fe__ = []            # Связи КЭ
-        self.__be__ = []            # ... ГЭ
-        self.__results__ = []       # Результаты расчета
-
-        # Считывание файла
-        if self.__load_file__(file_name):
-            self.__create_window__()
-
-    # Загрузка данных из файла
-    def __load_file__(self, file_name):
-        # Подготовка имени файла
-        if len(file_name) < 5 or file_name[len(file_name) - 5:] != '.json':
-            file_name += '.json'
-        # Проверка наличия файла
-        if not os.path.exists(file_name):
-            print_error('Unable open file ' + file_name)
-            return False
-        # Чтение файла
-        try:
-            with open(file_name, 'r') as file:
-                data = json.loads(json.load(file))
-        except IOError:
-            print_error('Unable read file ' + file_name)
-            return False
-        # Обработка данных
-        header = data['header']
-        self.__name__ = header['name']
-        self.__task_type__ = header['type']
-        self.__date_time__ = header['date_time']
-        mesh = data['mesh']
-        self.__fe_type__ = mesh['fe_type']
-        self.__x__ = mesh['vertex']
-        self.__fe__ = mesh['fe']
-        self.__be__ = mesh['be']
-        results = data['results']
-        for i in range(0, len(results)):
-            res = TResult()
-            res.name = results[i]['function']
-            res.t = results[i]['t']
-            res.results = results[i]['results']
-            self.__results__.append(res)
-        return True
-
-    # Создание главного окна
-    def __create_window__(self):
-        # Создание окна
+        self.file_name = file_name
+        # Создание главного окна приложения
         app = QApplication(sys.argv)
-        window = TApp(self.__name__, self.__fe_type__, self.__x__, self.__fe__, self.__be__, self.__results__)
+        window = TMainWindow(file_name)
         window.show()
         sys.exit(app.exec_())
 
