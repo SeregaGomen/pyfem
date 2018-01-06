@@ -26,13 +26,12 @@ class TMainWindow(QMainWindow):
         self.fe = []                # Связи КЭ
         self.be = []                # ... ГЭ
         self.results = []           # Результаты расчета
-        self.__index__ = 0          # Номер визуализируемой функции
         # Загрузка данных
         if self.__load_file__() is False:
             QMessageBox.critical(self, 'Error', 'Error read data from file ' + file_name, QMessageBox.Ok)
             return
         # Настройка окна
-        self.__gl_widget__ = TGLWidget(self.fe_type, self.x, self.fe, self.be, self.results, self.__index__)
+        self.__gl_widget__ = TGLWidget(self.fe_type, self.x, self.fe, self.be, self.results[0].results)
         self.setWindowTitle(file_name)
         self.resize(640, 480)
         self.__init_main_menu__()
@@ -106,8 +105,8 @@ class TMainWindow(QMainWindow):
 
     def __fun_action__(self, action):
         fun_name = action.text()[3:]
-        self.__index__ = self.__get_fun_index__(fun_name)
-        self.setCentralWidget(TGLWidget(self.fe_type, self.x, self.fe, self.be, self.results, self.__index__))
+        index = self.__get_fun_index__(fun_name)
+        self.__gl_widget__.set_results(self.results[index].results)
 
     # Поиск индекса функции по ее имени
     def __get_fun_index__(self, fun_name, t=0):
@@ -122,13 +121,13 @@ class TMainWindow(QMainWindow):
 
 # Базовый класс, реализующий основной функционал OpenGL
 class TGLWidget(QWidget):
-    def __init__(self, fe_type, x, fe, be, results, index):
+    def __init__(self, fe_type, x, fe, be, results):
         super(TGLWidget, self).__init__()
         self.fe_type = fe_type
         self.x = x
         self.fe = fe
         self.be = be
-        self.results = results[index].results
+        self.results = results
         self.min_x, self.max_x, self.x_c, self.radius = self.__get_coord_info__()
         self.min_u = min(self.results)
         self.max_u = max(self.results)
@@ -155,6 +154,13 @@ class TGLWidget(QWidget):
         # Создание нормалей
         if self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_8':
             self.__create_normal__()
+
+    def set_results(self, results):
+        self.results = results
+        self.min_u = min(self.results)
+        self.max_u = max(self.results)
+        self.__init_color_table__()
+        self.__gl__.repaint()
 
     def __mouse_press_event(self, event):
         self.__last_pos__ = event.pos()
