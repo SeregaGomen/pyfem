@@ -84,6 +84,12 @@ def beam():
         obj.add_volume_load('-1.0E+5', '', DIR_Y)
         if obj.calc():
             obj.print_result()
+            obj.save_result('beam')
+
+            plt = TPlot()
+            if plt.set_results('beam'):
+
+                plt.plot('U')
 
 
 def console():
@@ -286,11 +292,9 @@ def head3d():
         obj.add_surface_load('-1*sin(atan2(z,x))', 'abs(x^2 + z^2 - 210^2) <= 0.001', DIR_Z)
         if obj.calc():
             obj.save_result('head3d')
-            plt = TSimplePlot()
+            plt = TPlot()
             if plt.set_results('head3d'):
                 plt.plot('U')
-                plt.plot('V')
-                plt.plot('W')
 
 
 def console_dynamic():
@@ -333,13 +337,16 @@ if __name__ == "__main__":
     # head3d()
     # cube()
     # tank3()
-    cylinder()
+    # cylinder()
     # quad()
     # cube_test()
     # console_dynamic()
     # console()
     # console4()
     # body1d()
+    plt = TPlot()
+    if plt.set_results('cylinder'):
+        plt.plot('U')
 
 """
 1. Добавить загрузку названий функций в объект

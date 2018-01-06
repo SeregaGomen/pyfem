@@ -28,9 +28,12 @@ class TOpenGLWidget(QWidget):
         self.min_x, self.max_x, self.x_c, self.radius = self.__get_coord_info__()
         self.min_u = min(self.results)
         self.max_u = max(self.results)
-        self.is_light = True
+        self.is_light = False
         self.is_legend = True
         self.is_fe_border = True
+        self.angle_x = 0
+        self.angle_y = 0
+        self.angle_z = 0
         self.alpha = 1.0
         self.diffuse = 0.8
         self.ambient = 0.8
@@ -42,6 +45,19 @@ class TOpenGLWidget(QWidget):
         self.__gl__.resizeGL = self.__resize__
         self.__init_color_table__()
         QVBoxLayout(self).addWidget(self.__gl__)
+        self.mousePressEvent = self.__mouse_press_event
+        self.__gl__.mouseMoveEvent = self.__mouse_move__
+
+    def __mouse_press_event(self, event):
+        self.__last_pos__ = event.pos()
+
+    def __mouse_move__(self, event):
+        dx = event.x() - self.__last_pos__.x()
+        dy = event.x() - self.__last_pos__.y()
+
+        self.angle_x += dx/2
+        self.angle_y += dy/2
+        self.__gl__.repaint()
 
     def __get_coord_info__(self):
         min_x = [0, 0, 0]
@@ -336,11 +352,15 @@ class TPlot3d(TOpenGLWidget):
     def __paint__(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-        glEnable(GL_NORMALIZE)
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+#        glShadeModel(GL_SMOOTH)
+#        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+#        glEnable(GL_NORMALIZE)
+#        glEnable(GL_BLEND)
+#        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+#        glEnable(GL_CULL_FACE)
+#        glCullFace(GL_FRONT_AND_BACK)
+#        glCullFace(GL_FRONT)
+#        glFrontFace(GL_CCW)
 
         glLoadIdentity()
         glEnable(GL_POLYGON_OFFSET_FILL)
@@ -352,11 +372,15 @@ class TPlot3d(TOpenGLWidget):
             glDisable(GL_LIGHTING)
             glEnable(GL_COLOR_MATERIAL)
 
-        glRotate(30, 1, 1, 1)
+        glPushMatrix()
+        glRotatef(self.angle_x, 1, 0, 0)
+        glRotatef(self.angle_y, 0, 1, 0)
+        glRotatef(self.angle_z, 0, 0, 1)
 
         # Изображение поверхности
         for i in range(0, len(self.be)):
-            glNormal3d(self.__normal__[i][0], self.__normal__[i][1], self.__normal__[i][2])
+            if self.is_light:
+                glNormal3d(self.__normal__[i][0], self.__normal__[i][1], self.__normal__[i][2])
             tri = []
             for j in range(0, len(self.be[0])):
                 tri.append([self.x[self.be[i][j]][0], self.x[self.be[i][j]][1], self.x[self.be[i][j]][2],
@@ -369,6 +393,7 @@ class TPlot3d(TOpenGLWidget):
             # Изображение границы ГЭ
             if self.is_fe_border:
                 self.draw_fe_border(tri)
+        glPopMatrix()
         # Изображение цветовой шкалы
         if self.is_legend:
             self.show_legend()
@@ -381,7 +406,7 @@ class TPlot3d(TOpenGLWidget):
                 x.append([self.x[self.be[i][j]][0], self.x[self.be[i][j]][1], self.x[self.be[i][j]][2]])
             a = (x[1][1] - x[0][1])*(x[2][2] - x[0][2]) - (x[2][1] - x[0][1])*(x[1][2] - x[0][2])
             b = (x[2][0] - x[0][0])*(x[1][2] - x[0][2]) - (x[1][0] - x[0][0])*(x[2][2] - x[0][2])
-            c = (x[1][0] - x[0][0])*(x[2][1] - x[0][1]) - (x[2][0] - x[0][0])*(x[1][1] - x[0][2])
+            c = (x[1][0] - x[0][0])*(x[2][1] - x[0][1]) - (x[2][0] - x[0][0])*(x[1][1] - x[0][1])
             d = (a**2 + b**2 + c**2)**0.5
             if d == 0:
                 d = 1
