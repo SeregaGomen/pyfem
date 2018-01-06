@@ -3,11 +3,10 @@
 
 from core.fem_defs import DIR_X, DIR_Y, DIR_Z, INIT_U, INIT_V, INIT_U_T, INIT_V_T, INIT_U_T_T, INIT_V_T_T
 from core.fem_object import TObject
-from plot.simpleplot import TSimplePlot
 from plot.plot3d import TPlot
 
 
-def body1d():
+def body1d(res_name):
     obj = TObject()
     e = [6.5E+10]
     m = [0.3]
@@ -22,16 +21,12 @@ def body1d():
         obj.add_concentrated_load('-1.0E+5', 'x=1', DIR_X)
         if obj.calc():
             obj.print_result()
-            obj.save_result('body1d')
-
-            plt = TPlot()
-            if plt.set_results('body1d'):
-                # plt.plot('U')
-                plt.plot('Exx')
-                # plt.plot('Sxx')
+            obj.save_result(res_name)
+            return True
+        return False
 
 
-def cube():
+def cube(res_name):
     obj = TObject()
     e = [203200]
     m = [0.27]
@@ -47,14 +42,12 @@ def cube():
     #    obj.add_concentrated_load('-1000', 'z=1', DIR_Z)
         if obj.calc():
             obj.print_result()
-            obj.save_result('cube')
-
-            plt = TPlot()
-            if plt.set_results('cube'):
-                plt.plot('U')
+            obj.save_result(res_name)
+            return True
+        return False
 
 
-def cube_test():
+def cube_test(res_name):
     obj = TObject()
     e = [203200]
     m = [0.27]
@@ -68,9 +61,12 @@ def cube_test():
         obj.add_surface_load('-1000', 'y=1', DIR_Y)
         if obj.calc():
             obj.print_result()
+            obj.save_result(res_name)
+            return True
+        return False
 
 
-def beam():
+def beam(res_name):
     obj = TObject()
     e = [6.5E+10]
     m = [0.3]
@@ -84,15 +80,12 @@ def beam():
         obj.add_volume_load('-1.0E+5', '', DIR_Y)
         if obj.calc():
             obj.print_result()
-            obj.save_result('beam')
-
-            plt = TPlot()
-            if plt.set_results('beam'):
-
-                plt.plot('U')
+            obj.save_result(res_name)
+            return True
+        return False
 
 
-def console():
+def console(res_name):
     obj = TObject()
     e = [6.5E+10]
     m = [0.3]
@@ -107,22 +100,12 @@ def console():
         obj.add_concentrated_load('-1.0E+6', 'x=10', DIR_Y)
         if obj.calc():
             obj.print_result()
-            obj.save_result('console')
-
-            plt = TPlot()
-            if plt.set_results('console'):
-
-                plt.plot('U')
-                # plt.plot('V')
-                # plt.plot('Exx')
-                # plt.plot('Eyy')
-                # plt.plot('Exy')
-                # plt.plot('Sxx')
-                # plt.plot('Syy')
-                # plt.plot('Sxy')
+            obj.save_result(res_name)
+            return True
+        return False
 
 
-def console4():
+def console4(res_name):
     obj = TObject()
     e = [6.5E+10]
     m = [0.3]
@@ -138,14 +121,12 @@ def console4():
         obj.add_volume_load('-1.0E+5', '', DIR_Y)
         if obj.calc():
             obj.print_result()
-            obj.save_result('console4')
-
-            plt = TPlot()
-            if plt.set_results('console4'):
-                plt.plot('Syy')
+            obj.save_result(res_name)
+            return True
+        return False
 
 
-def quad():
+def quad(res_name):
     obj = TObject()
     e = [6.5E+10]
     m = [0.3]
@@ -159,9 +140,12 @@ def quad():
         obj.add_concentrated_load('-1.0E+5', 'y=1', DIR_Y)
         if obj.calc():
             obj.print_result()
+            obj.save_result(res_name)
+            return True
+        return False
 
 
-def cylinder():
+def cylinder(res_name):
     obj = TObject()
     e = [6.5E+10]
     m = [0.3]
@@ -182,14 +166,12 @@ def cylinder():
         if obj.calc():
             # obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.print_result()
-            obj.save_result('cylinder')
-
-            plt = TPlot()
-            if plt.set_results('cylinder'):
-                plt.plot('U')
+            obj.save_result(res_name)
+            return True
+        return False
 
 
-def tank3():
+def tank3(res_name):
     obj = TObject()
     e = [6.5E+10]
     m = [0.3]
@@ -267,14 +249,12 @@ def tank3():
         2.8163434974)<=eps', DIR_Z)
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
-            obj.save_result('tank3')
-
-            plt = TPlot()
-            if plt.set_results('tank3'):
-                plt.plot('U')
+            obj.save_result(res_name)
+            return True
+        return False
 
 
-def head3d():
+def head3d(res_name):
     obj = TObject()
     e = [1000]
     m = [0.3]
@@ -292,12 +272,12 @@ def head3d():
         obj.add_surface_load('-1*sin(atan2(z,x))', 'abs(x^2 + z^2 - 210^2) <= 0.001', DIR_Z)
         if obj.calc():
             obj.save_result('head3d')
-            plt = TPlot()
-            if plt.set_results('head3d'):
-                plt.plot('U')
+            obj.save_result(res_name)
+            return True
+        return False
 
 
-def console_dynamic():
+def console_dynamic(res_name):
     obj = TObject()
     e = [6.5E+10]
     m = [0.3]
@@ -320,33 +300,28 @@ def console_dynamic():
         obj.add_initial_condition('0', INIT_V_T_T)
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
-            obj.save_result('console_dynamic')
-
-            plt = TPlot()
-            if plt.set_results('console_dynamic'):
-                plt.plot('V', 0.0)
-                # plt.plot('U', 0.0)
-                # plt.plot('U', 0.25)
-                # plt.plot('U', 0.5)
-                # plt.plot('U', 0.75)
-                # plt.plot('U', 1.0)
+            obj.save_result(res_name)
+            return True
+        return False
 
 
 if __name__ == "__main__":
-    # beam()
-    # head3d()
-    # cube()
-    # tank3()
-    # cylinder()
-    # quad()
-    # cube_test()
-    # console_dynamic()
-    # console()
-    # console4()
-    # body1d()
-    plt = TPlot()
-    if plt.set_results('cylinder'):
-        plt.plot('U')
+    # beam('beam')
+    # head3d('head3d')
+    # cube('cube')
+    # tank3('tank3')
+    # cylinder('cylinder')
+    # quad('quad')
+    # cube_test('cube_test')
+    # console_dynamic('console_dynamic')
+    # console('console')
+    # console4('console4')
+    # body1d('body1d')
+
+    plt = TPlot('tank3')
+    # plt = TPlot('head3d')
+    # plt = TPlot('cylinder')
+    # plt = TPlot('console4')
 
 """
 1. Добавить загрузку названий функций в объект

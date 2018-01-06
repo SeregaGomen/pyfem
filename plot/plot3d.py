@@ -72,17 +72,17 @@ class TMainWindow(QMainWindow):
         self.setWindowTitle(self.file_name)
         self.statusBar().showMessage('')
 
-        mainMenu = self.menuBar()
-        fileMenu = mainMenu.addMenu('&File')
-        functionMenu = mainMenu.addMenu('F&unction')
-        optionMenu = mainMenu.addMenu('&Option')
-        helpMenu = mainMenu.addMenu('&?')
+        main_menu = self.menuBar()
+        file_menu = main_menu.addMenu('&File')
+        function_menu = main_menu.addMenu('F&unction')
+        options_menu = main_menu.addMenu('&Option')
+        help_menu = main_menu.addMenu('&?')
 
         # Настройка File
         exit_action = QAction('E&xit', self)
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self.close)
-        fileMenu.addAction(exit_action)
+        file_menu.addAction(exit_action)
 
         qa = QActionGroup(self)
         # Настройка Function
@@ -93,14 +93,11 @@ class TMainWindow(QMainWindow):
                 fun = '&' + chr(ord('A') + i - 9) + ' ' + self.results[i].name
             function_action = QAction(fun, self)
             function_action.setStatusTip('Visualization function ' + self.results[i].name)
-#            function_action.triggered.connect(self.fun_action)
             function_action.setActionGroup(qa)
             function_action.setCheckable(True)
-            if i == 0:
-                function_action.setChecked(True)
-            functionMenu.triggered.connect(self.__fun_action__)
-
-            functionMenu.addAction(function_action)
+            function_action.setChecked(True if i == 0 else False)
+            function_menu.triggered.connect(self.__fun_action__)
+            function_menu.addAction(function_action)
         self.show()
 
     def __fun_action__(self, action):
@@ -131,9 +128,9 @@ class TGLWidget(QWidget):
         self.min_x, self.max_x, self.x_c, self.radius = self.__get_coord_info__()
         self.min_u = min(self.results)
         self.max_u = max(self.results)
-        self.is_light = False
+        self.is_light = True
         self.is_legend = True
-        self.is_fe_border = True
+        self.is_fe_border = False
         self.angle_x = 0
         self.angle_y = 0
         self.angle_z = 0
@@ -144,6 +141,7 @@ class TGLWidget(QWidget):
         self.num_color = 16
         self.__is_idle__ = True
         self.__color_table__ = []
+        self.__normal__ = []
         self.__gl__ = QGLWidget(self)
         self.__gl__.initializeGL()
         self.__gl__.resizeGL = self.__resize__
@@ -153,9 +151,11 @@ class TGLWidget(QWidget):
         self.mousePressEvent = self.__mouse_press_event
         self.mouseReleaseEvent = self.__mouse_release_event
         self.__gl__.mouseMoveEvent = self.__mouse_move__
+        self.__xlist_object__ = 0
+        self.__xlist_sceleton__ = 0
         # Создание нормалей
         if self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_8':
-            self.__create_normal__()
+            self.__normal__ = self.__create_normal__()
 
     def set_results(self, results):
         self.results = results
@@ -373,6 +373,7 @@ class TGLWidget(QWidget):
             glEnable(GL_LIGHTING)
 
     def __paint__(self):
+        glClearColor(0.39, 0.39, 0.6, 0.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glEnable(GL_DEPTH_TEST)
         glLoadIdentity()
@@ -392,6 +393,8 @@ class TGLWidget(QWidget):
 
         if self.__is_idle__:
             self.__display_object__()
+        else:
+            self.__display_sceleton__()
         glPopMatrix()
         # Изображение цветовой шкалы
         if self.is_legend:
@@ -399,12 +402,45 @@ class TGLWidget(QWidget):
 
     # Визуализация результата
     def __display_object__(self):
-        if self.fe_type == 'fe_1d_2':
-            self.__paint_1d__()
-        elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4':
-            self.__paint_2d__()
+        if self.__xlist_object__ == 0:
+            self.__xlist_object__ = glGenLists(1)
+            glNewList(self.__xlist_object__, GL_COMPILE)
+            if self.fe_type == 'fe_1d_2':
+                self.__paint_1d__()
+            elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4':
+                self.__paint_2d__()
+            else:
+                self.__paint_3d__()
+            glEndList()
         else:
-            self.__paint_3d__()
+            glCallList(self.__xlist_object__)
+
+    # Изображение каркаса объекта
+    def __display_sceleton__(self):
+        if self.__xlist_sceleton__ == 0:
+            self.__xlist_sceleton__ = glGenLists(2)
+            glNewList(self.__xlist_sceleton__, GL_COMPILE)
+            if self.fe_type == 'fe_1d_2':
+                glBegin(GL_LINES)
+                glVertex2f(self.min_x[0] - self.x_c[0], 0)
+                glVertex2f(self.max_x[0] - self.x_c[0], 0)
+                glEnd()
+            elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4':
+                for i in range(0, len(self.be)):
+                    glBegin(GL_LINES)
+                    for j in range(0, len(self.be[0])):
+                        glVertex2f(self.x[self.be[i][j]][0] - self.x_c[0], self.x[self.be[i][j]][1] - self.x_c[1])
+                    glEnd()
+            else:
+                for i in range(0, len(self.be)):
+                    glBegin(GL_LINE_LOOP)
+                    for j in range(0, len(self.be[0])):
+                        glVertex3f(self.x[self.be[i][j]][0] - self.x_c[0], self.x[self.be[i][j]][1] - self.x_c[1],
+                                   self.x[self.be[i][j]][2] - self.x_c[2])
+                    glEnd()
+            glEndList()
+        else:
+            glCallList(self.__xlist_sceleton__)
 
     # Визуализация одномерной задачи
     def __paint_1d__(self):
@@ -421,8 +457,8 @@ class TGLWidget(QWidget):
             if ind[0] == ind[1]:
                 self.color(clr)
                 glBegin(GL_LINES)
-                glVertex2f(rod[0][0] - self.x_c[0])
-                glVertex2f(rod[1][0])
+                glVertex2f(rod[0][0] - self.x_c[0], 0)
+                glVertex2f(rod[1][0], 0)
                 glEnd()
             else:
                 step = abs(ind[1] - ind[0]) + 1
@@ -496,5 +532,3 @@ class TPlot:
         window = TMainWindow(file_name)
         window.show()
         sys.exit(app.exec_())
-
-
