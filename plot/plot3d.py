@@ -142,6 +142,7 @@ class TGLWidget(QWidget):
         self.ambient = 0.8
         self.specular = 0.6
         self.num_color = 16
+        self.__is_idle__ = True
         self.__color_table__ = []
         self.__gl__ = QGLWidget(self)
         self.__gl__.initializeGL()
@@ -150,6 +151,7 @@ class TGLWidget(QWidget):
         self.__init_color_table__()
         QVBoxLayout(self).addWidget(self.__gl__)
         self.mousePressEvent = self.__mouse_press_event
+        self.mouseReleaseEvent = self.__mouse_release_event
         self.__gl__.mouseMoveEvent = self.__mouse_move__
         # Создание нормалей
         if self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_8':
@@ -164,6 +166,11 @@ class TGLWidget(QWidget):
 
     def __mouse_press_event(self, event):
         self.__last_pos__ = event.pos()
+        self.__is_idle__ = False
+
+    def __mouse_release_event(self, event):
+        self.__is_idle__ = True
+        self.__gl__.repaint()
 
     def __mouse_move__(self, event):
         dx = event.x() - self.__last_pos__.x()
@@ -383,7 +390,8 @@ class TGLWidget(QWidget):
         glRotatef(self.angle_y, 0, 1, 0)
         glRotatef(self.angle_z, 0, 0, 1)
 
-        self.__display_object__()
+        if self.__is_idle__:
+            self.__display_object__()
         glPopMatrix()
         # Изображение цветовой шкалы
         if self.is_legend:
