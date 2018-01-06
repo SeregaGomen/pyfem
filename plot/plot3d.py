@@ -11,6 +11,7 @@ from core.fem_result import TResult
 from core.fem_object import print_error
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup)
 from PyQt5.QtGui import (QFont, QFontMetrics)
+from PyQt5.QtCore import Qt
 from PyQt5.QtOpenGL import QGLWidget
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -176,9 +177,14 @@ class TGLWidget(QWidget):
         dx = event.x() - self.__last_pos__.x()
         dy = event.x() - self.__last_pos__.y()
 
-        self.angle_x += dx/2
-        self.angle_y += dy/2
-        self.__gl__.repaint()
+        if  event.buttons() & Qt.LeftButton:
+            if event.modifiers() & Qt.ShiftModifier:
+                self.angle_x += dx/20
+                self.angle_y += dy/20
+            else:
+                self.angle_x += dy/20
+                self.angle_z += dx/20
+            self.__gl__.repaint()
 
     def __get_coord_info__(self):
         min_x = [0, 0, 0]
