@@ -106,6 +106,18 @@ class TMainWindow(QMainWindow):
         light_action.setCheckable(True)
         light_action.setChecked(True)
         options_menu.addAction(light_action)
+        fe_border_action = QAction('&FE border', self)
+        fe_border_action.setStatusTip('Enable drawing FE border')
+        fe_border_action.triggered.connect(self.__fe_border_action__)
+        fe_border_action.setCheckable(True)
+        fe_border_action.setChecked(False)
+        options_menu.addAction(fe_border_action)
+        legend_action = QAction('&Legend', self)
+        legend_action.setStatusTip('Enable drawing legend')
+        legend_action.triggered.connect(self.__legend_action__)
+        legend_action.setCheckable(True)
+        legend_action.setChecked(True)
+        options_menu.addAction(legend_action)
 
         self.show()
 
@@ -114,9 +126,16 @@ class TMainWindow(QMainWindow):
         self.__gl_widget__.set_results(self.results[index].results)
 
     def __light_action__(self, action):
-        self.__gl_widget__.set_light(not self.__gl_widget__.is_light)
+        self.__gl_widget__.trigger_light()
         self.repaint()
 
+    def __fe_border_action__(self, action):
+        self.__gl_widget__.trigger_fe_border()
+        self.repaint()
+
+    def __legend_action__(self, action):
+        self.__gl_widget__.trigger_legend()
+        self.repaint()
 
     # Поиск индекса функции по ее имени
     def __get_fun_index__(self, fun_name, t=0):
@@ -153,6 +172,7 @@ class TGLWidget(QWidget):
         self.specular = 0.6
         self.num_color = 16
         self.__is_idle__ = True
+        self.__last_pos__ = self.pos()
         self.__color_table__ = []
         self.__normal__ = []
         self.__gl__ = QGLWidget(self)
@@ -186,8 +206,18 @@ class TGLWidget(QWidget):
             self.__xlist_sceleton__ = 0
         self.__gl__.updateGL()
 
-    def set_light(self, light):
-        self.is_light = light
+    def trigger_light(self):
+        self.is_light = not self.is_light
+        self.redraw()
+        self.__gl__.update()
+
+    def trigger_fe_border(self):
+        self.is_fe_border = not self.is_fe_border
+        self.redraw()
+        self.__gl__.update()
+
+    def trigger_legend(self):
+        self.is_legend = not self.is_legend
         self.redraw()
         self.__gl__.update()
 
@@ -200,12 +230,16 @@ class TGLWidget(QWidget):
         self.__gl__.update()
 
     def __mouse_press_event(self, event):
-        self.__last_pos__ = event.pos()
-        self.__is_idle__ = False
+        super(TGLWidget, self).mousePressEvent(event)
+        if event.buttons() & Qt.LeftButton:
+            self.__last_pos__ = event.pos()
+            self.__is_idle__ = False
 
     def __mouse_release_event(self, event):
-        self.__is_idle__ = True
-        self.__gl__.repaint()
+        super(TGLWidget, self).mouseReleaseEvent(event)
+        if self.__is_idle__ is False:
+            self.__is_idle__ = True
+            self.__gl__.repaint()
 
     def __mouse_move__(self, event):
         dx = event.x() - self.__last_pos__.x()
@@ -436,7 +470,7 @@ class TGLWidget(QWidget):
             self.__display_sceleton__()
         glPopMatrix()
         # Изображение цветовой шкалы
-        if self.is_legend:
+        if self.is_legend and self.__is_idle__:
             self.show_legend()
 
     # Визуализация результата
