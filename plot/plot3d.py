@@ -11,7 +11,7 @@ from core.fem_result import TResult
 from core.fem_object import print_error
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup)
 from PyQt5.QtGui import (QFont, QFontMetrics)
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import (Qt, QObject)
 from PyQt5.QtOpenGL import QGLWidget
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -97,14 +97,26 @@ class TMainWindow(QMainWindow):
             function_action.setActionGroup(qa)
             function_action.setCheckable(True)
             function_action.setChecked(True if i == 0 else False)
-            function_menu.triggered.connect(self.__fun_action__)
+            function_action.triggered.connect(self.__fun_action__)
             function_menu.addAction(function_action)
+        # Настройка Options
+        light_action = QAction('&Light', self)
+        light_action.setStatusTip('Enable light')
+        light_action.triggered.connect(self.__light_action__)
+        light_action.setCheckable(True)
+        light_action.setChecked(True)
+        options_menu.addAction(light_action)
+
         self.show()
 
-    def __fun_action__(self, action):
-        fun_name = action.text()[3:]
-        index = self.__get_fun_index__(fun_name)
+    def __fun_action__(self, position):
+        index = self.__get_fun_index__(QObject.sender(self).text()[3:])
         self.__gl_widget__.set_results(self.results[index].results)
+
+    def __light_action__(self, action):
+        self.__gl_widget__.set_light(not self.__gl_widget__.is_light)
+        self.repaint()
+
 
     # Поиск индекса функции по ее имени
     def __get_fun_index__(self, fun_name, t=0):
@@ -158,12 +170,34 @@ class TGLWidget(QWidget):
         if self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_8':
             self.__normal__ = self.__create_normal__()
 
+#    def __del__(self):
+#        print('Delete')
+#        if self.__xlist_object__ != 0:
+#            glDeleteLists(self.__xlist_object__, 1)
+#        if self.__xlist_sceleton__ != 0:
+#            glDeleteLists(self.__xlist_sceleton__, 1)
+
+    def redraw(self):
+        if self.__xlist_object__ != 0:
+            glDeleteLists(self.__xlist_object__, 1)
+            self.__xlist_object__ = 0
+        if self.__xlist_sceleton__ != 0:
+            glDeleteLists(self.__xlist_sceleton__, 1)
+            self.__xlist_sceleton__ = 0
+        self.__gl__.updateGL()
+
+    def set_light(self, light):
+        self.is_light = light
+        self.redraw()
+        self.__gl__.update()
+
     def set_results(self, results):
         self.results = results
         self.min_u = min(self.results)
         self.max_u = max(self.results)
         self.__init_color_table__()
-        self.__gl__.repaint()
+        self.redraw()
+        self.__gl__.update()
 
     def __mouse_press_event(self, event):
         self.__last_pos__ = event.pos()
@@ -176,8 +210,7 @@ class TGLWidget(QWidget):
     def __mouse_move__(self, event):
         dx = event.x() - self.__last_pos__.x()
         dy = event.x() - self.__last_pos__.y()
-
-        if  event.buttons() & Qt.LeftButton:
+        if event.buttons() & Qt.LeftButton:
             if event.modifiers() & Qt.ShiftModifier:
                 self.angle_x += dx/20
                 self.angle_y += dy/20

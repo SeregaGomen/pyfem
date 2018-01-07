@@ -318,9 +318,9 @@ if __name__ == "__main__":
     # console4('console4')
     # body1d('body1d')
 
-    plt = TPlot('tank3')
+    # plt = TPlot('tank3')
     # plt = TPlot('head3d')
-    # plt = TPlot('cylinder')
+    plt = TPlot('cylinder')
     # plt = TPlot('console4')
 
 """
