@@ -9,7 +9,7 @@ import simplejson as json
 from math import floor
 from core.fem_result import TResult
 from core.fem_object import print_error
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup, QMenu)
 from PyQt5.QtGui import (QFont, QFontMetrics)
 from PyQt5.QtCore import (Qt, QObject)
 from PyQt5.QtOpenGL import QGLWidget
@@ -118,8 +118,54 @@ class TMainWindow(QMainWindow):
         legend_action.setCheckable(True)
         legend_action.setChecked(True)
         options_menu.addAction(legend_action)
+        options_menu.addSeparator()
+        qa = QActionGroup(self)
+        color_16_action = QAction('&16', self)
+        color_16_action.setStatusTip('Set 16 grading colors')
+        color_16_action.setActionGroup(qa)
+        color_16_action.setCheckable(True)
+        color_16_action.setChecked(True)
+        color_16_action.triggered.connect(self.__colors_action__)
+        color_32_action = QAction('3&2', self)
+        color_32_action.setStatusTip('Set 32 grading colors')
+        color_32_action.setActionGroup(qa)
+        color_32_action.setCheckable(True)
+        color_32_action.setChecked(False)
+        color_32_action.triggered.connect(self.__colors_action__)
+        color_64_action = QAction('6&4', self)
+        color_64_action.setStatusTip('Set 64 grading colors')
+        color_64_action.setActionGroup(qa)
+        color_64_action.setCheckable(True)
+        color_64_action.setChecked(False)
+        color_64_action.triggered.connect(self.__colors_action__)
+        color_128_action = QAction('1&28', self)
+        color_128_action.setStatusTip('Set 128 grading colors')
+        color_128_action.setActionGroup(qa)
+        color_128_action.setCheckable(True)
+        color_128_action.setChecked(False)
+        color_128_action.triggered.connect(self.__colors_action__)
+        color_256_action = QAction('25&6', self)
+        color_256_action.setStatusTip('Set 256 grading colors')
+        color_256_action.setActionGroup(qa)
+        color_256_action.setCheckable(True)
+        color_256_action.setChecked(False)
+        color_256_action.triggered.connect(self.__colors_action__)
+
+        color_menu = QMenu('&Colors', self)
+        color_menu.setStatusTip('Set grading colors')
+        color_menu.addAction(color_16_action)
+        color_menu.addAction(color_32_action)
+        color_menu.addAction(color_64_action)
+        color_menu.addAction(color_128_action)
+        color_menu.addAction(color_256_action)
+        options_menu.addMenu(color_menu)
+
 
         self.show()
+
+    def __colors_action__(self, position):
+        num = int(QObject.sender(self).text().replace('&', ''))
+        self.__gl_widget__.set_colors(num)
 
     def __fun_action__(self, position):
         index = self.__get_fun_index__(QObject.sender(self).text()[3:])
@@ -221,6 +267,12 @@ class TGLWidget(QWidget):
         self.redraw()
         self.__gl__.update()
 
+    def set_colors(self, colors):
+        self.num_color = colors
+        self.__init_color_table__()
+        self.redraw()
+        self.__gl__.update()
+
     def set_results(self, results):
         self.results = results
         self.min_u = min(self.results)
@@ -264,6 +316,7 @@ class TGLWidget(QWidget):
         return min_x, max_x, x_c, radius
 
     def __init_color_table__(self):
+        self.__color_table__.clear()
         step = self.num_color/6
         h = 1.0/step
         if self.min_u == self.max_u:
@@ -306,13 +359,12 @@ class TGLWidget(QWidget):
             u += h_u
 
     def color(self, index):
-        r = self.__color_table__[index][0] if index >= 0 else 1
-        g = self.__color_table__[index][1] if index >= 0 else 1
-        b = self.__color_table__[index][2] if index >= 0 else 1
         if self.is_light:
-            self.__make_material__(r, g, b, self.alpha)
+            self.__make_material__(self.__color_table__[index][0], self.__color_table__[index][1],
+                                   self.__color_table__[index][2], self.alpha)
         else:
-            glColor4f(r, g, b, self.alpha)
+            glColor4f(self.__color_table__[index][0], self.__color_table__[index][1], self.__color_table__[index][2],
+                      self.alpha)
 
     def __resize__(self, w, h):
         aspect = w/h
