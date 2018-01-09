@@ -9,7 +9,8 @@ import simplejson as json
 from math import floor
 from core.fem_result import TResult
 from core.fem_object import print_error
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup, QMenu)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup, QMenu,
+                             QFileDialog)
 from PyQt5.QtGui import (QFont, QFontMetrics)
 from PyQt5.QtCore import (Qt, QObject)
 from PyQt5.QtOpenGL import QGLWidget
@@ -80,13 +81,19 @@ class TMainWindow(QMainWindow):
         help_menu = main_menu.addMenu('&?')
 
         # Настройка File
+        open_action = QAction('&Open...', self)
+        open_action.setStatusTip('Open a data file')
+        open_action.triggered.connect(self.__open__)
+        file_menu.addAction(open_action)
+        file_menu.addSeparator()
+
         exit_action = QAction('E&xit', self)
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
-        qa = QActionGroup(self)
         # Настройка Function
+        qa = QActionGroup(self)
         for i in range(0, len(self.results)):
             if i < 9:
                 fun = '&' + str(i + 1) + ' ' + self.results[i].name
@@ -99,6 +106,7 @@ class TMainWindow(QMainWindow):
             function_action.setChecked(True if i == 0 else False)
             function_action.triggered.connect(self.__fun_action__)
             function_menu.addAction(function_action)
+
         # Настройка Options
         light_action = QAction('&Light', self)
         light_action.setStatusTip('Enable light')
@@ -160,26 +168,30 @@ class TMainWindow(QMainWindow):
         color_menu.addAction(color_256_action)
         options_menu.addMenu(color_menu)
 
-
         self.show()
 
-    def __colors_action__(self, position):
+    def __open__(self):
+        dlg = QFileDialog(self, 'Open data file', '', 'JSON data files (*.json)')
+        if dlg.exec_():
+            self.__set_file__(dlg.selectedFiles()[0])
+
+    def __colors_action__(self):
         num = int(QObject.sender(self).text().replace('&', ''))
         self.__gl_widget__.set_colors(num)
 
-    def __fun_action__(self, position):
+    def __fun_action__(self):
         index = self.__get_fun_index__(QObject.sender(self).text()[3:])
         self.__gl_widget__.set_results(self.results[index].results)
 
-    def __light_action__(self, action):
+    def __light_action__(self):
         self.__gl_widget__.trigger_light()
         self.repaint()
 
-    def __fe_border_action__(self, action):
+    def __fe_border_action__(self):
         self.__gl_widget__.trigger_fe_border()
         self.repaint()
 
-    def __legend_action__(self, action):
+    def __legend_action__(self):
         self.__gl_widget__.trigger_legend()
         self.repaint()
 
@@ -192,6 +204,20 @@ class TMainWindow(QMainWindow):
                 index = i
                 break
         return index
+
+    # Задание нового файла
+    def __set_file__(self, file_name):
+        self.file_name = file_name
+        self.fe_type = ''
+        self.x.clear()
+        self.fe.clear()
+        self.be.clear()
+        self.results.clear()
+        # Загрузка данных
+        if self.__load_file__() is False:
+            QMessageBox.critical(self, 'Error', 'Error read data from file ' + file_name, QMessageBox.Ok)
+            return
+        self.__gl_widget__.set_data(self.fe_type, self.x, self.fe, self.be, self.results[0].results)
 
 
 # Базовый класс, реализующий основной функционал OpenGL
@@ -242,6 +268,45 @@ class TGLWidget(QWidget):
 #            glDeleteLists(self.__xlist_object__, 1)
 #        if self.__xlist_sceleton__ != 0:
 #            glDeleteLists(self.__xlist_sceleton__, 1)
+
+    def set_data(self, fe_type, x, fe, be, results):
+        self.fe_type = fe_type
+        self.x = x
+        self.fe = fe
+        self.be = be
+        self.results = results
+        self.min_x, self.max_x, self.x_c, self.radius = self.__get_coord_info__()
+        self.min_u = min(self.results)
+        self.max_u = max(self.results)
+        self.is_light = True
+        self.is_legend = True
+        self.is_fe_border = False
+        self.angle_x = 0
+        self.angle_y = 0
+        self.angle_z = 0
+        self.alpha = 1.0
+        self.diffuse = 0.8
+        self.ambient = 0.8
+        self.specular = 0.6
+        self.num_color = 16
+        self.__is_idle__ = True
+        self.__last_pos__ = self.pos()
+        self.__color_table__ = []
+        self.__normal__ = []
+        self.__gl__ = QGLWidget(self)
+        self.__gl__.initializeGL()
+        self.__gl__.resizeGL = self.__resize__
+        self.__gl__.paintGL = self.__paint__
+        self.__init_color_table__()
+        QVBoxLayout(self).addWidget(self.__gl__)
+        self.mousePressEvent = self.__mouse_press_event
+        self.mouseReleaseEvent = self.__mouse_release_event
+        self.__gl__.mouseMoveEvent = self.__mouse_move__
+        self.__xlist_object__ = 0
+        self.__xlist_sceleton__ = 0
+        # Создание нормалей
+        if self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_8':
+            self.__normal__ = self.__create_normal__()
 
     def redraw(self):
         if self.__xlist_object__ != 0:
