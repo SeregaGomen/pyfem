@@ -12,7 +12,7 @@ from core.fem_object import print_error
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup, QMenu,
                              QFileDialog)
 from PyQt5.QtGui import (QFont, QFontMetrics)
-from PyQt5.QtCore import (Qt, QObject)
+from PyQt5.QtCore import (Qt, QObject, QPoint)
 from PyQt5.QtOpenGL import QGLWidget
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -30,7 +30,7 @@ class TMainWindow(QMainWindow):
         self.results = []           # Результаты расчета
         # Загрузка данных
         if self.__load_file__() is False:
-            QMessageBox.critical(self, 'Error', 'Error read data from file ' + file_name, QMessageBox.Ok)
+            QMessageBox.critical(self, 'Error', 'Error read data from file ' + self.file_name, QMessageBox.Ok)
             return
         # Настройка окна
         self.__gl_widget__ = TGLWidget(self.fe_type, self.x, self.fe, self.be, self.results[0].results)
@@ -244,7 +244,7 @@ class TGLWidget(QWidget):
         self.specular = 0.6
         self.num_color = 16
         self.__is_idle__ = True
-        self.__last_pos__ = self.pos()
+        self.__last_pos__ = QPoint()
         self.__color_table__ = []
         self.__normal__ = []
         self.__gl__ = QGLWidget(self)
@@ -290,23 +290,21 @@ class TGLWidget(QWidget):
         self.specular = 0.6
         self.num_color = 16
         self.__is_idle__ = True
-        self.__last_pos__ = self.pos()
+        self.__last_pos__ = QPoint()
         self.__color_table__ = []
         self.__normal__ = []
-        self.__gl__ = QGLWidget(self)
-        self.__gl__.initializeGL()
-        self.__gl__.resizeGL = self.__resize__
-        self.__gl__.paintGL = self.__paint__
         self.__init_color_table__()
-        QVBoxLayout(self).addWidget(self.__gl__)
-        self.mousePressEvent = self.__mouse_press_event
-        self.mouseReleaseEvent = self.__mouse_release_event
-        self.__gl__.mouseMoveEvent = self.__mouse_move__
-        self.__xlist_object__ = 0
-        self.__xlist_sceleton__ = 0
+        if self.__xlist_object__ != 0:
+            glDeleteLists(self.__xlist_object__, 1)
+            self.__xlist_object__ = 0
+        if self.__xlist_sceleton__ != 0:
+            glDeleteLists(self.__xlist_sceleton__, 1)
+            self.__xlist_sceleton__ = 0
         # Создание нормалей
         if self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_8':
             self.__normal__ = self.__create_normal__()
+        self.__resize__(self.width(), self.height())
+        self.__gl__.updateGL()
 
     def redraw(self):
         if self.__xlist_object__ != 0:
