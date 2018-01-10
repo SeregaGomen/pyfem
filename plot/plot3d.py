@@ -9,8 +9,8 @@ import simplejson as json
 from math import floor
 from core.fem_result import TResult
 from core.fem_object import print_error
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup, QMenu,
-                             QFileDialog)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup,
+                             QMenu, QFileDialog)
 from PyQt5.QtGui import (QFont, QFontMetrics)
 from PyQt5.QtCore import (Qt, QObject, QPoint)
 from PyQt5.QtOpenGL import QGLWidget
@@ -28,16 +28,18 @@ class TMainWindow(QMainWindow):
         self.fe = []                # Связи КЭ
         self.be = []                # ... ГЭ
         self.results = []           # Результаты расчета
-        # Загрузка данных
-        if self.__load_file__() is False:
-            QMessageBox.critical(self, 'Error', 'Error read data from file ' + self.file_name, QMessageBox.Ok)
-            return
-        # Настройка окна
-        self.__gl_widget__ = TGLWidget(self.fe_type, self.x, self.fe, self.be, self.results[0].results)
-        self.setWindowTitle(file_name)
-        self.resize(640, 480)
-        self.__init_main_menu__()
+
+        self.__gl_widget__ = TGLWidget()
         self.setCentralWidget(self.__gl_widget__)
+        self.resize(640, 480)
+        # Загрузка данных
+        if self.__load_file__():
+            self.__gl_widget__.set_data(self.fe_type, self.x, self.fe, self.be, self.results[0].results)
+            self.setWindowTitle(file_name)
+        else:
+            self.statusBar().showMessage('Error read data from file ' + self.file_name)
+        # Настройка окна
+        self.__init_main_menu__()
 
     # Загрузка данных из файла
     def __load_file__(self):
@@ -72,7 +74,7 @@ class TMainWindow(QMainWindow):
 
     def __init_main_menu__(self):
         self.setWindowTitle(self.file_name)
-        self.statusBar().showMessage('')
+        # self.statusBar().showMessage('')
 
         main_menu = self.menuBar()
         file_menu = main_menu.addMenu('&File')
@@ -222,26 +224,25 @@ class TMainWindow(QMainWindow):
 
 # Базовый класс, реализующий основной функционал OpenGL
 class TGLWidget(QWidget):
-    def __init__(self, fe_type, x, fe, be, results):
+    def __init__(self):
         super(TGLWidget, self).__init__()
-        self.fe_type = fe_type
-        self.x = x
-        self.fe = fe
-        self.be = be
-        self.results = results
-        self.min_x, self.max_x, self.x_c, self.radius = self.__get_coord_info__()
-        self.min_u = min(self.results)
-        self.max_u = max(self.results)
+        self.fe_type = ''
+        self.x = []
+        self.fe = []
+        self.be = []
+        self.results = []
+        self.min_x = []
+        self.max_x = []
+        self.x_c = []
+        self.radius = 0
+        self.min_u = 0
+        self.max_u = 0
         self.is_light = True
         self.is_legend = True
         self.is_fe_border = False
         self.angle_x = 0
         self.angle_y = 0
         self.angle_z = 0
-        self.alpha = 1.0
-        self.diffuse = 0.8
-        self.ambient = 0.8
-        self.specular = 0.6
         self.num_color = 16
         self.__is_idle__ = True
         self.__last_pos__ = QPoint()
@@ -284,10 +285,6 @@ class TGLWidget(QWidget):
         self.angle_x = 0
         self.angle_y = 0
         self.angle_z = 0
-        self.alpha = 1.0
-        self.diffuse = 0.8
-        self.ambient = 0.8
-        self.specular = 0.6
         self.num_color = 16
         self.__is_idle__ = True
         self.__last_pos__ = QPoint()
@@ -421,13 +418,11 @@ class TGLWidget(QWidget):
                     green = 0
             u += h_u
 
-    def color(self, index):
+    def color(self, i):
         if self.is_light:
-            self.__make_material__(self.__color_table__[index][0], self.__color_table__[index][1],
-                                   self.__color_table__[index][2], self.alpha)
+            self.__make_material__(self.__color_table__[i][0], self.__color_table__[i][1], self.__color_table__[i][2])
         else:
-            glColor4f(self.__color_table__[index][0], self.__color_table__[index][1], self.__color_table__[index][2],
-                      self.alpha)
+            glColor3f(self.__color_table__[i][0], self.__color_table__[i][1], self.__color_table__[i][2])
 
     def __resize__(self, w, h):
         aspect = w/h
@@ -440,14 +435,17 @@ class TGLWidget(QWidget):
         if self.is_light:
             self.__setup_light__()
 
-    def __make_material__(self, r, g, b, a):
-        glLightfv(GL_LIGHT0, GL_AMBIENT, [0.4, 0.4, 0.4, 1.0])
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, [0.5, 0.5, 0.5, 1.0])
-        glLightfv(GL_LIGHT0, GL_SPECULAR, [0.7, 0.7, 0.7, 1.0])
+    def __make_material__(self, r, g, b, a=1.0):
+        diffuse = 0.5
+        ambient = 0.4
+        specular = 0.7
+        glLightfv(GL_LIGHT0, GL_AMBIENT, [ambient, ambient, ambient, a])
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, [diffuse, diffuse, diffuse, a])
+        glLightfv(GL_LIGHT0, GL_SPECULAR, [specular, specular, specular, a])
         glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE)
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [r*self.diffuse, g*self.diffuse, b*self.diffuse, a])
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [r*self.ambient, g*self.ambient, b*self.ambient, a])
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [self.specular, self.specular, self.specular, a])
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [r*diffuse, g*diffuse, b*diffuse, a])
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [r*ambient, g*ambient, b*ambient, a])
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [specular, specular, specular, a])
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, [0, 0, 0, a])
 
     def __get_color_index__(self, u):
@@ -538,9 +536,12 @@ class TGLWidget(QWidget):
                         glEnd()
 
     def __setup_light__(self):
-        glLightfv(GL_LIGHT0, GL_AMBIENT, [self.ambient, self.ambient, self.ambient])
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, [self.diffuse, self.diffuse, self.diffuse])
-        glLightfv(GL_LIGHT0, GL_SPECULAR, [self.specular, self.specular, self.specular])
+        diffuse = 0.8
+        ambient = 0.8
+        specular = 0.6
+        glLightfv(GL_LIGHT0, GL_AMBIENT, [ambient, ambient, ambient])
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, [diffuse, diffuse, diffuse])
+        glLightfv(GL_LIGHT0, GL_SPECULAR, [specular, specular, specular])
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50)
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [1, 1, 1, 1])
         glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_FALSE)

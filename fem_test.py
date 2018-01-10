@@ -321,8 +321,8 @@ if __name__ == "__main__":
     # plt = TPlot('tank3')
     # plt = TPlot('head3d')
     # plt = TPlot('cylinder')
-    # plt = TPlot('console4')
-    plt = TPlot('beam')
+    plt = TPlot('console1')
+    # plt = TPlot('beam')
 
 """
 1. Добавить загрузку названий функций в объект
