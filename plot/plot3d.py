@@ -73,7 +73,7 @@ class TMainWindow(QMainWindow):
         return True
 
     def __init_main_menu__(self):
-        self.setWindowTitle(self.file_name)
+        #self.setWindowTitle(self.file_name)
         # self.statusBar().showMessage('')
 
         main_menu = self.menuBar()
@@ -564,6 +564,8 @@ class TGLWidget(QWidget):
     def __paint__(self):
         glClearColor(0.39, 0.39, 0.6, 0.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        if self.fe_type == '':
+            return
         glEnable(GL_DEPTH_TEST)
         glLoadIdentity()
         glEnable(GL_POLYGON_OFFSET_FILL)
