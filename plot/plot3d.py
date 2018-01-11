@@ -35,9 +35,6 @@ class TMainWindow(QMainWindow):
         # Загрузка данных
         if self.__load_file__():
             self.__gl_widget__.set_data(self.fe_type, self.x, self.fe, self.be, self.results[0].results)
-            self.setWindowTitle(file_name)
-        else:
-            self.statusBar().showMessage('Error read data from file ' + self.file_name)
         # Настройка окна
         self.__init_main_menu__()
 
@@ -49,7 +46,10 @@ class TMainWindow(QMainWindow):
         # Проверка наличия файла
         if not os.path.exists(self.file_name):
             print_error('Unable open file ' + self.file_name)
+            self.statusBar().showMessage('Error read data from file ' + self.file_name)
+            self.setWindowTitle('PyFEM results viewer')
             return False
+        self.setWindowTitle('PyFEM results viewer - ' + self.file_name)
         # Чтение файла
         try:
             with open(self.file_name, 'r') as file:
@@ -87,8 +87,11 @@ class TMainWindow(QMainWindow):
         open_action.setStatusTip('Open a data file')
         open_action.triggered.connect(self.__open__)
         file_menu.addAction(open_action)
+        close_action = QAction('&Close', self)
+        close_action.setStatusTip('Close current file')
+        close_action.triggered.connect(self.__close__)
+        file_menu.addAction(close_action)
         file_menu.addSeparator()
-
         exit_action = QAction('E&xit', self)
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self.close)
@@ -176,6 +179,16 @@ class TMainWindow(QMainWindow):
         dlg = QFileDialog(self, 'Open data file', '', 'JSON data files (*.json)')
         if dlg.exec_():
             self.__set_file__(dlg.selectedFiles()[0])
+
+    def __close__(self):
+        self.setWindowTitle('PyFEM results viewer')
+        self.file_name = ''
+        self.fe_type = ''
+        self.x.clear()
+        self.fe.clear()
+        self.be.clear()
+        self.results.clear()
+        self.__gl_widget__.clear()
 
     def __colors_action__(self):
         num = int(QObject.sender(self).text().replace('&', ''))
@@ -269,6 +282,24 @@ class TGLWidget(QWidget):
 #            glDeleteLists(self.__xlist_object__, 1)
 #        if self.__xlist_sceleton__ != 0:
 #            glDeleteLists(self.__xlist_sceleton__, 1)
+    def clear(self):
+        self.fe_type = ''
+        self.x.clear()
+        self.fe.clear()
+        self.be.clear()
+        self.results.clear()
+        self.min_x.clear()
+        self.max_x.clear()
+        self.x_c.clear()
+        self.__color_table__.clear()
+        self.__normal__.clear()
+        if self.__xlist_object__ != 0:
+            glDeleteLists(self.__xlist_object__, 1)
+            self.__xlist_object__ = 0
+        if self.__xlist_sceleton__ != 0:
+            glDeleteLists(self.__xlist_sceleton__, 1)
+            self.__xlist_sceleton__ = 0
+        self.__gl__.updateGL()
 
     def set_data(self, fe_type, x, fe, be, results):
         self.fe_type = fe_type
@@ -710,7 +741,7 @@ class TGLWidget(QWidget):
             d = (a**2 + b**2 + c**2)**0.5
             if d == 0:
                 d = 1
-            normal.append([a/d, b/d, c/d])
+            normal.append([-a/d, -b/d, -c/d])
         return normal
 
 
