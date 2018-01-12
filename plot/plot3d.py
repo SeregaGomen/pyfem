@@ -50,6 +50,7 @@ class TMainWindow(QMainWindow):
             self.setWindowTitle('PyFEM results viewer')
             return False
         self.setWindowTitle('PyFEM results viewer - ' + self.file_name)
+        self.statusBar().showMessage('Success load file ' + self.file_name)
         # Чтение файла
         try:
             with open(self.file_name, 'r') as file:
@@ -73,7 +74,7 @@ class TMainWindow(QMainWindow):
         return True
 
     def __init_main_menu__(self):
-        #self.setWindowTitle(self.file_name)
+        # self.setWindowTitle(self.file_name)
         # self.statusBar().showMessage('')
 
         main_menu = self.menuBar()
@@ -302,6 +303,7 @@ class TGLWidget(QWidget):
         self.__gl__.updateGL()
 
     def set_data(self, fe_type, x, fe, be, results):
+        self.__gl__.glInit()
         self.fe_type = fe_type
         self.x = x
         self.fe = fe
@@ -583,7 +585,7 @@ class TGLWidget(QWidget):
     def draw_fe_border(self, tri):
         glDisable(GL_LIGHTING)
         glEnable(GL_COLOR_MATERIAL)
-        glColor4f(0, 0, 0, self.alpha)
+        glColor3f(0, 0, 0)
         glBegin(GL_LINE_LOOP)
         for i in range(0, len(tri)):
             glVertex3f(tri[i][0] - self.x_c[0], tri[i][1] - self.x_c[1], tri[i][2] - self.x_c[2])
@@ -741,7 +743,7 @@ class TGLWidget(QWidget):
             d = (a**2 + b**2 + c**2)**0.5
             if d == 0:
                 d = 1
-            normal.append([-a/d, -b/d, -c/d])
+            normal.append([a/d, b/d, c/d])
         return normal
 
 
