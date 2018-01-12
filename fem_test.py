@@ -321,7 +321,7 @@ if __name__ == "__main__":
     # plt = TPlot('tank3')
     # plt = TPlot('head3d')
     # plt = TPlot('cylinder')
-    plt = TPlot('console1')
+    plt = TPlot('console')
     # plt = TPlot('beam')
 
 """
