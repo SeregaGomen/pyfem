@@ -391,11 +391,11 @@ class TGLWidget(QWidget):
         dy = event.x() - self.__last_pos__.y()
         if event.buttons() & Qt.LeftButton:
             if event.modifiers() & Qt.ShiftModifier:
-                self.angle_x += dx/20
-                self.angle_y += dy/20
+                self.angle_x += dx/50
+                self.angle_y += dy/50
             else:
-                self.angle_x += dy/20
-                self.angle_z += dx/20
+                self.angle_x += dy/50
+                self.angle_z += dx/50
             self.__gl__.repaint()
 
     def __get_coord_info__(self):
