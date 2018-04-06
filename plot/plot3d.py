@@ -271,18 +271,20 @@ class TGLWidget(QWidget):
         self.mousePressEvent = self.__mouse_press_event
         self.mouseReleaseEvent = self.__mouse_release_event
         self.__gl__.mouseMoveEvent = self.__mouse_move__
+        self.wheelEvent = self.__wheel_event__
         self.__xlist_object__ = 0
         self.__xlist_sceleton__ = 0
         # Создание нормалей
         if self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_8':
             self.__normal__ = self.__create_normal__()
 
-#    def __del__(self):
-#        print('Delete')
-#        if self.__xlist_object__ != 0:
-#            glDeleteLists(self.__xlist_object__, 1)
-#        if self.__xlist_sceleton__ != 0:
-#            glDeleteLists(self.__xlist_sceleton__, 1)
+    """def __del__(self):
+        print('Delete')
+        if self.__xlist_object__ != 0:
+            glDeleteLists(self.__xlist_object__, 1)
+        if self.__xlist_sceleton__ != 0:
+            glDeleteLists(self.__xlist_sceleton__, 1)"""
+
     def clear(self):
         self.fe_type = ''
         self.x.clear()
@@ -318,6 +320,7 @@ class TGLWidget(QWidget):
         self.angle_x = 0
         self.angle_y = 0
         self.angle_z = 0
+        self.scale = 1
         self.num_color = 16
         self.__is_idle__ = True
         self.__last_pos__ = QPoint()
@@ -377,7 +380,6 @@ class TGLWidget(QWidget):
     def __mouse_press_event(self, event):
         super(TGLWidget, self).mousePressEvent(event)
         if event.buttons() & Qt.LeftButton:
-            self.__last_pos__ = event.pos()
             self.__is_idle__ = False
 
     def __mouse_release_event(self, event):
@@ -388,15 +390,22 @@ class TGLWidget(QWidget):
 
     def __mouse_move__(self, event):
         dx = event.x() - self.__last_pos__.x()
-        dy = event.x() - self.__last_pos__.y()
+        dy = event.y() - self.__last_pos__.y()
+        self.__last_pos__ = event.pos()
         if event.buttons() & Qt.LeftButton:
             if event.modifiers() & Qt.ShiftModifier:
-                self.angle_x += dx/50
-                self.angle_y += dy/50
+                self.angle_z += (dy/abs(dy) if dy != 0 else 0) + (dx/abs(dx) if dx != 0 else 0)
             else:
-                self.angle_x += dy/50
-                self.angle_z += dx/50
+                self.angle_x += dy/abs(dy) if dy != 0 else 0
+                self.angle_y += dx/abs(dx) if dx != 0 else 0
             self.__gl__.repaint()
+
+    def __wheel_event__(self, event):
+        if event.angleDelta().y() > 0:
+            self.scale *= 1.05
+        else:
+            self.scale /= 1.05
+        self.__gl__.repaint()
 
     def __get_coord_info__(self):
         min_x = [0, 0, 0]
@@ -468,18 +477,16 @@ class TGLWidget(QWidget):
         if self.is_light:
             self.__setup_light__()
 
-    def __make_material__(self, r, g, b, a=1.0):
+    @staticmethod
+    def __make_material__(r, g, b, a=1.0):
         diffuse = 0.5
         ambient = 0.4
         specular = 0.7
-        glLightfv(GL_LIGHT0, GL_AMBIENT, [ambient, ambient, ambient, a])
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, [diffuse, diffuse, diffuse, a])
-        glLightfv(GL_LIGHT0, GL_SPECULAR, [specular, specular, specular, a])
-        glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE)
+        shininess = 50
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [r*diffuse, g*diffuse, b*diffuse, a])
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [r*ambient, g*ambient, b*ambient, a])
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [specular, specular, specular, a])
-        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, [0, 0, 0, a])
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess)
 
     def __get_color_index__(self, u):
         ret = int(floor((u - self.min_u)/((self.max_u - self.min_u)/self.num_color))) - 1
@@ -514,8 +521,13 @@ class TGLWidget(QWidget):
         ind = []
         for i in range(0, 3):
             ind.append(self.__get_color_index__(tri[i][3]))
-        # Треугольник одного цвета
+        if self.is_light:
+            a = (tri[1][1] - tri[0][1])*(tri[2][2] - tri[0][2]) - (tri[2][1] - tri[0][1])*(tri[1][2] - tri[0][2])
+            b = (tri[2][0] - tri[0][0])*(tri[1][2] - tri[0][2]) - (tri[1][0] - tri[0][0])*(tri[2][2] - tri[0][2])
+            c = (tri[1][0] - tri[0][0])*(tri[2][1] - tri[0][1]) - (tri[2][0] - tri[0][0])*(tri[1][1] - tri[0][1])
+            glNormal3f(a, b, c)
         if ind[0] == ind[1] == ind[2]:
+            # Треугольник одного цвета
             self.color(ind[0])
             glBegin(GL_TRIANGLES)
             for i in range(0, 3):
@@ -554,8 +566,8 @@ class TGLWidget(QWidget):
                     self.color(clr)
                     glBegin(GL_TRIANGLES)
                     glVertex3f(p02[i][0] - self.x_c[0], p02[i][1] - self.x_c[1], p02[i][2] - self.x_c[2])
-                    glVertex3f(p02[i + 1][0] - self.x_c[0], p02[i + 1][1] - self.x_c[1], p02[i + 1][2] - self.x_c[2])
                     glVertex3f(p012[i][0] - self.x_c[0], p012[i][1] - self.x_c[1], p012[i][2] - self.x_c[2])
+                    glVertex3f(p02[i + 1][0] - self.x_c[0], p02[i + 1][1] - self.x_c[1], p02[i + 1][2] - self.x_c[2])
                     glEnd()
                     if i + 1 < len(p012):
                         clr = round((p02[i + 1][3] + p012[i][3] + p012[i + 1][3])/3)
@@ -568,19 +580,20 @@ class TGLWidget(QWidget):
                                    self.x_c[2])
                         glEnd()
 
-    def __setup_light__(self):
+    @staticmethod
+    def __setup_light__():
         diffuse = 0.8
         ambient = 0.8
         specular = 0.6
+
+        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
         glLightfv(GL_LIGHT0, GL_AMBIENT, [ambient, ambient, ambient])
         glLightfv(GL_LIGHT0, GL_DIFFUSE, [diffuse, diffuse, diffuse])
         glLightfv(GL_LIGHT0, GL_SPECULAR, [specular, specular, specular])
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50)
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [1, 1, 1, 1])
-        glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_FALSE)
-        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
+
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
+        glEnable(GL_NORMALIZE)
 
     def draw_fe_border(self, tri):
         glDisable(GL_LIGHTING)
@@ -615,10 +628,13 @@ class TGLWidget(QWidget):
         glRotatef(self.angle_y, 0, 1, 0)
         glRotatef(self.angle_z, 0, 0, 1)
 
+        glScalef(self.scale, self.scale, self.scale)
+
         if self.__is_idle__:
             self.__display_object__()
         else:
             self.__display_sceleton__()
+
         glPopMatrix()
         # Изображение цветовой шкалы
         if self.is_legend and self.__is_idle__:
@@ -716,8 +732,6 @@ class TGLWidget(QWidget):
     def __paint_3d__(self):
         # Изображение поверхности
         for i in range(0, len(self.be)):
-            if self.is_light:
-                glNormal3d(self.__normal__[i][0], self.__normal__[i][1], self.__normal__[i][2])
             tri = []
             for j in range(0, len(self.be[0])):
                 tri.append([self.x[self.be[i][j]][0], self.x[self.be[i][j]][1], self.x[self.be[i][j]][2],
