@@ -261,7 +261,6 @@ class TGLWidget(QWidget):
         self.__is_idle__ = True
         self.__last_pos__ = QPoint()
         self.__color_table__ = []
-        self.__normal__ = []
         self.__gl__ = QGLWidget(self)
         self.__gl__.initializeGL()
         self.__gl__.resizeGL = self.__resize__
@@ -274,9 +273,6 @@ class TGLWidget(QWidget):
         self.wheelEvent = self.__wheel_event__
         self.__xlist_object__ = 0
         self.__xlist_sceleton__ = 0
-        # Создание нормалей
-        if self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_8':
-            self.__normal__ = self.__create_normal__()
 
     """def __del__(self):
         print('Delete')
@@ -295,7 +291,6 @@ class TGLWidget(QWidget):
         self.max_x.clear()
         self.x_c.clear()
         self.__color_table__.clear()
-        self.__normal__.clear()
         if self.__xlist_object__ != 0:
             glDeleteLists(self.__xlist_object__, 1)
             self.__xlist_object__ = 0
@@ -325,7 +320,6 @@ class TGLWidget(QWidget):
         self.__is_idle__ = True
         self.__last_pos__ = QPoint()
         self.__color_table__ = []
-        self.__normal__ = []
         self.__init_color_table__()
         if self.__xlist_object__ != 0:
             glDeleteLists(self.__xlist_object__, 1)
@@ -333,9 +327,6 @@ class TGLWidget(QWidget):
         if self.__xlist_sceleton__ != 0:
             glDeleteLists(self.__xlist_sceleton__, 1)
             self.__xlist_sceleton__ = 0
-        # Создание нормалей
-        if self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_8':
-            self.__normal__ = self.__create_normal__()
         self.__resize__(self.width(), self.height())
         self.__gl__.updateGL()
 
@@ -522,6 +513,7 @@ class TGLWidget(QWidget):
         for i in range(0, 3):
             ind.append(self.__get_color_index__(tri[i][3]))
         if self.is_light:
+            # Задание нормали
             a = (tri[1][1] - tri[0][1])*(tri[2][2] - tri[0][2]) - (tri[2][1] - tri[0][1])*(tri[1][2] - tri[0][2])
             b = (tri[2][0] - tri[0][0])*(tri[1][2] - tri[0][2]) - (tri[1][0] - tri[0][0])*(tri[2][2] - tri[0][2])
             c = (tri[1][0] - tri[0][0])*(tri[2][1] - tri[0][1]) - (tri[2][0] - tri[0][0])*(tri[1][1] - tri[0][1])
@@ -744,22 +736,6 @@ class TGLWidget(QWidget):
             # Изображение границы ГЭ
             if self.is_fe_border:
                 self.draw_fe_border(tri)
-
-    def __create_normal__(self):
-        normal = []
-        for i in range(0, len(self.be)):
-            x = []
-            for j in range(0, 3):
-                x.append([self.x[self.be[i][j]][0], self.x[self.be[i][j]][1], self.x[self.be[i][j]][2]])
-            a = (x[1][1] - x[0][1])*(x[2][2] - x[0][2]) - (x[2][1] - x[0][1])*(x[1][2] - x[0][2])
-            b = (x[2][0] - x[0][0])*(x[1][2] - x[0][2]) - (x[1][0] - x[0][0])*(x[2][2] - x[0][2])
-            c = (x[1][0] - x[0][0])*(x[2][1] - x[0][1]) - (x[2][0] - x[0][0])*(x[1][1] - x[0][1])
-            d = (a**2 + b**2 + c**2)**0.5
-            if d == 0:
-                d = 1
-            normal.append([a/d, b/d, c/d])
-        return normal
-
 
 # Класс, реализующий визуализацию расчета
 class TPlot:

@@ -318,11 +318,12 @@ if __name__ == "__main__":
     # console4('console4')
     # body1d('body1d')
 
-    # plt = TPlot('tank3')
-    # plt = TPlot('head3d')
-    # plt = TPlot('cylinder')
-    plt = TPlot('console4')
-    # plt = TPlot('beam')
+    TPlot('console')
+    # TPlot('tank3')
+    # TPlot('head3d')
+    # TPlot('cylinder')
+    # plt = TPlot('console4')
+    # TPlot('beam')
 
 """
 1. Добавить загрузку названий функций в объект
