@@ -316,7 +316,7 @@ class TGLWidget(QWidget):
         self.angle_y = 0
         self.angle_z = 0
         self.scale = 1
-        self.num_color = 16
+        self.num_color = 32
         self.__is_idle__ = True
         self.__last_pos__ = QPoint()
         self.__color_table__ = []
@@ -355,7 +355,7 @@ class TGLWidget(QWidget):
         self.__gl__.update()
 
     def set_colors(self, colors):
-        self.num_color = colors
+        self.num_color = 2*colors
         self.__init_color_table__()
         self.redraw()
         self.__gl__.update()
