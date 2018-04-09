@@ -554,7 +554,7 @@ class TGLWidget(QWidget):
 
             for i in range(0, len(p02) - 1):
                 if i < len(p012):
-                    clr = round((p02[i][3] + p02[i + 1][3] + p012[i][3])/3)
+                    clr = round(min(p02[i][3], p02[i + 1][3], p012[i][3]))
                     self.color(clr)
                     glBegin(GL_TRIANGLES)
                     glVertex3f(p02[i][0] - self.x_c[0], p02[i][1] - self.x_c[1], p02[i][2] - self.x_c[2])
@@ -562,7 +562,7 @@ class TGLWidget(QWidget):
                     glVertex3f(p02[i + 1][0] - self.x_c[0], p02[i + 1][1] - self.x_c[1], p02[i + 1][2] - self.x_c[2])
                     glEnd()
                     if i + 1 < len(p012):
-                        clr = round((p02[i + 1][3] + p012[i][3] + p012[i + 1][3])/3)
+                        clr = round(min(p02[i + 1][3], p012[i][3], p012[i + 1][3]))
                         self.color(clr)
                         glBegin(GL_TRIANGLES)
                         glVertex3f(p02[i + 1][0] - self.x_c[0], p02[i + 1][1] - self.x_c[1], p02[i + 1][2] -
@@ -709,6 +709,7 @@ class TGLWidget(QWidget):
     def __paint_2d__(self):
         # Изображение КЭ
         for i in range(0, len(self.fe)):
+#        for i in range(212, 214):
             tri = []
             for j in range(0, len(self.fe[0])):
                 tri.append([self.x[self.fe[i][j]][0], self.x[self.fe[i][j]][1], 0, self.results[self.fe[i][j]]])
