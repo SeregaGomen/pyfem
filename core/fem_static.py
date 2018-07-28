@@ -7,7 +7,7 @@
 from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve, bicgstab, ArpackError
 from core.fem_fem import TFEM
-from core.fem_defs import DIR_X, DIR_Y, DIR_Z
+from core.fem_defs import DIR_1, DIR_2, DIR_3
 from core.fem_result import TResult
 
 
@@ -26,6 +26,7 @@ class TFEMStatic(TFEM):
 
         fe = self.__create_fe__()
         fe.set_elasticity(self.__params__.e, self.__params__.m)
+        fe.set_h(self.__params__.h)
         # Вычисление компонент нагрузки
         self.__prepare_concentrated_load__()
         self.__prepare_surface_load__()
@@ -94,11 +95,11 @@ class TFEMStatic(TFEM):
                         continue
                 parser.set_code(self.__params__.bc_list[i].expression)
                 val = parser.run()
-                if self.__params__.bc_list[i].direct & DIR_X:
+                if self.__params__.bc_list[i].direct & DIR_1:
                     self.__global_load__[j*self.__mesh__.freedom + 0] += val
-                if self.__params__.bc_list[i].direct & DIR_Y:
+                if self.__params__.bc_list[i].direct & DIR_2:
                     self.__global_load__[j*self.__mesh__.freedom + 1] += val
-                if self.__params__.bc_list[i].direct & DIR_Z:
+                if self.__params__.bc_list[i].direct & DIR_3:
                     self.__global_load__[j*self.__mesh__.freedom + 2] += val
 
     # Вычисление поверхностных нагрузок
@@ -131,11 +132,11 @@ class TFEMStatic(TFEM):
                     parser.set_variable(self.__params__.names[3], t)
                     parser.set_code(self.__params__.bc_list[i].expression)
                     val = parser.run()
-                    if self.__params__.bc_list[i].direct & DIR_X:
+                    if self.__params__.bc_list[i].direct & DIR_1:
                         self.__global_load__[self.__mesh__.be[j][k]*self.__mesh__.freedom + 0] += val*rel_se
-                    if self.__params__.bc_list[i].direct & DIR_Y:
+                    if self.__params__.bc_list[i].direct & DIR_2:
                         self.__global_load__[self.__mesh__.be[j][k]*self.__mesh__.freedom + 1] += val*rel_se
-                    if self.__params__.bc_list[i].direct & DIR_Z:
+                    if self.__params__.bc_list[i].direct & DIR_3:
                         self.__global_load__[self.__mesh__.be[j][k]*self.__mesh__.freedom + 2] += val*rel_se
 
     # Вычисление объемных нагрузок
@@ -164,11 +165,11 @@ class TFEMStatic(TFEM):
                     parser.set_variable(self.__params__.names[3], t)
                     parser.set_code(self.__params__.bc_list[i].expression)
                     val = parser.run()
-                    if self.__params__.bc_list[i].direct & DIR_X:
+                    if self.__params__.bc_list[i].direct & DIR_1:
                         self.__global_load__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 0] += val*rel_ve
-                    if self.__params__.bc_list[i].direct & DIR_Y:
+                    if self.__params__.bc_list[i].direct & DIR_2:
                         self.__global_load__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 1] += val*rel_ve
-                    if self.__params__.bc_list[i].direct & DIR_Z:
+                    if self.__params__.bc_list[i].direct & DIR_3:
                         self.__global_load__[self.__mesh__.fe[j][k]*self.__mesh__.freedom + 2] += val*rel_ve
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...)
@@ -251,11 +252,11 @@ class TFEMStatic(TFEM):
                     parser.set_code(self.__params__.bc_list[i].expression)
                     val = parser.run()
                     direct = self.__params__.bc_list[i].direct
-                    if direct & DIR_X:
+                    if direct & DIR_1:
                         self.__set_boundary_condition__(j, 0, val)
-                    if direct & DIR_Y:
+                    if direct & DIR_2:
                         self.__set_boundary_condition__(j, 1, val)
-                    if direct & DIR_Z:
+                    if direct & DIR_3:
                         self.__set_boundary_condition__(j, 2, val)
 
     # Прямое решение СЛАУ
@@ -303,8 +304,12 @@ class TFEMStatic(TFEM):
             # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy
             res = 8
         elif self.__mesh__.freedom == 3:
-            # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz
-            res = 15
+            if self.__mesh__.fe_type == 'fe_2d_3_p' or  self.__mesh__.fe_type == 'fe_2d_4_p':
+                # w, Tx, Ty, Exx, Eyy, Exy, Sxx, Syy, Sxy
+                res = 9
+            else:
+                # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz
+                res = 15
         return res
 
     # Индекс функции в зависимости от размерности задачи

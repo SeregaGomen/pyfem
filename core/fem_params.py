@@ -8,19 +8,19 @@ from core.fem_error import TFEMException
 
 
 # Тип задачи: статика или динамика
-ProblemType = [
+problem_type = [
     'static',
     'dynamic'
 ]
 
 # Метод решения СЛАУ (точный, приближенный
-SolveMethod = [
+solve_method = [
     'direct',
     'iterative'
 ]
 
 # Стандартные имена функций (перемещения, деформации и напряжения) и их агрументов
-StdName = [
+std_name = [
     'x',    # 0  - идентификатор первого аргумента (x)
     'y',    # 1  - ... второго аргумента
     'z',    # 2  - ... третьего аргумента
@@ -49,7 +49,7 @@ StdName = [
 ]
 
 # Типы краевых условий
-BoundaryCondition = [
+boundary_condition = [
     'initial',
     'boundary',
     'volume',
@@ -75,6 +75,7 @@ class TFEMParams:
         self.width = 12         # Формат вывода результатов
         self.precision = 5
         self.eps = 1.0E-6       # Точность вычислений
+        self.h = 1.0            # Толщина (пластины, оболочки, ...)
         self.density = 0        # Плотность материала
         self.damping = 0        # Параметр демпфирования
         self.t0 = 0             # Начальный момент времени расчета
@@ -82,7 +83,7 @@ class TFEMParams:
         self.th = 0             # Шаг по времени
         self.e = []             # Коэффициент упругости (модуль Юнга)
         self.m = []             # Коэффициент Пуассона
-        self.names = StdName    # Список имен функций и их аргументов
+        self.names = std_name    # Список имен функций и их аргументов
         self.bc_list = []       # Список краевых условий
         self.var_list = {}      # Список вспомогательных переменных и их значений
 

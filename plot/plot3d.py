@@ -272,7 +272,7 @@ class TGLWidget(QWidget):
         self.__gl__.mouseMoveEvent = self.__mouse_move__
         self.wheelEvent = self.__wheel_event__
         self.__xlist_object__ = 0
-        self.__xlist_sceleton__ = 0
+        self.__xlist_skeleton__ = 0
 
     """def __del__(self):
         print('Delete')
@@ -294,9 +294,9 @@ class TGLWidget(QWidget):
         if self.__xlist_object__ != 0:
             glDeleteLists(self.__xlist_object__, 1)
             self.__xlist_object__ = 0
-        if self.__xlist_sceleton__ != 0:
-            glDeleteLists(self.__xlist_sceleton__, 1)
-            self.__xlist_sceleton__ = 0
+        if self.__xlist_skeleton__ != 0:
+            glDeleteLists(self.__xlist_skeleton__, 1)
+            self.__xlist_skeleton__ = 0
         self.__gl__.updateGL()
 
     def set_data(self, fe_type, x, fe, be, results):
@@ -324,9 +324,9 @@ class TGLWidget(QWidget):
         if self.__xlist_object__ != 0:
             glDeleteLists(self.__xlist_object__, 1)
             self.__xlist_object__ = 0
-        if self.__xlist_sceleton__ != 0:
-            glDeleteLists(self.__xlist_sceleton__, 1)
-            self.__xlist_sceleton__ = 0
+        if self.__xlist_skeleton__ != 0:
+            glDeleteLists(self.__xlist_skeleton__, 1)
+            self.__xlist_skeleton__ = 0
         self.__resize__(self.width(), self.height())
         self.__gl__.updateGL()
 
@@ -334,9 +334,9 @@ class TGLWidget(QWidget):
         if self.__xlist_object__ != 0:
             glDeleteLists(self.__xlist_object__, 1)
             self.__xlist_object__ = 0
-        if self.__xlist_sceleton__ != 0:
-            glDeleteLists(self.__xlist_sceleton__, 1)
-            self.__xlist_sceleton__ = 0
+        if self.__xlist_skeleton__ != 0:
+            glDeleteLists(self.__xlist_skeleton__, 1)
+            self.__xlist_skeleton__ = 0
         self.__gl__.updateGL()
 
     def trigger_light(self):
@@ -625,7 +625,7 @@ class TGLWidget(QWidget):
         if self.__is_idle__:
             self.__display_object__()
         else:
-            self.__display_sceleton__()
+            self.__display_skeleton__()
 
         glPopMatrix()
         # Изображение цветовой шкалы
@@ -639,7 +639,8 @@ class TGLWidget(QWidget):
             glNewList(self.__xlist_object__, GL_COMPILE)
             if self.fe_type == 'fe_1d_2':
                 self.__paint_1d__()
-            elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4':
+            elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_3_p' or \
+                    self.fe_type == 'fe_2d_4_p':
                 self.__paint_2d__()
             else:
                 self.__paint_3d__()
@@ -648,10 +649,10 @@ class TGLWidget(QWidget):
             glCallList(self.__xlist_object__)
 
     # Изображение каркаса объекта
-    def __display_sceleton__(self):
-        if self.__xlist_sceleton__ == 0:
-            self.__xlist_sceleton__ = glGenLists(2)
-            glNewList(self.__xlist_sceleton__, GL_COMPILE)
+    def __display_skeleton__(self):
+        if self.__xlist_skeleton__ == 0:
+            self.__xlist_skeleton__ = glGenLists(2)
+            glNewList(self.__xlist_skeleton__, GL_COMPILE)
             if self.fe_type == 'fe_1d_2':
                 glBegin(GL_LINES)
                 glVertex2f(self.min_x[0] - self.x_c[0], 0)
@@ -663,6 +664,12 @@ class TGLWidget(QWidget):
                     for j in range(0, len(self.be[0])):
                         glVertex2f(self.x[self.be[i][j]][0] - self.x_c[0], self.x[self.be[i][j]][1] - self.x_c[1])
                     glEnd()
+            elif self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_4_p':
+                for i in range(0, len(self.fe)):
+                    glBegin(GL_LINE_LOOP)
+                    for j in range(0, len(self.fe[0])):
+                        glVertex2f(self.x[self.fe[i][j]][0] - self.x_c[0], self.x[self.fe[i][j]][1] - self.x_c[1])
+                    glEnd()
             else:
                 for i in range(0, len(self.be)):
                     glBegin(GL_LINE_LOOP)
@@ -672,7 +679,7 @@ class TGLWidget(QWidget):
                     glEnd()
             glEndList()
         else:
-            glCallList(self.__xlist_sceleton__)
+            glCallList(self.__xlist_skeleton__)
 
     # Визуализация одномерной задачи
     def __paint_1d__(self):

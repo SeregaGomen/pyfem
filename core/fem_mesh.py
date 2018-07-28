@@ -11,7 +11,9 @@ from core.fem_error import TFEMException
 FEType = [
     'fe_1d_2',
     'fe_2d_3',
+    'fe_2d_3_p',
     'fe_2d_4',
+    'fe_2d_4_p',
     'fe_3d_4',
     'fe_3d_8'
 ]
@@ -25,19 +27,24 @@ class TMesh:
         self.be = []            # Связи граничных элементов
         self.fe = []            # Связи в КЭ
         self.freedom = 0        # Кол-во степеней свободы
+        self.dimension = 0      # Размерность КЭ
 
     @staticmethod
     def get_fe_data(t):
         if t == 3:
-            return 'fe_2d_3', 2, 3, 2
+            return 'fe_2d_3', 2, 3, 2, 2
         elif t == 4:
-            return 'fe_3d_4', 3, 4, 3
+            return 'fe_3d_4', 3, 4, 3, 3
         elif t == 8:
-            return 'fe_3d_8', 4, 8, 3
+            return 'fe_3d_8', 4, 8, 3, 3
         elif t == 24:
-            return 'fe_2d_4', 2, 4, 2
+            return 'fe_2d_4', 2, 4, 2, 2
         elif t == 34:
-            return 'fe_1d_2', 0, 2, 1
+            return 'fe_1d_2', 0, 2, 1, 1
+        elif t == 123:
+            return 'fe_2d_3_p', 0, 3, 3, 2
+        elif t == 124:
+            return 'fe_2d_4_p', 0, 4, 3, 2
         else:
             raise TFEMException('unknown_fe_err')
 
@@ -49,7 +56,7 @@ class TMesh:
             file.close()
         except IOError:
             raise TFEMException('read_file_err')
-        self.fe_type, size_surface, size_fe, self.freedom = self.get_fe_data(int(lines[0]))
+        self.fe_type, size_surface, size_fe, self.freedom, self.dimension = self.get_fe_data(int(lines[0]))
         # Кол-во узлов
         n = int(lines[1])
         # Считываем узлы
@@ -57,9 +64,9 @@ class TMesh:
         for i in range(0, n):
             tx = list()
             tx.append(float(lines[2 + i].split()[0]))
-            if self.freedom > 1:
+            if self.dimension > 1:
                 tx.append(float(lines[2 + i].split()[1]))
-            if self.freedom > 2:
+            if self.dimension > 2:
                 tx.append(float(lines[2 + i].split()[2]))
             self.x.append(tx)
             index += 1
@@ -83,6 +90,8 @@ class TMesh:
                 row.append(int(lines[index].split()[j]))
             self.be.append(row)
             index += 1
+        if self.fe_type == 'fe_2d_3_p' or  self.fe_type == 'fe_2d_4_p':
+            self.be = self.fe
 
     def fe_name(self):
         if self.fe_type == 'fe_1d_2':
@@ -91,6 +100,10 @@ class TMesh:
             return 'linear triangular element (3 nodes)'
         elif self.fe_type == 'fe_2d_4':
             return 'quadrilateral element (4 nodes)'
+        elif self.fe_type == 'fe_2d_3_p':
+            return 'plate element (3 nodes)'
+        elif self.fe_type == 'fe_2d_4_p':
+            return 'plate element (4 nodes)'
         elif self.fe_type == 'fe_3d_4':
             return 'linear tetrahedron (4 nodes)'
         elif self.fe_type == 'fe_3d_8':

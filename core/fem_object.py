@@ -52,8 +52,14 @@ class TObject:
     def set_eps(self, e):
         self.__params__.eps = e
 
+    def set_h(self, h):
+        self.__params__.h = h
+
     def set_width(self, width):
         self.__params__.width = width
+
+    def set_names(self, names):
+        self.__params__.names = names
 
     def set_precision(self, precision):
         self.__params__.precision = precision
@@ -174,9 +180,9 @@ class TObject:
         len2 = len('%d' % len(self.__mesh__.x))
         # Вывод заголовка
         file.write('| %*s  (' % (len2, 'N'))
-        for i in range(0, self.__mesh__.freedom):
+        for i in range(0, self.__mesh__.dimension):
             file.write(' %*s' % (len1, self.__params__.names[i]))
-            if i < self.__mesh__.freedom - 1:
+            if i < self.__mesh__.dimension - 1:
                 file.write(',')
         file.write(') |')
         for i in range(0, len(self.__results__)):
@@ -186,9 +192,9 @@ class TObject:
         for i in range(0, len(self.__mesh__.x)):
             file.write('| %*d  (' % (len2, i + 1))
             file.write(' %+*.*E' % (self.__params__.width, self.__params__.precision, self.__mesh__.x[i][0]))
-            if self.__mesh__.freedom > 1:
+            if self.__mesh__.dimension > 1:
                 file.write(', %+*.*E' % (self.__params__.width, self.__params__.precision, self.__mesh__.x[i][1]))
-            if self.__mesh__.freedom > 2:
+            if self.__mesh__.dimension > 2:
                 file.write(', %+*.*E' % (self.__params__.width, self.__params__.precision, self.__mesh__.x[i][2]))
             file.write(') | ')
             for k in range(0, len(self.__results__)):
@@ -200,22 +206,22 @@ class TObject:
         file.write('\n')
         # Печать итогов
         file.write('|  %*s  ' % (len2, ' '))
-        for i in range(0, self.__mesh__.freedom):
+        for i in range(0, self.__mesh__.dimension):
             file.write(' %*s' % (len1, ' '))
-            if i < self.__mesh__.freedom - 1:
+            if i < self.__mesh__.dimension - 1:
                 file.write(' ')
         file.write('  |')
         for i in range(0, len(self.__results__)):
             if self.__results__[i].t == t:
                 file.write(' %*s |' % (len1, self.__results__[i].name))
         file.write('\n')
-        file.write('|   %*s  |' % (self.__mesh__.freedom*(len1 + 1) + self.__mesh__.freedom + len2, 'min:'))
+        file.write('|   %*s  |' % (self.__mesh__.dimension*(len1 + 1) + self.__mesh__.dimension + len2, 'min:'))
         for i in range(0, len(self.__results__)):
             if self.__results__[i].t == t:
                 file.write(' %+*.*E ' % (self.__params__.width, self.__params__.precision, self.__results__[i].min()))
                 file.write('|')
         file.write('\n')
-        file.write('|   %*s  |' % (self.__mesh__.freedom*(len1 + 1) + self.__mesh__.freedom + len2, 'max:'))
+        file.write('|   %*s  |' % (self.__mesh__.dimension*(len1 + 1) + self.__mesh__.dimension + len2, 'max:'))
         for i in range(0, len(self.__results__)):
             if self.__results__[i].t == t:
                 file.write(' %+*.*E ' % (self.__params__.width, self.__params__.precision, self.__results__[i].max()))
