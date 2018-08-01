@@ -19,21 +19,17 @@ from core.fem_defs import eps
 class TFE:
     def __init__(self):
         self.size = 0
-        self.density = self.damping = 0.0
-        self.e = []                         # Модуль Юнга и коэффициент Пуассона
-        self.m = []
+        self.h = 1                          # Толщина (для оболочек и пластин)
+        self.density = self.damping = 0.0   # Параметры плотности и демпфирования
+        self.e = []                         # Модуль Юнга
+        self.m = []                         # Коэффициент Пуассона
         self.x = []                         # Координаты вершин КЭ
         self.y = []
         self.z = []
-        self.vx = []                        # Компоненты вектора объемной нагрузки
-        self.vy = []
-        self.vz = []
         self.K = [[]]                       # Матрица жесткости
         self.M = [[]]                       # ... масс
         self.D = [[]]                       # ... демпфирования
         self.c = [[]]                       # Коэффициенты функций форм
-        self.h = 1                          # Толщина (для оболочек и пластин)
-
 
     # Задание толщины
     def set_h(self, h):
@@ -51,18 +47,6 @@ class TFE:
             self.y = args[1]
             self.z = args[2]
         self.__create__()
-
-    # Задание объемной нагрузки
-    def set_volume_load(self, *args):
-        if len(args) == 1:
-            self.vx = args[0]
-        elif len(args) == 2:
-            self.vx = args[0]
-            self.vy = args[1]
-        elif len(args) == 3:
-            self.vx = args[0]
-            self.vy = args[1]
-            self.vz = args[2]
 
     # Задание параметров упругости
     def set_elasticity(self, p1, p2):
@@ -137,12 +121,6 @@ class TFE1D2(TFE):
         self.K[0][1] = 2.0*self.__length__()*self.e[0]*self.c[0][1]*self.c[1][1]
         self.K[1][1] = 2.0*self.__length__()*self.e[0]*self.c[1][1]**2
 
-        # Вычисление интеграла для объемных сил
-        if len(self.vx):
-            self.K[0][2] += self.vx[0]*(self.c[0][1]*(self.x[1]**2 - self.x[0]**2)*0.5 +
-                                        self.c[0][0]*(self.x[1] - self.x[0]))
-            self.K[1][2] += self.vx[1]*(self.c[1][1]*(self.x[1]**2 - self.x[0]**2)*0.5 +
-                                        self.c[1][0]*(self.x[1] - self.x[0]))
         if not is_static:
             # Формирование матрицы массы
             k00 = (self.c[0][0]**2*(self.x[1] - self.x[0])) + \
@@ -240,8 +218,6 @@ class TFE2D3(TFE):
         for i in range(0, 6):
             for j in range(i, 6):
                 self.K[i][j] = local_k[i][j]
-                if len(self.vx) or len(self.vy):
-                    self.K[i][6] = self.vy[0]*self.__square__()/3.0 if j % 2 == 0 else self.vx[0]*self.__square__()/3.0
                 if not is_static:
                     self.M[i][j] = self.density*self.__square__()/12.0 if i == j else self.density*self.__square__()/6.0
                     self.D[i][j] = self.damping*self.__square__()/12.0 if i == j else self.density*self.__square__()/6.0
@@ -334,13 +310,6 @@ class TFE3D4(TFE):
         # Формирование локальных матриц жесткости, масс и демпфирования
         local_k = b.conj().transpose().dot(d).dot(b)*self.__volume__()
         for i in range(0, 12):
-            if len(self.vx) or len(self.vy) or len(self.vz):
-                if i % 3 == 0:
-                    self.K[i][12] = 0.25*self.vx[0]*self.__volume__()
-                elif i % 3 == 1:
-                    self.K[i][12] = 0.25*self.vy[0]*self.__volume__()
-                elif i % 3 == 2:
-                    self.K[i][12] = 0.25*self.vz[0]*self.__volume__()
             for j in range(i, 12):
                 self.K[i][j] = local_k[i][j]
                 if not is_static:
@@ -353,7 +322,6 @@ class TFE2D4(TFE):
     def __init__(self):
         super().__init__()
         self.size = 4
-        self.K = zeros((8, 9))
         self.c = zeros((4, 4))
 
     def __square__(self):
@@ -388,7 +356,6 @@ class TFE2D4(TFE):
         # Формирование локальных матриц жесткости, масс и демпфирования
         local_k = zeros((8, 8))
         local_m = zeros((8, 8))
-        volume_load = zeros(8)
         # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(w)):
             # Изопараметрические функции формы и их производные
@@ -434,27 +401,10 @@ class TFE2D4(TFE):
             local_k += b.conj().transpose().dot(d).dot(b)*jacobian*w[i]
             if not is_static:
                 local_m += c.conj().transpose().dot(c)*jacobian*w[i]
-            # Учет объемной нагрузки
-            if len(self.vx) or len(self.vy):
-                for j in range(0, 4):
-                    volume_load[2*j] += self.vx[j]*shape[j]*jacobian*w[i]
-                    volume_load[2*j + 1] += self.vy[j]*shape[j]*jacobian*w[i]
-
-        for i in range(0, 8):
-            for j in range(i, 8):
-                self.K[i][j] = local_k[i][j]
-                if not is_static:
-                    self.M[i][j] = self.density*local_m[i][j]
-                    self.D[i][j] = self.damping*local_m[i][j]
-            self.K[i][8] = volume_load[i]
-#        import sys
-#        print('*******************************')
-#        for i in range(0, len(self.K)):
-#            for j in range(0, len(self.K[0])):
-#                sys.stdout.write('%f' % self.K[i][j])
-#                sys.stdout.write(' ')
-#            sys.stdout.write('\n')
-#        print('*******************************')
+        # Заполнение локальных матриц жесткости, масс и демпфирования
+        self.K = local_k
+        if not is_static:
+            self.M, self.D = self.density*local_m, self.damping*local_m
 
     def calc(self, u):
         m = self.m[0]
@@ -481,7 +431,6 @@ class TFE3D8(TFE):
     def __init__(self):
         super().__init__()
         self.size = 8
-        self.K = zeros((24, 25))
         self.c = zeros((8, 8))
 
     def __create__(self):
@@ -522,7 +471,6 @@ class TFE3D8(TFE):
         # Формирование локальных матриц жесткости, масс и демпфирования
         local_k = zeros((24, 24))
         local_m = zeros((24, 24))
-        volume_load = zeros(24)
         # Интегрирование по кубу [-1; 1] x [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(w)):
             # Изопараметрические функции формы и их производные
@@ -611,20 +559,10 @@ class TFE3D8(TFE):
                      0.0, 0.0, shape[4], 0.0, 0.0, shape[5], 0.0, 0.0, shape[6], 0.0, 0.0, shape[7]]
                     ])
                 local_m += c.conj().transpose().dot(c)*jacobian*w[i]
-            # Учет объемной нагрузки
-            if len(self.vx) or len(self.vy) or len(self.vz):
-                for j in range(0, self.size):
-                    volume_load[3*j + 0] += self.vx[j]*shape[j]*jacobian*w[j]
-                    volume_load[3*j + 1] += self.vy[j]*shape[j]*jacobian*w[j]
-                    volume_load[3*j + 2] += self.vz[j]*shape[j]*jacobian*w[j]
-        for i in range(0, 24):
-            for j in range(i, 24):
-                self.K[i][j] = local_k[i][j]
-                if not is_static:
-                    self.M[i][j] = self.density*local_m[i][j]
-                    self.D[i][j] = self.damping*local_m[i][j]
-            self.K[i][24] = volume_load[i]
-
+        # Заполнение локальных матриц жесткости, масс и демпфирования
+        self.K = local_k
+        if not is_static:
+            self.M, self.D = self.density*local_m, self.damping*local_m
 
 #        print('******************************************')
 #        import sys
@@ -669,9 +607,6 @@ class TFE3D8(TFE):
 class TFE2D4P(TFE2D4):
     def __init__(self):
         super().__init__()
-        self.K = zeros((12, 13))
-        self.M = zeros((12, 13))
-        self.D = zeros((12, 13))
 
     def generate(self, is_static=True):
         # Параметры квадратур Гаусса
@@ -692,7 +627,6 @@ class TFE2D4P(TFE2D4):
         # Формирование локальных матриц жесткости, масс и демпфирования
         local_k = zeros((12, 12))
         local_m = zeros((12, 12))
-        volume_load = zeros(12)
         # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(w)):
             # Изопараметрические функции формы и их производные
@@ -752,20 +686,10 @@ class TFE2D4P(TFE2D4):
                     [0, 0, self.density*self.h**3/12.0],
                 ])
                 local_m += c.conj().transpose().dot(mi).dot(c)*jacobian*w[i]
-            # Учет объемной нагрузки
-            if len(self.vx) or len(self.vy) or len(self.vz):
-                for j in range(0, 8):
-                    volume_load[3*j] += self.vx[j]*shape[j]*jacobian*w[i]
-                    volume_load[3*j + 1] += self.vy[j]*shape[j]*jacobian*w[i]
-                    volume_load[3*j + 2] += self.vy[j]*shape[j]*jacobian*w[i]
-
-        for i in range(0, 12):
-            for j in range(i, 12):
-                self.K[i][j] = local_k[i][j]
-                if not is_static:
-                    self.M[i][j] = self.density*local_m[i][j]
-                    self.D[i][j] = self.damping*local_m[i][j]
-            self.K[i][12] = volume_load[i]
+        # Заполнение локальных матриц жесткости, масс и демпфирования
+        self.K = local_k
+        if not is_static:
+            self.M, self.D = self.density*local_m, self.damping*local_m
 
     def calc(self, u):
         d = self.e[0]*self.h**3/(1 - self.m[0]**2)/12.0
@@ -789,9 +713,6 @@ class TFE2D4P(TFE2D4):
 class TFE2D3P(TFE2D3):
     def __init__(self):
         super().__init__()
-        self.K = zeros((9, 10))
-        self.M = zeros((9, 9))
-        self.D = zeros((9, 9))
 
     def calc(self, u):
         d = self.e[0]*self.h**3/(1 - self.m[0]**2)/12.0
@@ -813,7 +734,6 @@ class TFE2D3P(TFE2D3):
     def generate(self, is_static=True):
         local_k = zeros((9, 9))
         local_m = zeros((9, 9))
-        volume_load = zeros(9)
         k = 5.0/6.0
         # Матрицы упругих свойст
         cb = array([
@@ -870,17 +790,7 @@ class TFE2D3P(TFE2D3):
                     [0, 0, self.density*self.h**3/12.0],
                 ])
                 local_m += c.conj().transpose().dot(mi).dot(c)*jacobian*w[i]
-            # Учет объемной нагрузки
-            if len(self.vx) or len(self.vy) or len(self.vz):
-                for j in range(0, 8):
-                    volume_load[3*j + 0] += self.vx[j]*shape[j]*jacobian*w[i]
-                    volume_load[3*j + 1] += self.vy[j]*shape[j]*jacobian*w[i]
-                    volume_load[3*j + 2] += self.vy[j]*shape[j]*jacobian*w[i]
         # Заполнение локальных матриц жесткости, масс и демпфирования
-        for i in range(0, 9):
-            for j in range(i, 9):
-                self.K[i][j] = local_k[i][j]
-                if not is_static:
-                    self.M[i][j] = self.density*local_m[i][j]
-                    self.D[i][j] = self.damping*local_m[i][j]
-            self.K[i][9] = volume_load[i]
+        self.K = local_k
+        if not is_static:
+            self.M, self.D = self.density*local_m, self.damping*local_m
