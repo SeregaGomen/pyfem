@@ -359,16 +359,18 @@ if __name__ == "__main__":
     # console4('console4')
     # body1d('body1d')
     # plate4('plate4')
-    plate3('plate3')
+    # plate3('plate3')
+    body1d('body1d')
 
     # TPlot('console')
     # TPlot('tank3')
     # TPlot('head3d')
     # TPlot('cylinder')
-    # plt = TPlot('console4')
+    # TPlot('console4')
     # TPlot('beam')
     # TPlot('plate4')
-    TPlot('plate3')
+    # TPlot('plate3')
+    TPlot('body1d')
 
 """
 1. Добавить загрузку названий функций в объект

@@ -82,22 +82,8 @@ class TFE1D2(TFE):
     def __init__(self):
         super().__init__()
         self.size = 2
-        self.K = [
-            [0, 0, 0],
-            [0, 0, 0]
-        ]
-        self.M = [
-            [0, 0, 0],
-            [0, 0, 0]
-        ]
-        self.D = [
-            [0, 0, 0],
-            [0, 0, 0]
-        ]
-        self.c = [
-            [0, 0],
-            [0, 0]
-        ]
+        self.K = zeros((2, 2))
+        self.c = zeros((2, 2))
 
     def __length__(self):
         return math.fabs(self.x[1] - self.x[0])
@@ -133,14 +119,14 @@ class TFE1D2(TFE):
                   (self.c[1][0]*self.c[1][1]*(self.x[1]**2 - self.x[0]**2)) + \
                   (1.0/3.0*self.c[1][1]**2*(self.x[1]**3 - self.x[0]**3))
 
-            self.M = [[0, 0], [0, 0]]
+            self.M = zeros((2, 2))
             self.M[0][0] = self.density*k00
             self.M[0][1] = self.density*k01
             self.M[1][0] = self.density*k01
             self.M[1][1] = self.density*k11
 
             # Формирование матрицы демпфирования
-            self.D = [[0, 0], [0, 0]]
+            self.D = zeros((2, 2))
             self.D[0][0] = self.damping*k00
             self.D[0][1] = self.damping*k01
             self.D[1][0] = self.damping*k01
@@ -152,9 +138,7 @@ class TFE2D3(TFE):
     def __init__(self):
         super().__init__()
         self.size = 3
-        self.K = zeros((6, 7))
-        self.M = zeros((6, 6))
-        self.D = zeros((6, 6))
+        self.K = zeros((6, 6))
         self.c = zeros((3, 3))
 
     def __square__(self):
