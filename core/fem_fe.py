@@ -82,8 +82,6 @@ class TFE1D2(TFE):
     def __init__(self):
         super().__init__()
         self.size = 2
-        self.K = zeros((2, 2))
-        self.c = zeros((2, 2))
 
     def __length__(self):
         return math.fabs(self.x[1] - self.x[0])
@@ -91,46 +89,30 @@ class TFE1D2(TFE):
     def __create__(self):
         if self.__length__() == 0.0:
             raise TFEMException('incorrect_fe_err')
+        self.c = zeros((2, 2))
         self.c[0][0] = self.x[1]/(self.x[1] - self.x[0])
         self.c[0][1] = -1.0/(self.x[1] - self.x[0])
         self.c[1][0] = self.x[0]/(self.x[0] - self.x[1])
         self.c[1][1] = -1.0/(self.x[0] - self.x[1])
 
     def calc(self, u):
-        res = zeros((2, 2))
+        res = zeros((self.size, self.size))
         res[0][0] = res[0][1] = u[0]*self.c[0][1] + u[1]*self.c[1][1]
         res[1][0] = res[1][1] = self.e[0]*(u[0]*self.c[0][1] + u[1]*self.c[1][1])
         return res
 
     def generate(self, is_static=True):
-        self.K[0][0] = 2.0*self.__length__()*self.e[0]*self.c[0][1]**2
-        self.K[0][1] = 2.0*self.__length__()*self.e[0]*self.c[0][1]*self.c[1][1]
-        self.K[1][1] = 2.0*self.__length__()*self.e[0]*self.c[1][1]**2
-
+        self.K = array([
+                    [1.0, -1.0],
+                    [-1.0, .0]
+                ])*self.e[0]/self.__length__()
         if not is_static:
             # Формирование матрицы массы
-            k00 = (self.c[0][0]**2*(self.x[1] - self.x[0])) + \
-                  (self.c[0][0]*self.c[0][1]*(self.x[1]**2 - self.x[0]**2)) + \
-                  (1.0/3.0*self.c[0][1]**2*(self.x[1]**3 - self.x[0]**3))
-            k01 = (self.c[0][0]*self.c[1][0]*(self.x[1] - self.x[0])) + \
-                  (0.5*(self.c[0][0]*self.c[1][1] + self.c[0][1]*self.c[1][0])*(self.x[1]**2 - self.x[0]**2)) + \
-                  (1.0/3.0*self.c[0][1]*self.c[1][1]*(self.x[1]**3 - self.x[0]**3))
-            k11 = (self.c[1][0]**2*(self.x[1] - self.x[0])) + \
-                  (self.c[1][0]*self.c[1][1]*(self.x[1]**2 - self.x[0]**2)) + \
-                  (1.0/3.0*self.c[1][1]**2*(self.x[1]**3 - self.x[0]**3))
-
-            self.M = zeros((2, 2))
-            self.M[0][0] = self.density*k00
-            self.M[0][1] = self.density*k01
-            self.M[1][0] = self.density*k01
-            self.M[1][1] = self.density*k11
-
-            # Формирование матрицы демпфирования
-            self.D = zeros((2, 2))
-            self.D[0][0] = self.damping*k00
-            self.D[0][1] = self.damping*k01
-            self.D[1][0] = self.damping*k01
-            self.D[1][1] = self.damping*k11
+            m = array([
+                    [2.0, 1.0],
+                    [1.0, 2.0]
+                ])
+            self.M, self.D = m*self.__length__()/6.0*self.density, m*self.__length__()/6.0*self.damping
 
 
 # Линейный (трехузловой) треугольный КЭ
@@ -138,8 +120,6 @@ class TFE2D3(TFE):
     def __init__(self):
         super().__init__()
         self.size = 3
-        self.K = zeros((6, 6))
-        self.c = zeros((3, 3))
 
     def __square__(self):
         a = math.sqrt((self.x[0] - self.x[1])*(self.x[0] - self.x[1]) + (self.y[0] - self.y[1])*(self.y[0] - self.y[1]))
@@ -153,6 +133,7 @@ class TFE2D3(TFE):
                self.y[1]*self.x[0] + self.y[0]*self.x[2]
         if math.fabs(det0) < eps:
             raise TFEMException('incorrect_fe_err')
+        self.c = zeros((self.size, self.size))
         index = [[2, 1], [0, 2], [1, 0]]
         for i in range(0, 3):
             det1 = self.y[index[i][0]]*self.x[index[i][1]] - self.y[index[i][1]]*self.x[index[i][0]]
@@ -198,13 +179,17 @@ class TFE2D3(TFE):
             [shape_dy[0], shape_dx[0], shape_dy[1], shape_dx[1], shape_dy[2], shape_dx[2]]
         ])
         # Формирование локальных матриц жесткости, масс и демпфирования
-        local_k = b.conj().transpose().dot(d).dot(b)*self.__square__()
-        for i in range(0, 6):
-            for j in range(i, 6):
-                self.K[i][j] = local_k[i][j]
-                if not is_static:
-                    self.M[i][j] = self.density*self.__square__()/12.0 if i == j else self.density*self.__square__()/6.0
-                    self.D[i][j] = self.damping*self.__square__()/12.0 if i == j else self.density*self.__square__()/6.0
+        self.K = b.conj().transpose().dot(d).dot(b)*self.__square__()
+        if not is_static:
+            m = array([
+                [0.5, 0.0, 0.25, 0.0, 0.25, 0.0],
+                [0.0, 0.5, 0.0, 0.25, 0.0, 0.25],
+                [0.25, 0.0, 0.5, 0.0, 0.25, 0.0],
+                [0.0, 0.25, 0.0, 0.5, 0.0, 0.25],
+                [0.25, 0.0, 0.25, 0.0, 0.5, 0.0],
+                [0.0, 0.25, 0.0, 0.25, 0.0, 0.5]
+            ])
+            self.M, self.D = m*self.density*self.__square__(), m*self.damping*self.__square__()
 
 
 # Линейный (четырехузловой) тетраэдральный КЭ
@@ -212,8 +197,6 @@ class TFE3D4(TFE):
     def __init__(self):
         super().__init__()
         self.size = 4
-        self.K = zeros((12, 13))
-        self.c = zeros((4, 4))
 
     def __volume__(self):
         a = (self.x[1] - self.x[0])*(self.y[2] - self.y[0])*(self.z[3] - self.z[0]) + \
@@ -227,7 +210,7 @@ class TFE3D4(TFE):
     def __create__(self):
         if self.__volume__() == 0.0:
             raise TFEMException('incorrect_fe_err')
-        a = array([[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]])
+        a, self.c = zeros((self.size, self.size)), zeros((self.size, self.size))
         for j in range(0, self.size):
             b = array([0.0, 0.0, 0.0, 0.0])
             for i in range(0, self.size):
@@ -292,13 +275,23 @@ class TFE3D4(TFE):
              0.0, shape_dx[3]]
         ])
         # Формирование локальных матриц жесткости, масс и демпфирования
-        local_k = b.conj().transpose().dot(d).dot(b)*self.__volume__()
-        for i in range(0, 12):
-            for j in range(i, 12):
-                self.K[i][j] = local_k[i][j]
-                if not is_static:
-                    self.M[i][j] = 0.1*self.density*self.__volume__() if i == j else 0.05*self.density*self.__volume__()
-                    self.D[i][j] = 0.1*self.damping*self.__volume__() if i == j else 0.05*self.density*self.__volume__()
+        self.K = b.conj().transpose().dot(d).dot(b)*self.__volume__()
+        if not is_static:
+            m = array([
+                [1.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5],
+                [0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0],
+                [0.0, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0],
+                [0.0, 0.0, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5],
+                [0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.0, 0.0],
+                [0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.0],
+                [0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5],
+                [0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 1.0]
+            ])*0.1
+            self.M, self.D = m*self.density*self.__volume__(), m*self.damping*self.__volume__()
 
 
 # Билинейный четырехузловой двумерный КЭ
@@ -306,7 +299,6 @@ class TFE2D4(TFE):
     def __init__(self):
         super().__init__()
         self.size = 4
-        self.c = zeros((4, 4))
 
     def __square__(self):
         return math.sqrt((self.x[0] - self.x[1])**2 + (self.y[0] - self.y[1])**2)
@@ -314,7 +306,7 @@ class TFE2D4(TFE):
     def __create__(self):
         if self.__square__() == 0.0:
             raise TFEMException('incorrect_fe_err')
-        a = array([[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]])
+        a, self.c = zeros((self.size, self.size)), zeros((self.size, self.size))
         for j in range(0, self.size):
             b = array([0.0, 0.0, 0.0, 0.0])
             for i in range(0, self.size):
@@ -415,10 +407,9 @@ class TFE3D8(TFE):
     def __init__(self):
         super().__init__()
         self.size = 8
-        self.c = zeros((8, 8))
 
     def __create__(self):
-        a = zeros((self.size, self.size))
+        self.c. a = zeros((self.size, self.size)), zeros((self.size, self.size))
         for j in range(0, self.size):
             b = array([0.0]*self.size)
             for i in range(0, self.size):
@@ -453,8 +444,7 @@ class TFE3D8(TFE):
             [0.0, 0.0, 0.0, 0.0, 0.0, 0.5*(1.0 - 2.0*self.m[0])/(1.0 - self.m[0])],
             ])*self.e[0]*(1.0 - self.m[0])/(1.0 + self.m[0])/(1.0 - 2.0*self.m[0])
         # Формирование локальных матриц жесткости, масс и демпфирования
-        local_k = zeros((24, 24))
-        local_m = zeros((24, 24))
+        local_k, local_m = zeros((3*self.size, 3*self.size)), zeros((3*self.size, 3*self.size))
         # Интегрирование по кубу [-1; 1] x [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(w)):
             # Изопараметрические функции формы и их производные
@@ -609,8 +599,7 @@ class TFE2D4P(TFE2D4):
             [0.0, 1.0],
             ])*self.e[0]*self.h*k/(2.0 + 2.0*self.m[0])
         # Формирование локальных матриц жесткости, масс и демпфирования
-        local_k = zeros((12, 12))
-        local_m = zeros((12, 12))
+        local_k, local_m = zeros((3*self.size, 3*self.size)), zeros((3*self.size, 3*self.size))
         # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(w)):
             # Изопараметрические функции формы и их производные
@@ -716,8 +705,7 @@ class TFE2D3P(TFE2D3):
         return res
 
     def generate(self, is_static=True):
-        local_k = zeros((9, 9))
-        local_m = zeros((9, 9))
+        local_k, local_m = zeros((3*self.size, 3*self.size)), zeros((3*self.size, 3*self.size))
         k = 5.0/6.0
         # Матрицы упругих свойст
         cb = array([
@@ -736,7 +724,7 @@ class TFE2D3P(TFE2D3):
         # Интегрирование по треугольнику [0,0]-[1,0]-[1,1] (по формуле Гаусса)
         for i in range(len(w)):
             # Изопараметрические функции формы и их производные
-            shape = array([1.0 - xi[i],xi[i] - eta[i], eta[i]])
+            shape = array([1.0 - xi[i], xi[i] - eta[i], eta[i]])
             shape_dxi = array([-1.0, 1.0, 0.0])
             shape_deta = array([0.0, -1.0, 1.0])
             # Матрица Якоби
@@ -769,9 +757,9 @@ class TFE2D3P(TFE2D3):
                     [0, 0, shape[0], 0, 0, shape[1], 0, 0, shape[2]]
                 ])
                 mi = array([
-                    [self.density*self.h, 0, 0],
-                    [0, self.density*self.h**3/12.0, 0],
-                    [0, 0, self.density*self.h**3/12.0],
+                    [self.h, 0, 0],
+                    [0, self.h**3/12.0, 0],
+                    [0, 0, self.h**3/12.0],
                 ])
                 local_m += c.conj().transpose().dot(mi).dot(c)*jacobian*w[i]
         # Заполнение локальных матриц жесткости, масс и демпфирования
