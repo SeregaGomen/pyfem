@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from core.fem_defs import DIR_1, DIR_2, DIR_3, INIT_U, INIT_V, INIT_U_T, INIT_V_T, INIT_U_T_T, INIT_V_T_T
+from core.fem_defs import DIR_1, DIR_2, DIR_3, INIT_U, INIT_V, INIT_W, INIT_U_T, INIT_V_T, INIT_W_T, INIT_U_T_T, \
+    INIT_V_T_T, INIT_W_T_T
 from core.fem_object import TObject
 from plot.plot3d import TPlot
 
@@ -80,6 +81,34 @@ def beam(res_name):
         obj.add_volume_load('-1.0E+5', '', DIR_2)
         if obj.calc():
             obj.print_result()
+            obj.save_result(res_name)
+            return True
+        return False
+
+
+def beam_dynamic(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/beam.trpa'):
+        obj.set_problem_type('dynamic')
+        obj.set_solve_method('iterative')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([6.5E+10], [0.3])
+        obj.set_density(1.0E+3)
+        obj.set_time(0, 1.0, 0.25)
+        obj.add_boundary_condition('0', 'y=0', DIR_1 | DIR_2 | DIR_3)
+        obj.add_volume_load('-1.0E+5*cos(t)', '', DIR_2)
+        obj.add_initial_condition('0', INIT_U)
+        obj.add_initial_condition('0', INIT_V)
+        obj.add_initial_condition('0', INIT_W)
+        obj.add_initial_condition('0', INIT_U_T)
+        obj.add_initial_condition('0', INIT_V_T)
+        obj.add_initial_condition('0', INIT_W_T)
+        obj.add_initial_condition('0', INIT_U_T_T)
+        obj.add_initial_condition('0', INIT_V_T_T)
+        obj.add_initial_condition('0', INIT_W_T_T)
+        if obj.calc():
+            obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.save_result(res_name)
             return True
         return False
@@ -284,7 +313,8 @@ def console_dynamic(res_name):
     if obj.set_mesh('mesh/console.trpa'):
         obj.set_problem_type('dynamic')
         obj.set_solve_method('direct')
-        obj.set_damping(1.0E+3)
+        obj.set_density(1.0E+3)
+        obj.set_damping([3.383, 0.00206])
         obj.set_time(0, 1.0, 0.25)
         obj.set_width(10)
         obj.set_precision(5)
@@ -360,7 +390,8 @@ if __name__ == "__main__":
     # body1d('body1d')
     # plate4('plate4')
     # plate3('plate3')
-    body1d('body1d')
+    # body1d('body1d')
+    beam_dynamic('beam_dynamic')
 
     # TPlot('console')
     # TPlot('tank3')
@@ -370,8 +401,14 @@ if __name__ == "__main__":
     # TPlot('beam')
     # TPlot('plate4')
     # TPlot('plate3')
-    TPlot('body1d')
+    # TPlot('body1d')
+    TPlot('beam_dynamic')
+    # TPlot('console_dynamic')
+    # TPlot('cube')
 
 """
 1. Добавить загрузку названий функций в объект
+2. Правильно отображать динамическую задачу в plot3d
+3. Рисовать оси координат
+4. Правильно рисовать маленькие величины (стержень) 
 """
