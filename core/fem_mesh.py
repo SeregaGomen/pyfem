@@ -48,6 +48,8 @@ class TMesh:
             return 'fe_2d_4_p', 0, 4, 3, 2
         elif t == 223:
             return 'fe_2d_3_s', 0, 3, 6, 3
+        elif t == 224:
+            return 'fe_2d_4_s', 0, 4, 6, 3
         else:
             raise TFEMException('unknown_fe_err')
 
@@ -93,7 +95,8 @@ class TMesh:
                 row.append(int(lines[index].split()[j]))
             self.be.append(row)
             index += 1
-        if self.fe_type == 'fe_2d_3_p' or  self.fe_type == 'fe_2d_3_s' or  self.fe_type == 'fe_2d_4_p':
+        if self.fe_type == 'fe_2d_3_p' or  self.fe_type == 'fe_2d_3_s' or  self.fe_type == 'fe_2d_4_p'  or  \
+                self.fe_type == 'fe_2d_4_s':
             self.be = self.fe
 
     def fe_name(self):
@@ -109,6 +112,8 @@ class TMesh:
             return 'shell element (3 nodes)'
         elif self.fe_type == 'fe_2d_4_p':
             return 'plate element (4 nodes)'
+        elif self.fe_type == 'fe_2d_4_s':
+            return 'shell element (4 nodes)'
         elif self.fe_type == 'fe_3d_4':
             return 'linear tetrahedron (4 nodes)'
         elif self.fe_type == 'fe_3d_8':

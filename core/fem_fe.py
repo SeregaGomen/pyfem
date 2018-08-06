@@ -902,3 +902,54 @@ class TFE2D3S(TFE2D3P, TFE2D3):
 
         return local_k
 
+
+# Четырехугольный КЭ оболочки
+class TFE2D4S(TFE2D4P, TFE2D4):
+    def __init__(self):
+        super().__init__()
+        self.size = 4
+
+    def calc(self, u):
+        d = self.e[0]*self.h**3/(1 - self.m[0]**2)/12.0
+        dx = zeros((self.size, self.size))
+        dy = zeros((self.size, self.size))
+        res = zeros((6, self.size))
+        for i in range(0, self.size):
+            for j in range(0, self.size):
+                dx[i][j] = self.a[j][1] + self.a[j][3] * self.y[i]
+                dy[i][j] = self.a[j][2] + self.a[j][3] * self.x[i]
+                res[0][i] += u[2*j + 1]*dx[i][j]
+                res[1][i] += u[2*j + 2]*dy[i][j]
+                res[2][i] += u[2*j + 1]*dy[i][j] + u[2*j + 2]*dx[i][j]
+                res[3][i] += d*(u[2*j + 1]*dx[i][j] + self.m[0]*u[2*j + 2]*dy[i][j])
+                res[4][i] += d*(u[2*j + 2]*dy[i][j] + self.m[0]*u[2*j + 1]*dx[i][j])
+                res[5][i] += 2.0*(1.0 - self.m[0])*d*(u[2*j + 1]*dy[i][j] + u[2*j + 2]*dx[i][j])
+        return res
+
+    # Формирование локальной матрицы жесткости
+    def _generate_stiffness_matrix_(self):
+        local_k = zeros((6*self.size, 6*self.size))
+        # Локальная матрицыа жесткости плоского КЭ
+        k1 = TFE2D4._generate_stiffness_matrix_(self)
+        # ... КЭ пластины
+        k2 = TFE2D4P._generate_stiffness_matrix_(self)
+        for i in range(0, len(k1)):
+            for j in range(0, len(k1)):
+                local_k[i][j] = k1[i][j]
+        for i in range(0, len(k2)):
+            for j in range(0, len(k2)):
+                local_k[i + len(k1)][j + len(k1)] = k2[i][j]
+
+        for i in range(0, 6*self.size):
+            if local_k[i][i] == 0:
+                local_k[i][i] = 0.1
+
+        #        import sys
+        #        print('******************************************')
+        #        for i in range(0, len(local_k)):
+        #            for j in range(0, len(local_k)):
+        #                sys.stdout.write('%+E\t' % local_k[i][j])
+        #            sys.stdout.write('\n')
+        #        print('******************************************')
+
+        return local_k

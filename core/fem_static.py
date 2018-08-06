@@ -309,6 +309,9 @@ class TFEMStatic(TFEM):
             else:
                 # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz
                 res = 15
+        elif self.__mesh__.freedom == 6:
+            # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz, Tx, Ty, Tz
+            res = 18
         return res
 
     # Индекс функции в зависимости от размерности задачи
