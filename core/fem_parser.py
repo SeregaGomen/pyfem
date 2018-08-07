@@ -8,7 +8,7 @@ from core.fem_error import TFEMException
 from core.fem_tree import TTree
 
 # Типы лексем
-token = [
+tokens = [
     'delimiter',
     'digit',
     'function',
@@ -17,7 +17,7 @@ token = [
 ]
 
 # Функции
-function = [
+functions = [
     'sin',
     'cos',
     'tan',
@@ -33,14 +33,14 @@ function = [
 ]
 
 # Логические операции
-boolean = [
+booleans = [
     'not',
     'and',
     'or'
 ]
 
 # Арифметические операции
-operation = [
+operations = [
     '+',
     '-',
     '*',
@@ -223,7 +223,7 @@ class TParser:
             self.code = self.code[1:len(self.code)]
             # Проверка на наличие двойного разделителя
             if len(self.code) and '+-*/()^=><,'.find(self.code[0]) != -1:
-                if self.token + self.code[0] in operation:
+                if self.token + self.code[0] in operations:
                     self.token += self.code[0]
                     self.code = self.code[1:len(self.code)]
             self.token_type = 'delimiter'
@@ -266,9 +266,9 @@ class TParser:
                 i += 1
             self.token += self.code[0:i] if (i < len(self.code)) else self.code[0:]
             self.code = self.code[i:]
-            if self.token in function:
+            if self.token in functions:
                 self.token_type = 'function'
-            elif self.token in boolean:
+            elif self.token in booleans:
                 self.token_type = 'delimiter'
             elif self.token in self.variables:
                 self.token_type = 'variable'

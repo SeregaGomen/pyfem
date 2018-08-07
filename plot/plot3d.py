@@ -716,7 +716,7 @@ class TGLWidget(QWidget):
     def __paint_2d__(self):
         # Изображение КЭ
         for i in range(0, len(self.fe)):
-#        for i in range(212, 214):
+            # for i in range(212, 214):
             tri = []
             for j in range(0, len(self.fe[0])):
                 tri.append([self.x[self.fe[i][j]][0], self.x[self.fe[i][j]][1], 0, self.results[self.fe[i][j]]])
@@ -744,6 +744,7 @@ class TGLWidget(QWidget):
             # Изображение границы ГЭ
             if self.is_fe_border:
                 self.draw_fe_border(tri)
+
 
 # Класс, реализующий визуализацию расчета
 class TPlot:

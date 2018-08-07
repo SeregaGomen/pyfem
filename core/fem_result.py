@@ -16,4 +16,3 @@ class TResult:
 
     def max(self):
         return max(self.results)
-
