@@ -145,14 +145,14 @@ class TFEMDynamic(TFEMStatic):
         for i in range(0, len(fe.K)):
             k = self.__mesh__.fe[index][i//self.__mesh__.freedom]*self.__mesh__.freedom + i % self.__mesh__.freedom
             for j in range(i, len(fe.K)):
-                l = self.__mesh__.fe[index][j//self.__mesh__.freedom]*self.__mesh__.freedom + j % self.__mesh__.freedom
-                self.__global_matrix_stiffness__[k, l] += fe.K[i][j]
-                self.__global_matrix_mass__[k, l] += fe.M[i][j]
-                self.__global_matrix_damping__[k, l] += fe.C[i][j]
-                if k != l:
-                    self.__global_matrix_stiffness__[l, k] += fe.K[i][j]
-                    self.__global_matrix_mass__[l, k] += fe.M[i][j]
-                    self.__global_matrix_damping__[l, k] += fe.C[i][j]
+                r = self.__mesh__.fe[index][j//self.__mesh__.freedom]*self.__mesh__.freedom + j % self.__mesh__.freedom
+                self.__global_matrix_stiffness__[k, r] += fe.K[i][j]
+                self.__global_matrix_mass__[k, r] += fe.M[i][j]
+                self.__global_matrix_damping__[k, r] += fe.C[i][j]
+                if k != r:
+                    self.__global_matrix_stiffness__[r, k] += fe.K[i][j]
+                    self.__global_matrix_mass__[r, k] += fe.M[i][j]
+                    self.__global_matrix_damping__[r, k] += fe.C[i][j]
 
     # Формирование левой части (матрицы) уравнения квазистатического равновесия
     def __create_dynamic_matrix__(self):

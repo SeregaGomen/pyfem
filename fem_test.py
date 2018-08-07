@@ -414,7 +414,7 @@ def shell4(res_name):
 
 if __name__ == "__main__":
     # beam('beam')
-    head3d('head3d')
+    # head3d('head3d')
     # cube('cube')
     # tank3('tank3')
     # cylinder('cylinder')
@@ -422,7 +422,7 @@ if __name__ == "__main__":
     # cube_test('cube_test')
     # console_dynamic('console_dynamic')
     # console('console')
-    # console4('console4')
+    console4('console4')
     # body1d('body1d')
     # plate4('plate4')
     # plate3('plate3')
@@ -433,11 +433,11 @@ if __name__ == "__main__":
 
     # TPlot('console')
     # TPlot('tank3')
-    TPlot('head3d')
+    # TPlot('head3d')
     # TPlot('cylinder')
     # TPlot('quad')
     # TPlot('cube_test')
-    # TPlot('console4')
+    TPlot('console4')
     # TPlot('beam')
     # TPlot('plate4')
     # TPlot('plate3')

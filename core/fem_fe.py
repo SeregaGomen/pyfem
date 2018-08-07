@@ -36,7 +36,7 @@ class TFE:
 
     # Задание координат
     def set_coord(self, x):
-        self.x = x
+        self.x = array(x)
         self.__create__()
 
     # Задание параметров упругости
@@ -401,8 +401,8 @@ class TFE2D4(TFE):
             shape_deta = self.__shape_deta__(i)
             # Матрица Якоби
             jacobi = array([
-                [sum(shape_dxi*array(self.x)[:, 0]), sum(shape_dxi*array(self.x)[:, 1])],
-                [sum(shape_deta*array(self.x)[:, 0]), sum(shape_deta*array(self.x)[:, 1])]
+                [sum(shape_dxi*self.x[:, 0]), sum(shape_dxi*self.x[:, 1])],
+                [sum(shape_deta*self.x[:, 0]), sum(shape_deta*self.x[:, 1])]
             ])
             # Якобиан
             jacobian = det(jacobi)
@@ -581,9 +581,9 @@ class TFE3D8(TFE):
             shape_dpsi = self.__shape_dpsi__(i)
             # Матрица Якоби
             jacobi = array([
-                [sum(shape_dxi*array(self.x)[:, 0]), sum(shape_dxi*array(self.x)[:, 1]), sum(shape_dxi*array(self.x)[:, 2])],
-                [sum(shape_deta*array(self.x)[:, 0]), sum(shape_deta*array(self.x)[:, 1]), sum(shape_deta*array(self.x)[:, 2])],
-                [sum(shape_dpsi*array(self.x)[:, 0]), sum(shape_dpsi*array(self.x)[:, 1]), sum(shape_dpsi*array(self.x)[:, 2])]
+                [sum(shape_dxi*self.x[:, 0]), sum(shape_dxi*self.x[:, 1]), sum(shape_dxi*self.x[:, 2])],
+                [sum(shape_deta*self.x[:, 0]), sum(shape_deta*self.x[:, 1]), sum(shape_deta*self.x[:, 2])],
+                [sum(shape_dpsi*self.x[:, 0]), sum(shape_dpsi*self.x[:, 1]), sum(shape_dpsi*self.x[:, 2])]
             ])
             # Якобиан
             jacobian = det(jacobi)
@@ -692,8 +692,8 @@ class TFE2D4P(TFE2D4):
             shape_deta = self.__shape_deta__(i)
             # Матрица Якоби
             jacobi = array([
-                [sum(shape_dxi*array(self.x)[:, 0]), sum(shape_dxi*array(self.x)[:, 1])],
-                [sum(shape_deta*array(self.x)[:, 0]), sum(shape_deta*array(self.x)[:, 1])]
+                [sum(shape_dxi*self.x[:, 0]), sum(shape_dxi*self.x[:, 1])],
+                [sum(shape_deta*self.x[:, 0]), sum(shape_deta*self.x[:, 1])]
             ])
             # Якобиан
             jacobian = det(jacobi)
@@ -800,8 +800,8 @@ class TFE2D3P(TFE2D3):
             shape_deta = array([0.0, -1.0, 1.0])
             # Матрица Якоби
             jacobi = array([
-                [sum(shape_dxi*array(self.x)[:, 0]), sum(shape_dxi*array(self.x)[:, 1])],
-                [sum(shape_deta*array(self.x)[:, 0]), sum(shape_deta*array(self.x)[:, 1])]
+                [sum(shape_dxi*self.x[:, 0]), sum(shape_dxi*self.x[:, 1])],
+                [sum(shape_deta*self.x[:, 0]), sum(shape_deta*self.x[:, 1])]
             ])
             # Якобиан
             jacobian = det(jacobi)

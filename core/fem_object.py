@@ -79,9 +79,6 @@ class TObject:
     def set_damping(self, damping):
         self.__params__.damping = damping
 
-    def set_names(self, names):
-        self.__params__.names = names
-
     def add_boundary_condition(self, e, p, d):
         self.__params__.add_boundary_condition(e, p, d)
 
@@ -90,9 +87,6 @@ class TObject:
 
     def add_volume_load(self, e, p, d):
         self.__params__.add_volume_load(e, p, d)
-
-    def add_surface_load(self, e, p, d):
-        self.__params__.add_surface_load(e, p, d)
 
     def add_concentrated_load(self, e, p, d):
         self.__params__.add_concentrated_load(e, p, d)

@@ -56,10 +56,10 @@ class TFEMStatic(TFEM):
         for i in range(0, len(fe.K)):
             k = self.__mesh__.fe[index][i//self.__mesh__.freedom]*self.__mesh__.freedom + i % self.__mesh__.freedom
             for j in range(i, len(fe.K)):
-                l = self.__mesh__.fe[index][j//self.__mesh__.freedom]*self.__mesh__.freedom + j % self.__mesh__.freedom
-                self.__global_matrix_stiffness__[k, l] += fe.K[i][j]
-                if k != l:
-                    self.__global_matrix_stiffness__[l, k] += fe.K[i][j]
+                r = self.__mesh__.fe[index][j//self.__mesh__.freedom]*self.__mesh__.freedom + j % self.__mesh__.freedom
+                self.__global_matrix_stiffness__[k, r] += fe.K[i][j]
+                if k != r:
+                    self.__global_matrix_stiffness__[r, k] += fe.K[i][j]
 
     # Вычисление сосредоточенных нагрузок
     def __prepare_concentrated_load__(self, t=0):
@@ -208,11 +208,11 @@ class TFEMStatic(TFEM):
 
     # Задание граничных условий
     def __set_boundary_condition__(self, i, j, val):
-        l = i*self.__mesh__.freedom + j
-        for k in self.__global_matrix_stiffness__[l].nonzero()[1]:
-            if l != k:
-                self.__global_matrix_stiffness__[l, k] = self.__global_matrix_stiffness__[k, l] = 0
-        self.__global_load__[l] = val*self.__global_matrix_stiffness__[l, l]
+        r = i*self.__mesh__.freedom + j
+        for k in self.__global_matrix_stiffness__[r].nonzero()[1]:
+            if r != k:
+                self.__global_matrix_stiffness__[r, k] = self.__global_matrix_stiffness__[k, r] = 0
+        self.__global_load__[r] = val*self.__global_matrix_stiffness__[r, r]
 
     # Учет граничных условий
     def __use_boundary_condition__(self):
@@ -289,7 +289,7 @@ class TFEMStatic(TFEM):
             # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy
             res = 8
         elif self.__mesh__.freedom == 3:
-            if self.__mesh__.fe_type == 'fe_2d_3_p' or  self.__mesh__.fe_type == 'fe_2d_4_p':
+            if self.__mesh__.fe_type == 'fe_2d_3_p' or self.__mesh__.fe_type == 'fe_2d_4_p':
                 # w, Tx, Ty, Exx, Eyy, Exy, Sxx, Syy, Sxy
                 res = 9
             else:
