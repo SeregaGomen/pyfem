@@ -50,13 +50,9 @@ class TFEMDynamic(TFEMStatic):
                                       len(self.__mesh__.fe))
         for i in range(0, len(self.__mesh__.fe)):
             self.__progress__.set_progress(i + 1)
-            x = [0]*len(self.__mesh__.fe[i])
-            y = [0]*len(self.__mesh__.fe[i])
-            z = [0]*len(self.__mesh__.fe[i])
             # Настройка КЭ
-            for j in range(len(self.__mesh__.fe[i])):
-                x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.fe[i][j])
-            fe.set_coord(x, y, z)
+            x = self.__mesh__.get_fe_coord(i)
+            fe.set_coord(x)
             fe.generate(False)
             # Ансамблирование ЛМЖ к ГМЖ
             self.__assembly__(fe, i)

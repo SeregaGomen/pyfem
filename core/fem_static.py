@@ -35,13 +35,8 @@ class TFEMStatic(TFEM):
         self.__progress__.set_process('Assembling global stiffness matrix...', 1, len(self.__mesh__.fe))
         for i in range(0, len(self.__mesh__.fe)):
             self.__progress__.set_progress(i + 1)
-            x = [0]*len(self.__mesh__.fe[i])
-            y = [0]*len(self.__mesh__.fe[i])
-            z = [0]*len(self.__mesh__.fe[i])
-            # Настройка КЭ
-            for j in range(len(self.__mesh__.fe[i])):
-                x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.fe[i][j])
-            fe.set_coord(x, y, z)
+            x = self.__mesh__.get_fe_coord(i)
+            fe.set_coord(x)
             fe.generate()
             # Ансамблирование ЛМЖ к ГМЖ
             self.__assembly__(fe, i)
@@ -83,10 +78,9 @@ class TFEMStatic(TFEM):
             for j in range(0, len(self.__mesh__.x)):
                 self.__progress__.set_progress(counter)
                 counter += 1
-                x, y, z = self.__mesh__.get_coord(j)
-                parser.set_variable(self.__params__.names[0], x)
-                parser.set_variable(self.__params__.names[1], y)
-                parser.set_variable(self.__params__.names[2], z)
+                x = self.__mesh__.get_coord(j)
+                for k in range(0, len(x)):
+                    parser.set_variable(self.__params__.names[k], x[k])
                 parser.set_variable(self.__params__.names[3], t)
                 if len(self.__params__.bc_list[i].predicate):
                     parser.set_code(self.__params__.bc_list[i].predicate)
@@ -124,10 +118,9 @@ class TFEMStatic(TFEM):
                     continue
                 rel_se = self.__mesh__.square(j)/float(len(self.__mesh__.be[j]))
                 for k in range(0, len(self.__mesh__.be[j])):
-                    x, y, z = self.__mesh__.get_coord(self.__mesh__.be[j][k])
-                    parser.set_variable(self.__params__.names[0], x)
-                    parser.set_variable(self.__params__.names[1], y)
-                    parser.set_variable(self.__params__.names[2], z)
+                    x = self.__mesh__.get_coord(self.__mesh__.be[j][k])
+                    for l in range(0, len(x)):
+                        parser.set_variable(self.__params__.names[l], x[l])
                     parser.set_variable(self.__params__.names[3], t)
                     parser.set_code(self.__params__.bc_list[i].expression)
                     val = parser.run()
@@ -157,10 +150,9 @@ class TFEMStatic(TFEM):
                 counter += 1
                 rel_ve = self.__mesh__.volume(j)/float(len(self.__mesh__.fe[j]))
                 for k in range(0, len(self.__mesh__.fe[j])):
-                    x, y, z = self.__mesh__.get_coord(self.__mesh__.fe[j][k])
-                    parser.set_variable(self.__params__.names[0], x)
-                    parser.set_variable(self.__params__.names[1], y)
-                    parser.set_variable(self.__params__.names[2], z)
+                    x = self.__mesh__.get_coord(self.__mesh__.fe[j][k])
+                    for l in range(0, len(x)):
+                        parser.set_variable(self.__params__.names[l], x[l])
                     parser.set_variable(self.__params__.names[3], t)
                     parser.set_code(self.__params__.bc_list[i].expression)
                     val = parser.run()
@@ -190,12 +182,8 @@ class TFEMStatic(TFEM):
         self.__progress__.set_process('Calculation results...', 1, len(self.__mesh__.fe))
         for i in range(0, len(self.__mesh__.fe)):
             self.__progress__.set_progress(i + 1)
-            x = [0]*len(self.__mesh__.fe[i])
-            y = [0]*len(self.__mesh__.fe[i])
-            z = [0]*len(self.__mesh__.fe[i])
-            for j in range(len(self.__mesh__.fe[i])):
-                x[j], y[j], z[j] = self.__mesh__.get_coord(self.__mesh__.fe[i][j])
-            fe.set_coord(x, y, z)
+            x = self.__mesh__.get_fe_coord(i)
+            fe.set_coord(x)
             for j in range(0, len(self.__mesh__.fe[i])):
                 for k in range(0, self.__mesh__.freedom):
                     uvw[j*self.__mesh__.freedom + k] = \
@@ -240,10 +228,9 @@ class TFEMStatic(TFEM):
                 for j in range(0, len(self.__mesh__.x)):
                     self.__progress__.set_progress(counter)
                     counter += 1
-                    x, y, z = self.__mesh__.get_coord(j)
-                    parser.set_variable(self.__params__.names[0], x)
-                    parser.set_variable(self.__params__.names[1], y)
-                    parser.set_variable(self.__params__.names[2], z)
+                    x = self.__mesh__.get_coord(j)
+                    for k in range(0, len(x)):
+                        parser.set_variable(self.__params__.names[k], x[k])
                     if len(self.__params__.bc_list[i].predicate):
                         parser.set_code(self.__params__.bc_list[i].predicate)
                         if parser.run() == 0:
@@ -284,10 +271,9 @@ class TFEMStatic(TFEM):
             return True
         parser = self.__create_parser__()
         for k in range(0, len(self.__mesh__.be[0])):
-            x, y, z = self.__mesh__.get_coord(self.__mesh__.be[i][k])
-            parser.set_variable(self.__params__.names[0], x)
-            parser.set_variable(self.__params__.names[1], y)
-            parser.set_variable(self.__params__.names[2], z)
+            x = self.__mesh__.get_coord(self.__mesh__.be[i][k])
+            for l in range(0, len(x)):
+                parser.set_variable(self.__params__.names[l], x[l])
             parser.set_code(predicate)
             if parser.run() == 0:
                 return False

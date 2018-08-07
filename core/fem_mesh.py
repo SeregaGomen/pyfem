@@ -119,80 +119,110 @@ class TMesh:
         elif self.fe_type == 'fe_3d_8':
             return 'cube element (8 nodes)'
 
-    def get_coord(self, i):
-        return self.x[i][0], self.x[i][1] if (len(self.x[0]) > 1) else 0, self.x[i][2] if (len(self.x[0]) > 2) else 0
+    def get_coord(self, index):
+        return self.x[index]
+
+    def get_fe_coord(self, index):
+        x = []
+        for i in range(0, len(self.fe[index])):
+            a = []
+            for j in range(0, self.dimension):
+                a.append(self.x[self.fe[index][i]][j])
+            x.append(a)
+        return x
+
+    def get_be_coord(self, index):
+        x = []
+        for i in range(0, len(self.be[index])):
+            a = []
+            for j in range(0, self.dimension):
+                a.append(self.x[self.be[index][i]][j])
+            x.append(a)
+        return x
 
     # Вычисление длины (площади) заданного граничного элемента
     def square(self, index):
-        x = [0]*len(self.be[index])
-        y = [0]*len(self.be[index])
-        z = [0]*len(self.be[index])
-        for i in range(0, len(self.be[index])):
-            x[i], y[i], z[i] = self.get_coord(self.be[index][i])
+        x = self.get_be_coord(index)
         s = 0
-        if len(x) == 2:     # Граничный элемент - отрезок
-            s = math.sqrt((x[0] - x[1])**2 + (y[0] - y[1])**2)
-        elif len(x) == 3:   # Граничный элемент - треугольник
-            a = math.sqrt((x[0] - x[1])**2 + (y[0] - y[1])**2 + (z[0] - z[1])**2)
-            b = math.sqrt((x[0] - x[2])**2 + (y[0] - y[2])**2 + (z[0] - z[2])**2)
-            c = math.sqrt((x[2] - x[1])**2 + (y[2] - y[1])**2 + (z[2] - z[1])**2)
+        if self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4':  # ГЭ - отрезок
+            s = math.sqrt((x[0][0] - x[1][0])**2 + (x[0][1] - x[1][1])**2)
+        elif self.fe_type == 'fe_2d_3_p':  # ГЭ - "плоский" треугольник
+            a = math.sqrt((x[0][0] - x[1][0])**2 + (x[0][1] - x[1][1])**2)
+            b = math.sqrt((x[0][0] - x[2][0])**2 + (x[0][1] - x[2][1])**2)
+            c = math.sqrt((x[2][0] - x[1][0])**2 + (x[2][1] - x[1][1])**2)
             p = 0.5*(a + b + c)
             s = math.sqrt(p*(p - a)*(p - b)*(p - c))
-        elif len(x) == 4:   # Граничный элемент - четырехугольник
-            a = math.sqrt((x[0] - x[1])**2 + (y[0] - y[1])**2 + (z[0] - z[1])**2)
-            b = math.sqrt((x[0] - x[2])**2 + (y[0] - y[2])**2 + (z[0] - z[2])**2)
-            c = math.sqrt((x[2] - x[1])**2 + (y[2] - y[1])**2 + (z[2] - z[1])**2)
+        elif self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_3d_4':  # ГЭ - "пространственный" треугольник
+            a = math.sqrt((x[0][0] - x[1][0])**2 + (x[0][1] - x[1][1])**2 + (x[0][2] - x[1][2])**2)
+            b = math.sqrt((x[0][0] - x[2][0])**2 + (x[0][1] - x[2][1])**2 + (x[0][2] - x[2][2])**2)
+            c = math.sqrt((x[2][0] - x[1][0])**2 + (x[2][1] - x[1][1])**2 + (x[2][2] - x[1][2])**2)
             p = 0.5*(a + b + c)
             s = math.sqrt(p*(p - a)*(p - b)*(p - c))
-
-            a = math.sqrt((x[0] - x[3])**2 + (y[0] - y[3])**2 + (z[0] - z[3])**2)
-            b = math.sqrt((x[0] - x[2])**2 + (y[0] - y[2])**2 + (z[0] - z[2])**2)
-            c = math.sqrt((x[2] - x[3])**2 + (y[2] - y[3])**2 + (z[2] - z[3])**2)
+        elif self.fe_type == 'fe_2d_4_p':  # ГЭ - "плоский" четырехугольник
+            a = math.sqrt((x[0][0] - x[1][0])**2 + (x[0][1] - x[1][1])**2)
+            b = math.sqrt((x[0][0] - x[2][0])**2 + (x[0][1] - x[2][1])**2)
+            c = math.sqrt((x[2][0] - x[1][0])**2 + (x[2][1] - x[1][1])**2)
+            p = 0.5*(a + b + c)
+            s = math.sqrt(p * (p - a) * (p - b) * (p - c))
+            a = math.sqrt((x[0][0] - x[3][0])**2 + (x[0][1] - x[3][1])**2)
+            b = math.sqrt((x[0][0] - x[2][0])**2 + (x[0][1] - x[2][1])**2)
+            c = math.sqrt((x[2][0] - x[3][0])**2 + (x[2][1] - x[3][1])**2)
+            p = 0.5*(a + b + c)
+            s += math.sqrt(p * (p - a) * (p - b) * (p - c))
+        elif self.fe_type == 'fe_3d_8' or self.fe_type == 'fe_2d_4_s':   # ГЭ - четырехугольник
+            a = math.sqrt((x[0][0] - x[1][0])**2 + (x[0][1] - x[1][1])**2 + (x[0][2] - x[1][2])**2)
+            b = math.sqrt((x[0][0] - x[2][0])**2 + (x[0][1] - x[2][1])**2 + (x[0][2] - x[2][2])**2)
+            c = math.sqrt((x[2][0] - x[1][0])**2 + (x[2][1] - x[1][1])**2 + (x[2][2] - x[1][2])**2)
+            p = 0.5*(a + b + c)
+            s = math.sqrt(p*(p - a)*(p - b)*(p - c))
+            a = math.sqrt((x[0][0] - x[3][0])**2 + (x[0][1] - x[3][1])**2 + (x[0][2] - x[3][2])**2)
+            b = math.sqrt((x[0][0] - x[2][0])**2 + (x[0][1] - x[2][1])**2 + (x[0][2] - x[2][2])**2)
+            c = math.sqrt((x[2][0] - x[3][0])**2 + (x[2][1] - x[3][1])**2 + (x[2][2] - x[3][2])**2)
             p = 0.5*(a + b + c)
             s += math.sqrt(p*(p - a)*(p - b)*(p - c))
         return s
 
     # Вычисление объема (длины, площади) заданного конечного элемента
     def volume(self, index):
-        x = [0]*len(self.fe[index])
-        y = [0]*len(self.fe[index])
-        z = [0]*len(self.fe[index])
-        for i in range(0, len(self.fe[index])):
-            x[i], y[i], z[i] = self.get_coord(self.fe[index][i])
         v = 0
+        x = self.get_fe_coord(index)
         if self.fe_type == 'fe_1d_2':
-            v = math.sqrt((x[0] - x[1])**2 + (y[0] - y[1])**2)
+            v = math.fabs(x[0][0] - x[1][0])
         elif self.fe_type == 'fe_2d_3':
-            a = math.sqrt((x[0] - x[1])**2 + (y[0] - y[1])**2 + (z[0] - z[1])**2)
-            b = math.sqrt((x[0] - x[2])**2 + (y[0] - y[2])**2 + (z[0] - z[2])**2)
-            c = math.sqrt((x[2] - x[1])**2 + (y[2] - y[1])**2 + (z[2] - z[1])**2)
+            a = math.sqrt((x[0][0] - x[1][0])**2 + (x[0][1] - x[1][1])**2)
+            b = math.sqrt((x[0][0] - x[2][0])**2 + (x[0][1] - x[2][1])**2)
+            c = math.sqrt((x[2][0] - x[1][0])**2 + (x[2][1] - x[1][1])**2)
             p = 0.5*(a + b + c)
             v = math.sqrt(p*(p - a)*(p - b)*(p - c))
         elif self.fe_type == 'fe_2d_4':
-            a = math.sqrt((x[0] - x[1])**2 + (y[0] - y[1])**2 + (z[0] - z[1])**2)
-            b = math.sqrt((x[0] - x[2])**2 + (y[0] - y[2])**2 + (z[0] - z[2])**2)
-            c = math.sqrt((x[2] - x[1])**2 + (y[2] - y[1])**2 + (z[2] - z[1])**2)
+            a = math.sqrt((x[0][0] - x[1][0])**2 + (x[0][1] - x[1][1])**2)
+            b = math.sqrt((x[0][0] - x[2][0])**2 + (x[0][1] - x[2][1])**2)
+            c = math.sqrt((x[2][0] - x[1][0])**2 + (x[2][1] - x[1][1])**2)
             p = 0.5*(a + b + c)
             v = math.sqrt(p*(p - a)*(p - b)*(p - c))
-            a = math.sqrt((x[0] - x[3])**2 + (y[0] - y[3])**2 + (z[0] - z[3])**2)
-            b = math.sqrt((x[0] - x[2])**2 + (y[0] - y[2])**2 + (z[0] - z[2])**2)
-            c = math.sqrt((x[2] - x[3])**2 + (y[2] - y[3])**2 + (z[2] - z[3])**2)
+            a = math.sqrt((x[0][0] - x[3][0])**2 + (x[0][1] - x[3][1])**2)
+            b = math.sqrt((x[0][0] - x[2][0])**2 + (x[0][1] - x[2][1])**2)
+            c = math.sqrt((x[2][0] - x[3][0])**2 + (x[2][1] - x[3][1])**2)
             p = 0.5*(a + b + c)
             v += math.sqrt(p*(p - a)*(p - b)*(p - c))
         elif self.fe_type == 'fe_3d_4':
-            a = (x[1] - x[0])*(y[2] - y[0])*(z[3] - z[0]) + (x[3] - x[0])*(y[1] - y[0])*(z[2] - z[0]) + \
-                (x[2] - x[0])*(y[3] - y[0])*(z[1] - z[0])
-            b = (x[3] - x[0])*(y[2] - y[0])*(z[1] - z[0]) + (x[2] - x[0])*(y[1] - y[0])*(z[3] - z[0]) + \
-                (x[1] - x[0])*(y[3] - y[0])*(z[2] - z[0])
+            a = (x[1][0] - x[0][0])*(x[2][1] - x[0][1])*(x[3][2] - x[0][2]) + (x[3][0] - x[0][0])*(x[1][1] -
+                 x[0][1])*(x[2][2] - x[0][2]) + (x[2][0] - x[0][0])*(x[3][1] - x[0][1])*(x[1][2] - x[0][2])
+            b = (x[3][0] - x[0][0])*(x[2][1] - x[0][1])*(x[1][2] - x[0][2]) + (x[2][0] - x[0][0])*(x[1][1] -
+                 x[0][1])*(x[3][2] - x[0][2]) + (x[1][0] - x[0][0])*(x[3][1] - x[0][1])*(x[2][2] - x[0][2])
             v = math.fabs(a - b)/6.0
         elif self.fe_type == 'fe_3d_8':
             ref = [[0, 1, 4, 7], [4, 1, 5, 7], [1, 2, 6, 7], [1, 5, 6, 7], [1, 2, 3, 7], [0, 3, 1, 7]]
             for i in range(0, 6):
-                a = (x[ref[i][1]] - x[ref[i][0]])*(y[ref[i][2]] - y[ref[i][0]])*(z[ref[i][3]] - z[ref[i][0]]) + \
-                    (x[ref[i][3]] - x[ref[i][0]])*(y[ref[i][1]] - y[ref[i][0]])*(z[ref[i][2]] - z[ref[i][0]]) + \
-                    (x[ref[i][2]] - x[ref[i][0]])*(y[ref[i][3]] - y[ref[i][0]])*(z[ref[i][1]] - z[ref[i][0]])
-                b = (x[ref[i][3]] - x[ref[i][0]])*(y[ref[i][2]] - y[ref[i][0]])*(z[ref[i][1]] - z[ref[i][0]]) + \
-                    (x[ref[i][2]] - x[ref[i][0]])*(y[ref[i][1]] - y[ref[i][0]])*(z[ref[i][3]] - z[ref[i][0]]) + \
-                    (x[ref[i][1]] - x[ref[i][0]])*(y[ref[i][3]] - y[ref[i][0]])*(z[ref[i][2]] - z[ref[i][0]])
+                a = (x[ref[i][1]][0] - x[ref[i][0]][0])*(x[ref[i][2]][1] - x[ref[i][0]][1])*(x[ref[i][3]][2] -
+                     x[ref[i][0]][2]) + (x[ref[i][3]][0] - x[ref[i][0]][0])*(x[ref[i][1]][1] -
+                     x[ref[i][0]][1])*(x[ref[i][2]][2] - x[ref[i][0]][2]) + \
+                    (x[ref[i][2]][0] - x[ref[i][0]][0])*(x[ref[i][3]][1] -
+                     x[ref[i][0]][1])*(x[ref[i][1]][2] - x[ref[i][0]][2])
+                b = (x[ref[i][3]][0] - x[ref[i][0]][0])*(x[ref[i][2]][1] - x[ref[i][0]][1])*(x[ref[i][1]][2] -
+                     x[ref[i][0]][2]) + (x[ref[i][2]][0] - x[ref[i][0]][0])*(x[ref[i][1]][1] -
+                     x[ref[i][0]][1])*(x[ref[i][3]][2] - x[ref[i][0]][2]) + \
+                    (x[ref[i][1]][0] - x[ref[i][0]][0])*(x[ref[i][3]][1] - x[ref[i][0]][1])*(x[ref[i][2]][2] -
+                     x[ref[i][0]][2])
                 v += math.fabs(a - b)/6.0
         return v
