@@ -91,6 +91,9 @@ class TObject:
     def add_concentrated_load(self, e, p, d):
         self.__params__.add_concentrated_load(e, p, d)
 
+    def add_surface_load(self, e, p, d):
+        self.__params__.add_surface_load(e, p, d)
+
     def add_variable(self, var, val):
         self.__params__.add_variable(var, val)
 
