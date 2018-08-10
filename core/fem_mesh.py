@@ -228,3 +228,9 @@ class TMesh:
                     (x[ref[i][2]][2] - x[ref[i][0]][2])
                 v += math.fabs(a - b)/6.0
         return v
+
+    def is_plate(self):
+        return True if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_4_p' else False
+
+    def is_shell(self):
+        return True if self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_2d_4_s' else False

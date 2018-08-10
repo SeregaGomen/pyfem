@@ -424,12 +424,12 @@ if __name__ == "__main__":
     # console('console')
     # console4('console4')
     # body1d('body1d')
-    plate4('plate4')
+    # plate4('plate4')
     # plate3('plate3')
     # body1d('body1d')
     # beam_dynamic('beam_dynamic')
     # shell3('shell3')
-    # shell4('shell4')
+    shell4('shell4')
 
     # TPlot('console')
     # TPlot('tank3')
@@ -439,14 +439,14 @@ if __name__ == "__main__":
     # TPlot('cube_test')
     # TPlot('console4')
     # TPlot('beam')
-    TPlot('plate4')
+    # TPlot('plate4')
     # TPlot('plate3')
     # TPlot('body1d')
     # TPlot('beam_dynamic')
     # TPlot('console_dynamic')
     # TPlot('cube')
     # TPlot('shell3')
-    # TPlot('shell4')
+    TPlot('shell4')
 
 """
 1. Добавить загрузку названий функций в объект
