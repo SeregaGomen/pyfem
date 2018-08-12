@@ -188,13 +188,13 @@ class TMesh:
         x = self.get_fe_coord(index)
         if self.fe_type == 'fe_1d_2':
             v = math.fabs(x[0][0] - x[1][0])
-        elif self.fe_type == 'fe_2d_3':
+        elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_3_s':
             a = math.sqrt((x[0][0] - x[1][0])**2 + (x[0][1] - x[1][1])**2)
             b = math.sqrt((x[0][0] - x[2][0])**2 + (x[0][1] - x[2][1])**2)
             c = math.sqrt((x[2][0] - x[1][0])**2 + (x[2][1] - x[1][1])**2)
             p = 0.5*(a + b + c)
             v = math.sqrt(p*(p - a)*(p - b)*(p - c))
-        elif self.fe_type == 'fe_2d_4':
+        elif self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_2d_4_s':
             a = math.sqrt((x[0][0] - x[1][0])**2 + (x[0][1] - x[1][1])**2)
             b = math.sqrt((x[0][0] - x[2][0])**2 + (x[0][1] - x[2][1])**2)
             c = math.sqrt((x[2][0] - x[1][0])**2 + (x[2][1] - x[1][1])**2)
