@@ -934,16 +934,14 @@ class TFE2D3S(TFE2D3P, TFE2D3):
         for i in range(0, 6*self.size):
             if local_k[i][i] == 0:
                 local_k[i][i] = 0.1
-        #        import sys
-        #        print('******************************************')
-        #        for i in range(0, len(local_k)):
-        #            for j in range(0, len(local_k)):
-        #                sys.stdout.write('%+E\t' % local_k[i][j])
-        #            sys.stdout.write('\n')
-        #        print('******************************************')
-
+#        import sys
+#        print('******************************************')
+#        for i in range(0, len(local_k)):
+#            for j in range(0, len(local_k)):
+#                sys.stdout.write('%+E\t' % local_k[i][j])
+#            sys.stdout.write('\n')
+#        print('******************************************')
         return m.conj().transpose().dot(local_k).dot(m)
-
 
 
 # Четырехугольный КЭ оболочки

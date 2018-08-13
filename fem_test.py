@@ -387,6 +387,7 @@ def shell3(res_name):
         obj.set_elasticity([2E+6], [0.3])
 #        obj.add_boundary_condition('0', 'y = 0', DIR_1 | DIR_2 | DIR_3)
 #        obj.add_volume_load('-1.0E+2', '', DIR_2)
+        obj.add_boundary_condition('0', 'y = 0', DIR_2)
         obj.add_boundary_condition('0', 'z = 0', DIR_1 | DIR_2 | DIR_3)
         obj.add_concentrated_load('-1.0E+2', 'z = 5', DIR_3)
         if obj.calc():
@@ -416,6 +417,25 @@ def shell4(res_name):
         return False
 
 
+def shell_plate3(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/shell_plate3.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_h(0.01)
+        obj.set_precision(5)
+        obj.set_elasticity([2E+6], [0.3])
+        obj.add_boundary_condition('0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1', DIR_1 | DIR_2 | DIR_3)
+#        obj.add_concentrated_load('-1.0E+5', 'x = 0 and y = 0', DIR_1)
+        obj.add_surface_load('-2000', '', DIR_1)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            return True
+        return False
+
+
 if __name__ == "__main__":
     # beam('beam')
     # head3d('head3d')
@@ -432,8 +452,9 @@ if __name__ == "__main__":
     # plate3('plate3')
     # body1d('body1d')
     # beam_dynamic('beam_dynamic')
-    shell3('shell3')
+    # shell3('shell3')
     # shell4('shell4')
+    shell_plate3('shell_plate3')
 
     # TPlot('console')
     # TPlot('tank3')
@@ -449,8 +470,9 @@ if __name__ == "__main__":
     # TPlot('beam_dynamic')
     # TPlot('console_dynamic')
     # TPlot('cube')
-    TPlot('shell3')
+    # TPlot('shell3')
     # TPlot('shell4')
+    TPlot('shell_plate3')
 
 """
 2. Правильно отображать динамическую задачу в plot3d
