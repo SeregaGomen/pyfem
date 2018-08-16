@@ -508,16 +508,16 @@ class TGLWidget(QWidget):
             v -= step
 
     def draw_triangle_3d(self, tri):
-        tri = sorted(tri, key=lambda item: item[3])
-        ind = []
-        for i in range(0, 3):
-            ind.append(self.__get_color_index__(tri[i][3]))
         if self.is_light:
             # Задание нормали
             a = (tri[1][1] - tri[0][1])*(tri[2][2] - tri[0][2]) - (tri[2][1] - tri[0][1])*(tri[1][2] - tri[0][2])
             b = (tri[2][0] - tri[0][0])*(tri[1][2] - tri[0][2]) - (tri[1][0] - tri[0][0])*(tri[2][2] - tri[0][2])
             c = (tri[1][0] - tri[0][0])*(tri[2][1] - tri[0][1]) - (tri[2][0] - tri[0][0])*(tri[1][1] - tri[0][1])
             glNormal3f(a, b, c)
+        tri = sorted(tri, key=lambda item: item[3])
+        ind = []
+        for i in range(0, 3):
+            ind.append(self.__get_color_index__(tri[i][3]))
         if ind[0] == ind[1] == ind[2]:
             # Треугольник одного цвета
             self.color(ind[0])
@@ -578,7 +578,7 @@ class TGLWidget(QWidget):
         ambient = 0.8
         specular = 0.6
 
-        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
+#        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
         glLightfv(GL_LIGHT0, GL_AMBIENT, [ambient, ambient, ambient])
         glLightfv(GL_LIGHT0, GL_DIFFUSE, [diffuse, diffuse, diffuse])
         glLightfv(GL_LIGHT0, GL_SPECULAR, [specular, specular, specular])
@@ -724,7 +724,7 @@ class TGLWidget(QWidget):
                 self.draw_triangle_3d(tri)
             else:
                 self.draw_triangle_3d([tri[0], tri[1], tri[2]])
-                self.draw_triangle_3d([tri[0], tri[3], tri[2]])
+                self.draw_triangle_3d([tri[0], tri[2], tri[3]])
             if self.is_fe_border:
                 self.draw_fe_border(tri)
 
@@ -740,7 +740,7 @@ class TGLWidget(QWidget):
                 self.draw_triangle_3d(tri)
             else:
                 self.draw_triangle_3d([tri[0], tri[1], tri[2]])
-                self.draw_triangle_3d([tri[0], tri[3], tri[2]])
+                self.draw_triangle_3d([tri[0], tri[2], tri[3]])
             # Изображение границы ГЭ
             if self.is_fe_border:
                 self.draw_fe_border(tri)

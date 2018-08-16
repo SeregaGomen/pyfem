@@ -867,28 +867,28 @@ class TFE2D3S(TFE2D3P, TFE2D3):
         self.__create_transform_matrix__()
         self.global_x = self.x
         self.x = array([self.T.dot(self.x[0, :]), self.T.dot(self.x[1, :]), self.T.dot(self.x[2, :])])
+        x0 = [self.x[0][0], self.x[0][1], self.x[0][2]]
+        for i in range (0, 3):
+            self.x[i] -= x0
         TFE2D3.__create__(self)
 #        self.x = x
 
+    @staticmethod
+    def __cross_product__(a, b):
+        v = array([a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]])
+        length = math.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
+        return v/length
+
+    def __vector__(self, i, j):
+        v = array([self.x[j][0] - self.x[i][0], self.x[j][1] - self.x[i][1], self.x[j][2] - self.x[i][2]])
+        length = math.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
+        return v/length
+
     def __create_transform_matrix__(self):
-        mxx, mxy, mxz = (self.x[1][0] - self.x[0][0]), (self.x[1][1] - self.x[0][1]), (self.x[1][2] - self.x[0][2])
-        lv = math.sqrt(mxx ** 2 + mxy ** 2 + mxz ** 2)
-        mxx, mxy, mxz = mxx / lv, mxy / lv, mxz / lv
-
-        mzx, mzy, mzz = ((self.x[1][1] - self.x[0][1]) * (self.x[2][2] - self.x[0][2]) -
-                         (self.x[1][2] - self.x[0][2]) * (self.x[2][1] - self.x[0][1])), \
-                        ((self.x[1][2] - self.x[0][2]) * (self.x[2][0] - self.x[0][0]) -
-                         (self.x[1][0] - self.x[0][0]) * (self.x[2][2] - self.x[0][2])), \
-                        ((self.x[1][0] - self.x[0][0]) * (self.x[2][1] - self.x[0][1]) -
-                         (self.x[1][1] - self.x[0][1]) * (self.x[2][0] - self.x[0][0]))
-        lv = math.sqrt(mzx ** 2 + mzy ** 2 + mzz ** 2)
-        mzx, mzy, mzz = mzx / lv, mzy / lv, mzz / lv
-
-        myx, myy, myz = mzy * mxz - mzz * mxy, mzz * mxx - mzx * mxz, mzx * mxy - mzy * mxx
-
-        self.T[0][0], self.T[0][1], self.T[0][2] = mxx, mxy, mxz
-        self.T[1][0], self.T[1][1], self.T[1][2] = myx, myy, myz
-        self.T[2][0], self.T[2][1], self.T[2][2] = mzx, mzy, mzz
+        v_x = self.__vector__(1, 0)
+        v_z = self.__cross_product__(self.__vector__(1, 0), self.__vector__(2, 0))
+        v_y = self.__cross_product__(v_z, v_x)
+        self.T = array([v_x, v_y, v_z])
 
     def calc(self, u):
         d = self.e[0]*self.h**3/(1 - self.m[0]**2)/12.0
@@ -919,7 +919,6 @@ class TFE2D3S(TFE2D3P, TFE2D3):
                 m[i + 9][j + 9] = self.T[i][j]
                 m[i + 12][j + 12] = self.T[i][j]
                 m[i + 15][j + 15] = self.T[i][j]
-
         # Локальная матрицыа жесткости плоского КЭ
         k1 = TFE2D3._generate_stiffness_matrix_(self)
         # ... КЭ пластины
@@ -933,14 +932,7 @@ class TFE2D3S(TFE2D3P, TFE2D3):
         # Добавление фиктивных жесткостей
         for i in range(0, 6*self.size):
             if local_k[i][i] == 0:
-                local_k[i][i] = 0.1
-#        import sys
-#        print('******************************************')
-#        for i in range(0, len(local_k)):
-#            for j in range(0, len(local_k)):
-#                sys.stdout.write('%+E\t' % local_k[i][j])
-#            sys.stdout.write('\n')
-#        print('******************************************')
+                local_k[i][i] = 1
         return m.conj().transpose().dot(local_k).dot(m)
 
 
@@ -950,26 +942,7 @@ class TFE2D4S(TFE2D4P, TFE2D4):
         super().__init__()
         self.size = 4
         self.T = zeros((3, 3))  # Матрица преобразования глобальных координат в локальные
-        
-    def __create_transform_matrix__(self):
-        mxx, mxy, mxz = (self.x[1][0] - self.x[0][0]), (self.x[1][1] - self.x[0][1]), (self.x[1][2] - self.x[0][2])
-        lv = math.sqrt(mxx**2 + mxy**2 + mxz**2)
-        mxx, mxy, mxz = mxx/lv, mxy/lv, mxz/lv
-
-        mzx, mzy, mzz = ((self.x[1][1] - self.x[0][1])*(self.x[2][2] - self.x[0][2]) -
-                         (self.x[1][2] - self.x[0][2])*(self.x[2][1] - self.x[0][1])), \
-                        ((self.x[1][2] - self.x[0][2])*(self.x[2][0] - self.x[0][0]) -
-                         (self.x[1][0] - self.x[0][0])*(self.x[2][2] - self.x[0][2])), \
-                        ((self.x[1][0] - self.x[0][0])*(self.x[2][1] - self.x[0][1]) -
-                         (self.x[1][1] - self.x[0][1])*(self.x[2][0] - self.x[0][0]))
-        lv = math.sqrt(mzx**2 + mzy**2 + mzz**2)
-        mzx, mzy, mzz = mzx/lv, mzy/lv, mzz/lv
-
-        myx, myy, myz = mzy*mxz - mzz*mxy, mzz*mxx - mzx*mxz, mzx*mxy - mzy*mxx
-
-        self.T[0][0], self.T[0][1], self.T[0][2] = mxx, mxy, mxz
-        self.T[1][0], self.T[1][1], self.T[1][2] = myx, myy, myz
-        self.T[2][0], self.T[2][1], self.T[2][2] = mzx, mzy, mzz
+        self.global_x = zeros((4, 4))
 
     def calc(self, u):
         d = self.e[0]*self.h**3/(1 - self.m[0]**2)/12.0
@@ -990,14 +963,25 @@ class TFE2D4S(TFE2D4P, TFE2D4):
 
     # Формирование локальной матрицы жесткости
     def _generate_stiffness_matrix_(self):
-        # Построение матрицы перехода из глобальных в локальные координаты
-        self.__create_transform_matrix__()
+        # Создание матрицы преобразования
+        m = zeros((24, 24))
+        for i in range(0, 3):
+            for j in range(0, 3):
+                m[i][j] = self.T[i][j]
+                m[i + 3][j + 3] = self.T[i][j]
+                m[i + 6][j + 6] = self.T[i][j]
+                m[i + 9][j + 9] = self.T[i][j]
+                m[i + 12][j + 12] = self.T[i][j]
+                m[i + 15][j + 15] = self.T[i][j]
+                m[i + 18][j + 18] = self.T[i][j]
+                m[i + 21][j + 21] = self.T[i][j]
 
-        local_k = zeros((6*self.size, 6*self.size))
         # Локальная матрицыа жесткости плоского КЭ
         k1 = TFE2D4._generate_stiffness_matrix_(self)
         # ... КЭ пластины
         k2 = TFE2D4P._generate_stiffness_matrix_(self)
+
+        local_k = zeros((6*self.size, 6*self.size))
         for i in range(0, len(k1)):
             for j in range(0, len(k1)):
                 local_k[i][j] = k1[i][j]
@@ -1007,16 +991,45 @@ class TFE2D4S(TFE2D4P, TFE2D4):
 
         for i in range(0, 6*self.size):
             if local_k[i][i] == 0:
-                local_k[i][i] = 0.1
+                local_k[i][i] = 0.01
 
-        #        import sys
-        #        print('******************************************')
-        #        for i in range(0, len(local_k)):
-        #            for j in range(0, len(local_k)):
-        #                sys.stdout.write('%+E\t' % local_k[i][j])
-        #            sys.stdout.write('\n')
-        #        print('******************************************')
+        # import sys
+        # print('\n******************************************')
+        # for i in range(0, len(local_k)):
+        #     for j in range(0, len(local_k)):
+        #         sys.stdout.write('%+E\t' % local_k[i][j])
+        #     sys.stdout.write('\n')
+        # print('******************************************')
+        return m.conj().transpose().dot(local_k).dot(m)
 
-        local_k = self.T*local_k
+    def __create__(self):
+        self.__create_transform_matrix__()
+        self.global_x = self.x
 
-        return local_k
+        x0 = self.T.dot(self.x[0, :].conj().transpose())
+        x1 = self.T.dot(self.x[1, :].conj().transpose())
+        x2 = self.T.dot(self.x[2, :].conj().transpose())
+        x3 = self.T.dot(self.x[3, :].conj().transpose())
+
+        self.x = array([x0 - x0, x1 - x0, x2 - x0, x3 - x0])
+#        self.x = array([x0, x1, x2, x3])
+        TFE2D4.__create__(self)
+#        self.x = x
+
+    @staticmethod
+    def __cross_product__(a, b):
+        v = array([a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]])
+        length = math.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
+        return v/length
+
+    def __vector__(self, i, j):
+        v = array([self.x[j][0] - self.x[i][0], self.x[j][1] - self.x[i][1], self.x[j][2] - self.x[i][2]])
+        length = math.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
+        return v/length
+
+    def __create_transform_matrix__(self):
+        v_x = self.__vector__(1, 0)
+        v_z = self.__cross_product__(self.__vector__(1, 0), self.__vector__(2, 0))
+        v_y = self.__cross_product__(v_z, v_x)
+        self.T = array([v_x, v_y, v_z])
+
