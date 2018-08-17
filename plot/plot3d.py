@@ -126,12 +126,27 @@ class TMainWindow(QMainWindow):
         fe_border_action.setCheckable(True)
         fe_border_action.setChecked(False)
         options_menu.addAction(fe_border_action)
-        legend_action = QAction('&Legend', self)
+        legend_action = QAction('Le&gend', self)
         legend_action.setStatusTip('Enable drawing legend')
         legend_action.triggered.connect(self.__legend_action__)
         legend_action.setCheckable(True)
         legend_action.setChecked(True)
         options_menu.addAction(legend_action)
+        options_menu.addSeparator()
+        invert_normal_action = QAction('&Invert normal', self)
+        invert_normal_action.setStatusTip('Invert polygon normnal vector')
+        invert_normal_action.triggered.connect(self.__invert_normal_action__)
+        invert_normal_action.setCheckable(True)
+        invert_normal_action.setChecked(False)
+        options_menu.addAction(invert_normal_action)
+
+        light_two_side_action = QAction('&Two-sided lighting', self)
+        light_two_side_action.setStatusTip('Invert polygon normnal vector')
+        light_two_side_action.triggered.connect(self.__light_two_side_action__)
+        light_two_side_action.setCheckable(True)
+        light_two_side_action.setChecked(False)
+        options_menu.addAction(light_two_side_action)
+
         options_menu.addSeparator()
         qa = QActionGroup(self)
         color_16_action = QAction('&16', self)
@@ -211,6 +226,14 @@ class TMainWindow(QMainWindow):
         self.__gl_widget__.trigger_legend()
         self.repaint()
 
+    def __invert_normal_action__(self):
+        self.__gl_widget__.trigger_invert_normal()
+        self.repaint()
+
+    def __light_two_side_action__(self):
+        self.__gl_widget__.trigger_light_two_side()
+        self.repaint()
+
     # Поиск индекса функции по ее имени
     def __get_fun_index__(self, fun_name, t=0):
         # Поиск индекса функции в списке результатов
@@ -254,6 +277,8 @@ class TGLWidget(QWidget):
         self.is_light = True
         self.is_legend = True
         self.is_fe_border = False
+        self.is_invert_normal = False
+        self.is_light_two_side = False
         self.angle_x = 0
         self.angle_y = 0
         self.angle_z = 0
@@ -311,6 +336,8 @@ class TGLWidget(QWidget):
         self.max_u = max(self.results)
         self.is_light = True
         self.is_legend = True
+        self.is_invert_normal = False
+        self.is_light_two_side = False
         self.is_fe_border = False
         self.angle_x = 0
         self.angle_y = 0
@@ -351,6 +378,17 @@ class TGLWidget(QWidget):
 
     def trigger_legend(self):
         self.is_legend = not self.is_legend
+        self.redraw()
+        self.__gl__.update()
+
+    def trigger_invert_normal(self):
+        self.is_invert_normal = not self.is_invert_normal
+        self.redraw()
+        self.__gl__.update()
+
+    def trigger_light_two_side(self):
+        self.is_light_two_side = not self.is_light_two_side
+        self.__setup_light__()
         self.redraw()
         self.__gl__.update()
 
@@ -508,13 +546,16 @@ class TGLWidget(QWidget):
             v -= step
 
     def draw_triangle_3d(self, tri):
+        tri = sorted(tri, key=lambda item: item[3])
         if self.is_light:
             # Задание нормали
             a = (tri[1][1] - tri[0][1])*(tri[2][2] - tri[0][2]) - (tri[2][1] - tri[0][1])*(tri[1][2] - tri[0][2])
             b = (tri[2][0] - tri[0][0])*(tri[1][2] - tri[0][2]) - (tri[1][0] - tri[0][0])*(tri[2][2] - tri[0][2])
             c = (tri[1][0] - tri[0][0])*(tri[2][1] - tri[0][1]) - (tri[2][0] - tri[0][0])*(tri[1][1] - tri[0][1])
-            glNormal3f(a, b, c)
-        tri = sorted(tri, key=lambda item: item[3])
+            if not self.is_invert_normal:
+                glNormal3f(a, b, c)
+            else:
+                glNormal3f(-a, -b, -c)
         ind = []
         for i in range(0, 3):
             ind.append(self.__get_color_index__(tri[i][3]))
@@ -572,12 +613,12 @@ class TGLWidget(QWidget):
                                    self.x_c[2])
                         glEnd()
 
-    @staticmethod
-    def __setup_light__():
+    def __setup_light__(self):
         diffuse = 0.8
         ambient = 0.8
         specular = 0.6
 
+        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE if self.is_light_two_side else GL_FALSE)
 #        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
         glLightfv(GL_LIGHT0, GL_AMBIENT, [ambient, ambient, ambient])
         glLightfv(GL_LIGHT0, GL_DIFFUSE, [diffuse, diffuse, diffuse])
