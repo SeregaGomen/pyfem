@@ -215,6 +215,7 @@ class TMainWindow(QMainWindow):
         self.__gl_widget__.set_results(self.results[index].results)
 
     def __light_action__(self):
+        #if self.menuBar().actions()
         self.__gl_widget__.trigger_light()
         self.repaint()
 
@@ -282,6 +283,7 @@ class TGLWidget(QWidget):
         self.angle_x = 0
         self.angle_y = 0
         self.angle_z = 0
+        self.scale = 1
         self.num_color = 16
         self.__is_idle__ = True
         self.__last_pos__ = QPoint()
@@ -545,17 +547,34 @@ class TGLWidget(QWidget):
             cy += font_h
             v -= step
 
+    @staticmethod
+    def __sort__(tri):
+        inverse = 1.0
+        min_i = 0
+        min_u = tri[0][3]
+        for i in range(1, 3):
+            if tri[i][3] < min_u:
+                min_i = i
+                min_u = tri[i][3]
+        for i in range(0, min_i):
+            tri.append(tri.pop(0))
+        if tri[1][3] > tri[2][3]:
+            inverse = -1.0
+            tri.append(tri.pop(1))
+        return inverse
+
     def draw_triangle_3d(self, tri):
-        tri = sorted(tri, key=lambda item: item[3])
+        # tri = sorted(tri, key=lambda item: item[3])
+        inv = self.__sort__(tri)
+        glFrontFace(GL_CCW if inv == 1 else GL_CW)
         if self.is_light:
             # Задание нормали
             a = (tri[1][1] - tri[0][1])*(tri[2][2] - tri[0][2]) - (tri[2][1] - tri[0][1])*(tri[1][2] - tri[0][2])
             b = (tri[2][0] - tri[0][0])*(tri[1][2] - tri[0][2]) - (tri[1][0] - tri[0][0])*(tri[2][2] - tri[0][2])
             c = (tri[1][0] - tri[0][0])*(tri[2][1] - tri[0][1]) - (tri[2][0] - tri[0][0])*(tri[1][1] - tri[0][1])
-            if not self.is_invert_normal:
-                glNormal3f(a, b, c)
-            else:
-                glNormal3f(-a, -b, -c)
+            if self.is_invert_normal:
+                inv *= -1
+            glNormal3f(inv*a, inv*b, inv*c)
         color_index = []
         for i in range(0, 3):
             color_index.append(self.__get_color_index__(tri[i][3]))
