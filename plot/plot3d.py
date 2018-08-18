@@ -556,42 +556,42 @@ class TGLWidget(QWidget):
                 glNormal3f(a, b, c)
             else:
                 glNormal3f(-a, -b, -c)
-        ind = []
+        color_index = []
         for i in range(0, 3):
-            ind.append(self.__get_color_index__(tri[i][3]))
-        if ind[0] == ind[1] == ind[2]:
+            color_index.append(self.__get_color_index__(tri[i][3]))
+        if color_index[0] == color_index[1] == color_index[2]:
             # Треугольник одного цвета
-            self.color(ind[0])
+            self.color(color_index[0])
             glBegin(GL_TRIANGLES)
             for i in range(0, 3):
                 glVertex3f(tri[i][0] - self.x_c[0], tri[i][1] - self.x_c[1], tri[i][2] - self.x_c[2])
             glEnd()
         else:
             # Изолинии проходят по треугольнику
-            step = ind[2] - ind[0] + 1
+            step = color_index[2] - color_index[0] + 1
             p02 = []
-            x = [tri[0][0], tri[0][1], tri[0][2], ind[0]]
+            x = [tri[0][0], tri[0][1], tri[0][2], color_index[0]]
             h = [(tri[2][0] - tri[0][0])/step, (tri[2][1] - tri[0][1])/step, (tri[2][2] - tri[0][2])/step,
-                 (ind[2] - ind[0])/step]
+                 (color_index[2] - color_index[0])/step]
             for i in range(0, step):
-                p02.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], ind[0] + i*h[3]])
-            p02.append([tri[2][0], tri[2][1], tri[2][2], ind[2]])
+                p02.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], color_index[0] + i*h[3]])
+            p02.append([tri[2][0], tri[2][1], tri[2][2], color_index[2]])
 
-            step = ind[1] - ind[0] + 1
+            step = color_index[1] - color_index[0] + 1
             p012 = []
-            x = [tri[0][0], tri[0][1], tri[0][2], ind[0]]
+            x = [tri[0][0], tri[0][1], tri[0][2], color_index[0]]
             h = [(tri[1][0] - tri[0][0])/step, (tri[1][1] - tri[0][1])/step, (tri[1][2] - tri[0][2])/step,
-                 (ind[1] - ind[0])/step]
+                 (color_index[1] - color_index[0])/step]
             for i in range(1, step):
-                p012.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], ind[0] + i*h[3]])
-            p012.append([tri[1][0], tri[1][1], tri[1][2], ind[1]])
+                p012.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], color_index[0] + i*h[3]])
+            p012.append([tri[1][0], tri[1][1], tri[1][2], color_index[1]])
 
-            step = ind[2] - ind[1] + 1
-            x = [tri[1][0], tri[1][1], tri[1][2], ind[1]]
+            step = color_index[2] - color_index[1] + 1
+            x = [tri[1][0], tri[1][1], tri[1][2], color_index[1]]
             h = [(tri[2][0] - tri[1][0])/step, (tri[2][1] - tri[1][1])/step, (tri[2][2] - tri[1][2])/step,
-                 (ind[2] - ind[1])/step]
+                 (color_index[2] - color_index[1])/step]
             for i in range(1, step):
-                p012.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], ind[1] + i*h[3]])
+                p012.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], color_index[1] + i*h[3]])
 
             for i in range(0, len(p02) - 1):
                 if i < len(p012):
