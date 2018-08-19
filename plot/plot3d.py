@@ -29,6 +29,12 @@ class TMainWindow(QMainWindow):
         self.be = []                # ... ГЭ
         self.results = []           # Результаты расчета
 
+        # Пункты главного меню
+        self.file_menu = self.menuBar().addMenu('&File')
+        self.function_menu = self.menuBar().addMenu('F&unction')
+        self.options_menu = self.menuBar().addMenu('&Option')
+        self.help_menu = self.menuBar().addMenu('&?')
+
         self.__gl_widget__ = TGLWidget()
         self.setCentralWidget(self.__gl_widget__)
         self.resize(640, 480)
@@ -74,44 +80,23 @@ class TMainWindow(QMainWindow):
         return True
 
     def __init_main_menu__(self):
-        # self.setWindowTitle(self.file_name)
-        # self.statusBar().showMessage('')
-
-        main_menu = self.menuBar()
-        file_menu = main_menu.addMenu('&File')
-        function_menu = main_menu.addMenu('F&unction')
-        options_menu = main_menu.addMenu('&Option')
-        help_menu = main_menu.addMenu('&?')
-
         # Настройка File
         open_action = QAction('&Open...', self)
         open_action.setStatusTip('Open a data file')
-        open_action.triggered.connect(self.__open__)
-        file_menu.addAction(open_action)
+        open_action.triggered.connect(self.__open_action__)
+        self.file_menu.addAction(open_action)
         close_action = QAction('&Close', self)
         close_action.setStatusTip('Close current file')
-        close_action.triggered.connect(self.__close__)
-        file_menu.addAction(close_action)
-        file_menu.addSeparator()
+        close_action.triggered.connect(self.__close_action__)
+        self.file_menu.addAction(close_action)
+        self.file_menu.addSeparator()
         exit_action = QAction('E&xit', self)
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self.close)
-        file_menu.addAction(exit_action)
+        self.file_menu.addAction(exit_action)
 
         # Настройка Function
-        qa = QActionGroup(self)
-        for i in range(0, len(self.results)):
-            if i < 9:
-                fun = '&' + str(i + 1) + ' ' + self.results[i].name
-            else:
-                fun = '&' + chr(ord('A') + i - 9) + ' ' + self.results[i].name
-            function_action = QAction(fun, self)
-            function_action.setStatusTip('Visualization function ' + self.results[i].name)
-            function_action.setActionGroup(qa)
-            function_action.setCheckable(True)
-            function_action.setChecked(True if i == 0 else False)
-            function_action.triggered.connect(self.__fun_action__)
-            function_menu.addAction(function_action)
+        self.__init_function_menu__()
 
         # Настройка Options
         light_action = QAction('&Light', self)
@@ -119,35 +104,35 @@ class TMainWindow(QMainWindow):
         light_action.triggered.connect(self.__light_action__)
         light_action.setCheckable(True)
         light_action.setChecked(True)
-        options_menu.addAction(light_action)
+        self.options_menu.addAction(light_action)
         fe_border_action = QAction('&FE border', self)
         fe_border_action.setStatusTip('Enable drawing FE border')
         fe_border_action.triggered.connect(self.__fe_border_action__)
         fe_border_action.setCheckable(True)
         fe_border_action.setChecked(False)
-        options_menu.addAction(fe_border_action)
+        self.options_menu.addAction(fe_border_action)
         legend_action = QAction('Le&gend', self)
         legend_action.setStatusTip('Enable drawing legend')
         legend_action.triggered.connect(self.__legend_action__)
         legend_action.setCheckable(True)
         legend_action.setChecked(True)
-        options_menu.addAction(legend_action)
-        options_menu.addSeparator()
+        self.options_menu.addAction(legend_action)
+        self.options_menu.addSeparator()
         invert_normal_action = QAction('&Invert normal', self)
         invert_normal_action.setStatusTip('Invert polygon normnal vector')
         invert_normal_action.triggered.connect(self.__invert_normal_action__)
         invert_normal_action.setCheckable(True)
         invert_normal_action.setChecked(False)
-        options_menu.addAction(invert_normal_action)
+        self.options_menu.addAction(invert_normal_action)
 
         light_two_side_action = QAction('&Two-sided lighting', self)
         light_two_side_action.setStatusTip('Invert polygon normnal vector')
         light_two_side_action.triggered.connect(self.__light_two_side_action__)
         light_two_side_action.setCheckable(True)
         light_two_side_action.setChecked(False)
-        options_menu.addAction(light_two_side_action)
+        self.options_menu.addAction(light_two_side_action)
 
-        options_menu.addSeparator()
+        self.options_menu.addSeparator()
         qa = QActionGroup(self)
         color_16_action = QAction('&16', self)
         color_16_action.setStatusTip('Set 16 grading colors')
@@ -187,16 +172,33 @@ class TMainWindow(QMainWindow):
         color_menu.addAction(color_64_action)
         color_menu.addAction(color_128_action)
         color_menu.addAction(color_256_action)
-        options_menu.addMenu(color_menu)
+        self.options_menu.addMenu(color_menu)
 
         self.show()
 
-    def __open__(self):
+    def __init_function_menu__(self):
+        qa = QActionGroup(self)
+        for i in range(0, len(self.results)):
+            if i < 9:
+                fun = '&' + str(i + 1) + ' ' + self.results[i].name
+            else:
+                fun = '&' + chr(ord('A') + i - 9) + ' ' + self.results[i].name
+            function_action = QAction(fun, self)
+            function_action.setStatusTip('Visualization function ' + self.results[i].name)
+            function_action.setActionGroup(qa)
+            function_action.setCheckable(True)
+            function_action.setChecked(True if i == 0 else False)
+            function_action.triggered.connect(self.__fun_action__)
+            self.function_menu.addAction(function_action)
+
+    def __open_action__(self):
         dlg = QFileDialog(self, 'Open data file', '', 'JSON data files (*.json)')
         if dlg.exec_():
+            if len(self.x):
+                self.__close_action__()
             self.__set_file__(dlg.selectedFiles()[0])
 
-    def __close__(self):
+    def __close_action__(self):
         self.setWindowTitle('PyFEM results viewer')
         self.file_name = ''
         self.fe_type = ''
@@ -205,6 +207,16 @@ class TMainWindow(QMainWindow):
         self.be.clear()
         self.results.clear()
         self.__gl_widget__.clear()
+        self.function_menu.clear()
+        self.file_menu.actions()[1].setEnabled(False)   # Close menu
+        self.function_menu.setEnabled(False)
+        self.options_menu.setEnabled(False)
+        self.options_menu.actions()[0].setChecked(True)
+        self.options_menu.actions()[1].setChecked(False)
+        self.options_menu.actions()[2].setChecked(True)
+        self.options_menu.actions()[4].setChecked(False)
+        self.options_menu.actions()[5].setChecked(False)
+        self.options_menu.actions()[7].menu().actions()[0].setChecked(True)
 
     def __colors_action__(self):
         num = int(QObject.sender(self).text().replace('&', ''))
@@ -215,7 +227,10 @@ class TMainWindow(QMainWindow):
         self.__gl_widget__.set_results(self.results[index].results)
 
     def __light_action__(self):
-        #if self.menuBar().actions()
+        self.options_menu.actions()[4].setEnabled(not self.options_menu.actions()[4].isEnabled())
+        self.options_menu.actions()[5].setEnabled(not self.options_menu.actions()[5].isEnabled())
+#        for i in range(0, len(self.__light_actions__)):
+#            self.__light_actions__[i].setEnabled(not self.__light_actions__[i].isEnabled())
         self.__gl_widget__.trigger_light()
         self.repaint()
 
@@ -248,16 +263,15 @@ class TMainWindow(QMainWindow):
     # Задание нового файла
     def __set_file__(self, file_name):
         self.file_name = file_name
-        self.fe_type = ''
-        self.x.clear()
-        self.fe.clear()
-        self.be.clear()
-        self.results.clear()
         # Загрузка данных
         if self.__load_file__() is False:
             QMessageBox.critical(self, 'Error', 'Error read data from file ' + file_name, QMessageBox.Ok)
             return
+        self.__init_function_menu__()
         self.__gl_widget__.set_data(self.fe_type, self.x, self.fe, self.be, self.results[0].results)
+        self.file_menu.actions()[1].setEnabled(True)   # Close menu
+        self.function_menu.setEnabled(True)
+        self.options_menu.setEnabled(True)
 
 
 # Базовый класс, реализующий основной функционал OpenGL
@@ -309,6 +323,11 @@ class TGLWidget(QWidget):
             glDeleteLists(self.__xlist_sceleton__, 1)"""
 
     def clear(self):
+        self.is_light = True
+        self.is_legend = True
+        self.is_fe_border = False
+        self.is_invert_normal = False
+        self.is_light_two_side = False
         self.fe_type = ''
         self.x.clear()
         self.fe.clear()
