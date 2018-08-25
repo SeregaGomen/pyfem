@@ -18,6 +18,12 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
+import math
+import numpy as np
+from numpy import array
+from numpy.linalg import norm
+from numpy import cross
+
 
 class TMainWindow(QMainWindow):
     def __init__(self, file_name):

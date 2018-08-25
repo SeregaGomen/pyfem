@@ -11,6 +11,8 @@ from numpy import array
 from numpy import zeros
 from numpy.linalg import det
 from numpy.linalg import inv
+from numpy.linalg import norm
+from numpy import cross
 from core.fem_error import TFEMException
 from core.fem_defs import eps
 
@@ -127,12 +129,9 @@ class TFE2D3(TFE):
         self.size = 3
 
     def __square__(self):
-        a = math.sqrt((self.x[0][0] - self.x[1][0])*(self.x[0][0] - self.x[1][0]) +
-                      (self.x[0][1] - self.x[1][1])*(self.x[0][1] - self.x[1][1]))
-        b = math.sqrt((self.x[0][0] - self.x[2][0])*(self.x[0][0] - self.x[2][0]) +
-                      (self.x[0][1] - self.x[2][1])*(self.x[0][1] - self.x[2][1]))
-        c = math.sqrt((self.x[2][0] - self.x[1][0])*(self.x[2][0] - self.x[1][0]) +
-                      (self.x[2][1] - self.x[1][1])*(self.x[2][1] - self.x[1][1]))
+        a = math.sqrt((self.x[0][0] - self.x[1][0])**2 + (self.x[0][1] - self.x[1][1])**2)
+        b = math.sqrt((self.x[0][0] - self.x[2][0])**2 + (self.x[0][1] - self.x[2][1])**2)
+        c = math.sqrt((self.x[2][0] - self.x[1][0])**2 + (self.x[2][1] - self.x[1][1])**2)
         p = 0.5*(a + b + c)
         return math.sqrt(p*(p - a)*(p - b)*(p - c))
 
@@ -867,26 +866,22 @@ class TFE2D3S(TFE2D3P, TFE2D3):
         self.__create_transform_matrix__()
         self.global_x = self.x
         self.x = array([self.T.dot(self.x[0, :]), self.T.dot(self.x[1, :]), self.T.dot(self.x[2, :])])
-        x0 = [self.x[0][0], self.x[0][1], self.x[0][2]]
-        for i in range (0, 3):
-            self.x[i] -= x0
+        self.x -= self.x[0, :]
         TFE2D3.__create__(self)
 #        self.x = x
 
     @staticmethod
     def __cross_product__(a, b):
-        v = array([a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]])
-        length = math.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
-        return v/length
+        v = cross(a, b)
+        return v/norm(v)
 
     def __vector__(self, i, j):
-        v = array([self.x[j][0] - self.x[i][0], self.x[j][1] - self.x[i][1], self.x[j][2] - self.x[i][2]])
-        length = math.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
-        return v/length
+        v = array(self.x[j]) - array(self.x[i])
+        return v/norm(v)
 
     def __create_transform_matrix__(self):
-        v_x = self.__vector__(1, 0)
-        v_z = self.__cross_product__(self.__vector__(1, 0), self.__vector__(2, 0))
+        v_x = self.__vector__(0, 1)
+        v_z = self.__cross_product__(v_x, self.__vector__(0, 2))
         v_y = self.__cross_product__(v_z, v_x)
         self.T = array([v_x, v_y, v_z])
 
@@ -908,7 +903,8 @@ class TFE2D3S(TFE2D3P, TFE2D3):
         return res
 
     def _generate_stiffness_matrix_(self):
-        local_k = zeros((6*self.size, 6*self.size))
+        global_freedom = 6
+        local_k = zeros((global_freedom*self.size, global_freedom*self.size))
         # Создание матрицы преобразования
         m = zeros((18, 18))
         for i in range(0, 3):
@@ -923,12 +919,18 @@ class TFE2D3S(TFE2D3P, TFE2D3):
         k1 = TFE2D3._generate_stiffness_matrix_(self)
         # ... КЭ пластины
         k2 = TFE2D3P._generate_stiffness_matrix_(self)
+        local_freedom1 = 2
         for i in range(0, len(k1)):
+            p = (i//local_freedom1)*global_freedom + i%local_freedom1
             for j in range(0, len(k1)):
-                local_k[i][j] = k1[i][j]
+                q = (j//local_freedom1)*global_freedom + j%local_freedom1
+                local_k[p][q] = k1[i][j]
+        local_freedom2 = 3
         for i in range(0, len(k2)):
+            p = (i//local_freedom2)*global_freedom + i%local_freedom2 + local_freedom1
             for j in range(0, len(k2)):
-                local_k[i + len(k1)][j + len(k1)] = k2[i][j]
+                q = (j//local_freedom2)*global_freedom + j%local_freedom2 + local_freedom1
+                local_k[p][q] = k2[i][j]
         # Добавление фиктивных жесткостей
         for i in range(0, 6*self.size):
             if local_k[i][i] == 0:
