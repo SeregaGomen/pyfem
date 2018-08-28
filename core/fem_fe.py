@@ -9,6 +9,7 @@ from abc import abstractmethod
 from numpy.linalg import solve, LinAlgError
 from numpy import array
 from numpy import zeros
+from numpy import identity
 from numpy.linalg import det
 from numpy.linalg import inv
 from numpy.linalg import norm
@@ -904,7 +905,7 @@ class TFE2D3S(TFE2D3P, TFE2D3):
 
     def _generate_stiffness_matrix_(self):
         global_freedom = 6
-        local_k = zeros((global_freedom*self.size, global_freedom*self.size))
+        local_k = identity(global_freedom*self.size)
         # Создание матрицы преобразования
         m = zeros((18, 18))
         for i in range(0, 3):
@@ -932,9 +933,9 @@ class TFE2D3S(TFE2D3P, TFE2D3):
                 q = (j//local_freedom2)*global_freedom + j%local_freedom2 + local_freedom1
                 local_k[p][q] = k2[i][j]
         # Добавление фиктивных жесткостей
-        for i in range(0, 6*self.size):
-            if local_k[i][i] == 0:
-                local_k[i][i] = 1
+#        for i in range(0, 6*self.size):
+#            if local_k[i][i] == 0:
+#                local_k[i][i] = 1
         return m.conj().transpose().dot(local_k).dot(m)
 
 
