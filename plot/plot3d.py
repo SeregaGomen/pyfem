@@ -303,6 +303,7 @@ class TGLWidget(QWidget):
         self.is_fe_border = False
         self.is_invert_normal = False
         self.is_light_two_side = False
+        self.transform_coeff = 0
         self.angle_x = 0
         self.angle_y = 0
         self.angle_z = 0
@@ -337,6 +338,7 @@ class TGLWidget(QWidget):
         self.is_fe_border = False
         self.is_invert_normal = False
         self.is_light_two_side = False
+        self.transform_coeff = 0
         self.fe_type = ''
         self.x.clear()
         self.fe.clear()
@@ -370,6 +372,7 @@ class TGLWidget(QWidget):
         self.is_invert_normal = False
         self.is_light_two_side = False
         self.is_fe_border = False
+        self.transform_coeff = 0
         self.angle_x = 0
         self.angle_y = 0
         self.angle_z = 0
@@ -776,7 +779,8 @@ class TGLWidget(QWidget):
         for i in range(0, len(self.fe)):
             rod = []
             for j in range(0, len(self.fe[0])):
-                rod.append([self.x[self.fe[i][j]][0], self.results[self.fe[i][j]]])
+                rod.append([self.x[self.fe[i][j]][0] +  self.transform_coeff*self.results[0].results[self.fe[i][j]],
+                            self.results[self.fun_index].results[self.fe[i][j]]])
             rod = sorted(rod, key=lambda item: item[1])
             ind = []
             for j in range(0, 2):
@@ -808,7 +812,9 @@ class TGLWidget(QWidget):
             # for i in range(212, 214):
             tri = []
             for j in range(0, len(self.fe[0])):
-                tri.append([self.x[self.fe[i][j]][0], self.x[self.fe[i][j]][1], 0, self.results[self.fe[i][j]]])
+                tri.append([self.x[self.fe[i][j]][0] + self.transform_coeff*self.results[0].results[self.fe[i][j]],
+                            self.x[self.fe[i][j]][1] + self.transform_coeff*self.results[1].results[self.fe[i][j]], 0,
+                            self.results[self.fun_index].results[self.fe[i][j]]])
             if len(tri) == 3:
                 self.draw_triangle_3d(tri)
             else:
@@ -823,7 +829,9 @@ class TGLWidget(QWidget):
         for i in range(0, len(self.be)):
             tri = []
             for j in range(0, len(self.be[0])):
-                tri.append([self.x[self.be[i][j]][0], self.x[self.be[i][j]][1], self.x[self.be[i][j]][2],
+                tri.append([self.x[self.be[i][j]][0] + self.transform_coeff*self.results[0].results[self.be[i][j]],
+                            self.x[self.be[i][j]][1] + self.transform_coeff*self.results[1].results[self.be[i][j]],
+                            self.x[self.be[i][j]][2] + self.transform_coeff*self.results[2].results[self.be[i][j]],
                             self.results[self.fun_index].results[self.be[i][j]]])
             if len(tri) == 3:
                 self.draw_triangle_3d(tri)
