@@ -40,7 +40,7 @@ class TMainWindow(QMainWindow):
         self.resize(640, 480)
         # Загрузка данных
         if self.__load_file__():
-            self.__gl_widget__.set_data(self.fe_type, self.x, self.fe, self.be, self.results[0].results)
+            self.__gl_widget__.set_data(self.fe_type, self.x, self.fe, self.be, self.results, 0)
         # Настройка окна
         self.__init_main_menu__()
 
@@ -230,7 +230,7 @@ class TMainWindow(QMainWindow):
 
     def __fun_action__(self):
         index = self.__get_fun_index__(QObject.sender(self).text()[3:])
-        self.__gl_widget__.set_results(self.results[index].results)
+        self.__gl_widget__.set_fun_index(index)
 
     def __light_action__(self):
         self.menuBar().actions()[2].menu().actions()[4].setEnabled(not self.menuBar().actions()[2].
@@ -274,7 +274,7 @@ class TMainWindow(QMainWindow):
             QMessageBox.critical(self, 'Error', 'Error read data from file ' + file_name, QMessageBox.Ok)
             return
         self.__init_function_menu__()
-        self.__gl_widget__.set_data(self.fe_type, self.x, self.fe, self.be, self.results[0].results)
+        self.__gl_widget__.set_data(self.fe_type, self.x, self.fe, self.be, self.results, 0)
         # Настройка меню
         self.menuBar().actions()[0].menu().actions()[1].setEnabled(True)
         self.menuBar().actions()[1].setEnabled(True)                       # Function
@@ -287,12 +287,14 @@ class TGLWidget(QWidget):
         super(TGLWidget, self).__init__()
         self.fe_type = ''
         self.x = []
+        self.dx = []
         self.fe = []
         self.be = []
         self.results = []
         self.min_x = []
         self.max_x = []
         self.x_c = []
+        self.fun_index = 0
         self.radius = 0
         self.min_u = 0
         self.max_u = 0
@@ -352,16 +354,17 @@ class TGLWidget(QWidget):
             self.__xlist_skeleton__ = 0
         self.__gl__.updateGL()
 
-    def set_data(self, fe_type, x, fe, be, results):
+    def set_data(self, fe_type, x, fe, be, results, fun_index):
         self.__gl__.glInit()
         self.fe_type = fe_type
         self.x = x
         self.fe = fe
         self.be = be
         self.results = results
+        self.fun_index = fun_index
         self.min_x, self.max_x, self.x_c, self.radius = self.__get_coord_info__()
-        self.min_u = min(self.results)
-        self.max_u = max(self.results)
+        self.min_u = min(self.results[self.fun_index].results)
+        self.max_u = max(self.results[self.fun_index].results)
         self.is_light = True
         self.is_legend = True
         self.is_invert_normal = False
@@ -426,10 +429,10 @@ class TGLWidget(QWidget):
         self.redraw()
         self.__gl__.update()
 
-    def set_results(self, results):
-        self.results = results
-        self.min_u = min(self.results)
-        self.max_u = max(self.results)
+    def set_fun_index(self, fun_index):
+        self.fun_index = fun_index
+        self.min_u = min(self.results[self.fun_index].results)
+        self.max_u = max(self.results[self.fun_index].results)
         self.__init_color_table__()
         self.redraw()
         self.__gl__.update()
@@ -821,7 +824,7 @@ class TGLWidget(QWidget):
             tri = []
             for j in range(0, len(self.be[0])):
                 tri.append([self.x[self.be[i][j]][0], self.x[self.be[i][j]][1], self.x[self.be[i][j]][2],
-                            self.results[self.be[i][j]]])
+                            self.results[self.fun_index].results[self.be[i][j]]])
             if len(tri) == 3:
                 self.draw_triangle_3d(tri)
             else:
