@@ -441,24 +441,39 @@ def shell_plate3(res_name):
 
 def shell3_test(res_name):
     obj = TObject()
-    if obj.set_mesh('mesh/test_shell3.trpa'):
-    # if obj.set_mesh('mesh/test_shell3_0.trpa'):
+    if obj.set_mesh('mesh/shell-tube.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
-        obj.set_h(0.01)
         obj.set_precision(5)
-        obj.set_elasticity([2E+6], [0.3])
-        obj.add_boundary_condition('0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1', DIR_1 | DIR_2 | DIR_3)
-        # obj.add_surface_load('-2000', '', DIR_3)
-        # obj.add_concentrated_load('-1.0E+3', 'x = 0 and y = 0', DIR_3)
-        obj.add_concentrated_load('-1.0E+3', 'z = 0', DIR_1)
+        obj.set_h(0.0369)
+        obj.set_elasticity([203200000000], [0.27])
+        obj.add_boundary_condition('0', 'z = 0 or z = 4.014', DIR_1 | DIR_2 | DIR_3)
+        obj.add_surface_load('50000*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-5)', DIR_1)
+        obj.add_surface_load('50000*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-5)', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
             return True
         return False
 
+
+def plate3_test(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/plate3-1.0.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_h(0.01)
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200000000], [0.27])
+        obj.add_boundary_condition('0', 'x = -0.5 or x = 0.5 or y = -0.5 or y = 0.5', DIR_1 | DIR_2 | DIR_3)
+        obj.add_surface_load('-50000', '', DIR_1)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            return True
+        return False
 
 if __name__ == "__main__":
     # beam('beam')
@@ -475,11 +490,12 @@ if __name__ == "__main__":
     # plate4('plate4')
     # body1d('body1d')
     # beam_dynamic('beam_dynamic')
-    shell3('shell3')
+    # shell3('shell3')
     # shell4('shell4')
     # shell_plate3('shell_plate3')
     # plate3('plate3')
     # shell3_test('shell3_test')
+    # plate3_test('plate_test')
 
     # TPlot('console')
     # TPlot('tank3')
@@ -494,11 +510,13 @@ if __name__ == "__main__":
     # TPlot('beam_dynamic')
     # TPlot('console_dynamic')
     # TPlot('cube')
-    TPlot('shell3')
+    # TPlot('shell3')
     # TPlot('shell4')
     # TPlot('shell_plate3')
     # TPlot('plate3')
-    # TPlot('shell3_test')
+    TPlot('shell3_test')
+    # TPlot('plate_test')
+
 
 """
 2. Правильно отображать динамическую задачу в plot3d
