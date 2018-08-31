@@ -503,7 +503,7 @@ if __name__ == "__main__":
     # TPlot('cylinder')
     # TPlot('quad')
     # TPlot('cube_test')
-    # TPlot('console4')
+    TPlot('console4')
     # TPlot('beam')
     # TPlot('plate4')
     # TPlot('body1d')
@@ -514,7 +514,7 @@ if __name__ == "__main__":
     # TPlot('shell4')
     # TPlot('shell_plate3')
     # TPlot('plate3')
-    TPlot('shell3_test')
+    # TPlot('shell3_test')
     # TPlot('plate_test')
 
 
