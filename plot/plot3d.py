@@ -777,33 +777,28 @@ class TGLWidget(QWidget):
     def __paint_1d__(self):
         # Изображение КЭ
         for i in range(0, len(self.fe)):
-            rod = []
+            data = []
             for j in range(0, len(self.fe[0])):
-                rod.append([self.x[self.fe[i][j]][0] +  self.transform_coeff*self.results[0].results[self.fe[i][j]],
+                data.append([self.x[self.fe[i][j]][0] + self.transform_coeff*self.results[0].results[self.fe[i][j]],
                             self.results[self.fun_index].results[self.fe[i][j]]])
-            rod = sorted(rod, key=lambda item: item[1])
-            ind = []
-            for j in range(0, 2):
-                ind.append(self.__get_color_index__(rod[j][1]))
-            clr = ind[0]
-            if ind[0] == ind[1]:
-                self.color(clr)
-                glBegin(GL_LINES)
-                glVertex2f(rod[0][0] - self.x_c[0], 0)
-                glVertex2f(rod[1][0], 0)
-                glEnd()
-            else:
-                step = abs(ind[1] - ind[0]) + 1
-                x = rod[0][0]
-                h = (rod[1][0] - rod[0][0])/step
-                for j in range(0, step):
-                    self.color(clr)
-                    glBegin(GL_LINES)
-                    glVertex2f(x - self.x_c[0], 0)
-                    glVertex2f(x + h - self.x_c[0], 0)
-                    glEnd()
-                    x += h
-                    clr += 1
+            color1 = self.__get_color_index__(data[0][1])
+            color2 = self.__get_color_index__(data[1][1])
+            delta_color = 1 if color1 < color2 else -1
+            step = abs(color1 - color2)
+            h = (data[1][0] - data[0][0])/step if step > 0 else 0
+            glBegin(GL_LINE_STRIP)
+            color = color1
+            self.color(color)
+            x = data[0][0]
+            glVertex2f(x - self.x_c[0], 0)
+            for j in range(0, step - 1):
+                x += h
+                color += delta_color
+                self.color(color)
+                glVertex2f(x - self.x_c[0], 0)
+            self.color(color2)
+            glVertex2f(data[1][0] - self.x_c[0], 0)
+            glEnd()
 
     # Визуализация плоской задачи
     def __paint_2d__(self):
