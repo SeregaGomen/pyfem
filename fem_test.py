@@ -477,7 +477,58 @@ def plate3_test(res_name):
             return True
         return False
 
+
+def plate4_test(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/plate4-1.0.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_h(0.01)
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200000000], [0.27])
+        obj.add_boundary_condition('0', 'x = -0.5 or x = 0.5 or y = -0.5 or y = 0.5', DIR_1 | DIR_2 | DIR_3)
+        obj.add_surface_load('-50000', '', DIR_1)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            return True
+        return False
+
+
+def create_plate_mesh_4():
+    x_min = [-0.5, -0.5]
+    x_max = [0.5, 0.5]
+    n = 200
+    h = [(x_max[0] - x_min[0])/n, (x_max[1] - x_min[1])/n]
+    index = []
+    x = []
+    counter = 0
+    for i in range(0, n + 1):
+        c_index = []
+        for j in range(0, n + 1):
+            c_index.append(counter)
+            counter += 1
+            x.append([x_min[0] + i*h[0], x_min[1] + j*h[1]])
+        index.append(c_index)
+    print(index)
+
+    with open('mesh/plate4-1.0.trpa', 'w') as file:
+        file.write('124\n')
+        file.write(str(counter) + '\n')
+        for i in range(0, len(x)):
+            file.write(str(x[i][0]) + ' ' + str(x[i][1]) + '\n')
+        file.write(str(n**2) + '\n')
+        for i in range(0, len(index) - 1):
+            for j in range(0, len(index) - 1):
+                file.write(str(index[i][j]) + ' ' +str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' + str(index[i + 1][j]) + '\n')
+        file.write('0\n')
+    return
+
 if __name__ == "__main__":
+    create_plate_mesh_4()
+
+
     # beam('beam')
     # head3d('head3d')
     # cube('cube')
@@ -496,8 +547,9 @@ if __name__ == "__main__":
     # shell4('shell4')
     # shell_plate3('shell_plate3')
     # plate3('plate3')
-    shell3_test('shell3_test')
-    # plate3_test('plate_test')
+    # shell3_test('shell3_test')
+    # plate3_test('plate3_test')
+    plate4_test('plate4_test')
 
     # TPlot('console')
     # TPlot('tank3')
@@ -516,8 +568,9 @@ if __name__ == "__main__":
     # TPlot('shell4')
     # TPlot('shell_plate3')
     # TPlot('plate3')
-    TPlot('shell3_test')
-    # TPlot('plate_test')
+    # TPlot('shell3_test')
+    # TPlot('plate3_test')
+    TPlot('plate4_test')
 
 
 """

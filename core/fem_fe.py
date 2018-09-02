@@ -714,7 +714,7 @@ class TFE2D4P(TFE2D4):
                  -shape[3], 0]
             ])
             local_k += (b1.conj().transpose().dot(cb).dot(b1) +
-                        b2.conj().transpose().dot(cs).dot(b2))*jacobian*self.__w__[i]*0.5
+                        b2.conj().transpose().dot(cs).dot(b2))*jacobian*self.__w__[i]
         return local_k
 
     # Формирование локальных матриц жесткости, масс и демпфирования
