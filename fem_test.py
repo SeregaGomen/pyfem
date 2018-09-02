@@ -449,8 +449,10 @@ def shell3_test(res_name):
         obj.set_h(0.0369)
         obj.set_elasticity([203200000000], [0.27])
         obj.add_boundary_condition('0', 'z = 0 or z = 4.014', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('50000*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-5)', DIR_1)
-        obj.add_surface_load('50000*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-5)', DIR_2)
+        obj.add_surface_load('50000*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_1)
+        obj.add_surface_load('50000*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_2)
+#        obj.add_concentrated_load('50000*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-5)', DIR_1)
+#        obj.add_concentrated_load('50000*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-5)', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -494,7 +496,7 @@ if __name__ == "__main__":
     # shell4('shell4')
     # shell_plate3('shell_plate3')
     # plate3('plate3')
-    # shell3_test('shell3_test')
+    shell3_test('shell3_test')
     # plate3_test('plate_test')
 
     # TPlot('console')
@@ -503,10 +505,10 @@ if __name__ == "__main__":
     # TPlot('cylinder')
     # TPlot('quad')
     # TPlot('cube_test')
-    TPlot('console4')
+    # TPlot('console4')
     # TPlot('beam')
     # TPlot('plate4')
-    # TPlot('body1d')
+    # Plot('body1d')
     # TPlot('beam_dynamic')
     # TPlot('console_dynamic')
     # TPlot('cube')
@@ -514,7 +516,7 @@ if __name__ == "__main__":
     # TPlot('shell4')
     # TPlot('shell_plate3')
     # TPlot('plate3')
-    # TPlot('shell3_test')
+    TPlot('shell3_test')
     # TPlot('plate_test')
 
 

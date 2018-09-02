@@ -18,12 +18,6 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-import math
-import numpy as np
-from numpy import array
-from numpy.linalg import norm
-from numpy import cross
-
 
 class TMainWindow(QMainWindow):
     def __init__(self, file_name):
@@ -821,6 +815,10 @@ class TGLWidget(QWidget):
     # Визуализация пространственной задачи
     def __paint_3d__(self):
         # Изображение поверхности
+
+        self.transform_coeff = 5*1.0E+5
+
+
         for i in range(0, len(self.be)):
             tri = []
             for j in range(0, len(self.be[0])):

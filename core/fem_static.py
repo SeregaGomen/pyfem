@@ -10,6 +10,11 @@ from core.fem_fem import TFEM
 from core.fem_defs import DIR_1, DIR_2, DIR_3
 from core.fem_result import TResult
 
+from numpy.linalg import norm
+from numpy import cross
+from numpy import array
+
+
 
 class TFEMStatic(TFEM):
     def __init__(self):
@@ -94,6 +99,7 @@ class TFEMStatic(TFEM):
                     self.__global_load__[j*self.__mesh__.freedom + 1] += val
                 if self.__params__.bc_list[i].direct & DIR_3:
                     self.__global_load__[j*self.__mesh__.freedom + 2] += val
+
 
     # Вычисление поверхностных нагрузок
     def __prepare_surface_load__(self, t=0):
