@@ -496,6 +496,27 @@ def plate4_test(res_name):
         return False
 
 
+def shell4_test(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/shell4-1.0.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_h(0.0369)
+        obj.set_elasticity([203200000000], [0.27])
+        obj.add_boundary_condition('0', 'z = 0 or z = 4.014', DIR_1 | DIR_2 | DIR_3)
+        obj.add_surface_load('50000*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_1)
+        obj.add_surface_load('50000*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_2)
+#        obj.add_concentrated_load('50000*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-5)', DIR_1)
+#        obj.add_concentrated_load('50000*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-5)', DIR_2)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            return True
+        return False
+
+
 def create_plate_mesh_4():
     x_min = [-0.5, -0.5]
     x_max = [0.5, 0.5]
@@ -525,8 +546,47 @@ def create_plate_mesh_4():
         file.write('0\n')
     return
 
+import math
+
+
+def create_shell_mesh_4():
+    r = 3.98/2
+    height = 4.014
+    n_xy = 100
+    n_z = 50
+    d_fi = 2*math.pi/n_xy
+    d_h = height/n_z
+    index = []
+    x = []
+    counter = 0
+    for i in range(0, n_z + 1):
+        c_index = []
+        for j in range(0, n_xy):
+            c_index.append(counter)
+            counter += 1
+            x.append([r*math.cos(j*d_fi), r*math.sin(j*d_fi), i*d_h])
+        index.append(c_index)
+
+    print(index)
+    print(x)
+
+    with open('mesh/shell4-1.0.trpa', 'w') as file:
+        file.write('224\n')
+        file.write(str(counter) + '\n')
+        for i in range(0, len(x)):
+            file.write(str(x[i][0]) + ' ' + str(x[i][1]) + ' ' + str(x[i][2]) + '\n')
+        file.write(str(n_xy*n_z) + '\n')
+        for i in range(0, len(index) - 1):
+            for j in range(0, len(index[0]) - 1):
+                file.write(str(index[i][j]) + ' ' +str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' + str(index[i + 1][j]) + '\n')
+            file.write(str(index[i][j + 1]) + ' ' + str(index[i][0]) + ' ' + str(index[i + 1][0]) + ' ' + str(index[i + 1][j + 1]) + '\n')
+        file.write('0\n')
+    return
+
+
 if __name__ == "__main__":
-    create_plate_mesh_4()
+    create_shell_mesh_4()
+    # create_plate_mesh_4()
 
 
     # beam('beam')
@@ -549,7 +609,8 @@ if __name__ == "__main__":
     # plate3('plate3')
     # shell3_test('shell3_test')
     # plate3_test('plate3_test')
-    plate4_test('plate4_test')
+    # plate4_test('plate4_test')
+    shell4_test('shell4_test')
 
     # TPlot('console')
     # TPlot('tank3')
@@ -570,7 +631,8 @@ if __name__ == "__main__":
     # TPlot('plate3')
     # TPlot('shell3_test')
     # TPlot('plate3_test')
-    TPlot('plate4_test')
+    # TPlot('plate4_test')
+    TPlot('shell4_test')
 
 
 """
