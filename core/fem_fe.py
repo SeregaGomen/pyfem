@@ -1025,4 +1025,3 @@ class TFE2D4S(TFE2D4P, TFE2D4):
 #        self.x = array([x0, x1, x2, x3])
         TFE2D4.__create__(self)
 #        self.x = x
-
