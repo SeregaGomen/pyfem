@@ -71,7 +71,7 @@ class TMesh:
             tx.append(float(lines[2 + i].split()[0]))
             if self.dimension > 1:
                 tx.append(float(lines[2 + i].split()[1]))
-            if self.dimension > 2:
+            if self.dimension > 2 and not self.is_plate():
                 tx.append(float(lines[2 + i].split()[2]))
             self.x.append(tx)
             index += 1

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import math
 from core.fem_defs import DIR_1, DIR_2, DIR_3, INIT_U, INIT_V, INIT_W, INIT_U_T, INIT_V_T, INIT_W_T, INIT_U_T_T, \
     INIT_V_T_T, INIT_W_T_T
 from core.fem_object import TObject
@@ -447,12 +448,10 @@ def shell3_test(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_h(0.0369)
-        obj.set_elasticity([203200000000], [0.27])
+        obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z = 0 or z = 4.014', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('50000*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_1)
-        obj.add_surface_load('50000*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_2)
-#        obj.add_concentrated_load('50000*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-5)', DIR_1)
-#        obj.add_concentrated_load('50000*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-5)', DIR_2)
+        obj.add_surface_load('0.05*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_1)
+        obj.add_surface_load('0.05*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -462,15 +461,16 @@ def shell3_test(res_name):
 
 def plate3_test(res_name):
     obj = TObject()
-    if obj.set_mesh('mesh/plate3-1.0.trpa'):
+    if obj.set_mesh('mesh/plate3_1_0.trpa'):
+#    if obj.set_mesh('mesh/plate3.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_h(0.01)
         obj.set_width(10)
         obj.set_precision(5)
-        obj.set_elasticity([203200000000], [0.27])
+        obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'x = -0.5 or x = 0.5 or y = -0.5 or y = 0.5', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('-50000', '', DIR_1)
+        obj.add_surface_load('0.05', '', DIR_1)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -480,15 +480,16 @@ def plate3_test(res_name):
 
 def plate4_test(res_name):
     obj = TObject()
-    if obj.set_mesh('mesh/plate4-1.0.trpa'):
+#    if obj.set_mesh('mesh/plate4-1.0.trpa'):
+    if obj.set_mesh('mesh/plate4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_h(0.01)
         obj.set_width(10)
         obj.set_precision(5)
-        obj.set_elasticity([203200000000], [0.27])
+        obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'x = -0.5 or x = 0.5 or y = -0.5 or y = 0.5', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('-50000', '', DIR_1)
+        obj.add_surface_load('0.05', '', DIR_1)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -504,10 +505,10 @@ def shell4_test(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_h(0.0369)
-        obj.set_elasticity([203200000000], [0.27])
+        obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z = 0 or z = 4.014', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('50000*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_1)
-        obj.add_surface_load('50000*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_2)
+        obj.add_surface_load('0.05*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_1)
+        obj.add_surface_load('0.05*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_2)
 #        obj.add_concentrated_load('50000*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-5)', DIR_1)
 #        obj.add_concentrated_load('50000*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-5)', DIR_2)
         if obj.calc():
@@ -534,6 +535,21 @@ def tube_test(res_name):
             return True
         return False
 
+def plate3d(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/plate3d.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200000000], [0.27])
+        obj.add_boundary_condition('0', 'x = -0.5 or x = 0.5 or y = -0.5 or y = 0.5', DIR_1 | DIR_2 | DIR_3)
+        obj.add_surface_load('-50000', 'z = 0', DIR_3)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            return True
+        return False
 
 def create_plate_mesh_4():
     x_min = [-0.5, -0.5]
@@ -558,11 +574,10 @@ def create_plate_mesh_4():
         file.write(str(n**2) + '\n')
         for i in range(0, len(index) - 1):
             for j in range(0, len(index) - 1):
-                file.write(str(index[i][j]) + ' ' +str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' + str(index[i + 1][j]) + '\n')
+                file.write(str(index[i][j]) + ' ' +str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' +
+                           str(index[i + 1][j]) + '\n')
         file.write('0\n')
     return
-
-import math
 
 
 def create_shell_mesh_4():
@@ -590,8 +605,10 @@ def create_shell_mesh_4():
         file.write(str(n_xy*n_z) + '\n')
         for i in range(0, len(index) - 1):
             for j in range(0, len(index[0]) - 1):
-                file.write(str(index[i][j]) + ' ' +str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' + str(index[i + 1][j]) + '\n')
-            file.write(str(index[i][j + 1]) + ' ' + str(index[i][0]) + ' ' + str(index[i + 1][0]) + ' ' + str(index[i + 1][j + 1]) + '\n')
+                file.write(str(index[i][j]) + ' ' +str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' +
+                           str(index[i + 1][j]) + '\n')
+            file.write(str(index[i][j + 1]) + ' ' + str(index[i][0]) + ' ' + str(index[i + 1][0]) + ' ' +
+                       str(index[i + 1][j + 1]) + '\n')
         file.write('0\n')
     return
 
@@ -599,8 +616,6 @@ def create_shell_mesh_4():
 if __name__ == "__main__":
     # create_shell_mesh_4()
     # create_plate_mesh_4()
-
-
     # beam('beam')
     # head3d('head3d')
     # cube('cube')
@@ -621,9 +636,10 @@ if __name__ == "__main__":
     # plate3('plate3')
     # plate3_test('plate3_test')
     # plate4_test('plate4_test')
-    shell4_test('shell4_test')
-    # shell3_test('shell3_test')
+    # shell4_test('shell4_test')
+    shell3_test('shell3_test')
     # tube_test('tube_test')
+    # plate3d('plate3d')
 
     # TPlot('console')
     # TPlot('tank3')
@@ -634,7 +650,7 @@ if __name__ == "__main__":
     # TPlot('console4')
     # TPlot('beam')
     # TPlot('plate4')
-    # Plot('body1d')
+    # TPlot('body1d')
     # TPlot('beam_dynamic')
     # TPlot('console_dynamic')
     # TPlot('cube')
@@ -644,9 +660,10 @@ if __name__ == "__main__":
     # TPlot('plate3')
     # TPlot('plate3_test')
     # TPlot('plate4_test')
-    TPlot('shell4_test')
-    # TPlot('shell3_test')
+    # TPlot('shell4_test')
+    TPlot('shell3_test')
     # TPlot('tube_test')
+    # TPlot('plate3d')
 
 
 """

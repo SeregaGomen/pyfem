@@ -180,18 +180,17 @@ class TFEMStatic(TFEM):
         counter = [0]*len(self.__mesh__.x)  # Счетчик кол-ва вхождения узлов для осреднения результатов
         # Копируем полученные перемещения
         for i in range(0, len(self.__mesh__.x)):
-            for j in range(0, self.__mesh__.freedom):
-                if self.__mesh__.is_plate():  # Для пластин перемещения меняются местами и вычисляются u и v
-                    if j < 2:
-                        res[j][i] = -self.__global_load__[i * self.__mesh__.freedom + j + 1] * \
-                                    self.__global_load__[i * self.__mesh__.freedom + 0]
-                    else:
-                        res[j][i] = self.__global_load__[i * self.__mesh__.freedom + 0]
-                else:
+            if self.__mesh__.is_plate():  # Для пластин перемещения меняются местами и вычисляются u и v
+                res[0][i] = self.__global_load__[i*self.__mesh__.freedom + 1]   # u (Tau_x)
+                res[1][i] = self.__global_load__[i*self.__mesh__.freedom + 2]   # v (Tau_y)
+                res[2][i] = self.__global_load__[i*self.__mesh__.freedom + 0]   # w
+            else:
+                for j in range(0, self.__mesh__.freedom):
                     res[j][i] = self.__global_load__[i * self.__mesh__.freedom + j]
         # Вычисляем стандартные результаты по всем КЭ
         fe = self.__create_fe__()
         fe.set_elasticity(self.__params__.e, self.__params__.m)
+        fe.set_h(self.__params__.h)
         self.__progress__.set_process('Calculation results...', 1, len(self.__mesh__.fe))
         for i in range(0, len(self.__mesh__.fe)):
             self.__progress__.set_progress(i + 1)
@@ -202,9 +201,10 @@ class TFEMStatic(TFEM):
                     uvw[j * self.__mesh__.freedom + k] = \
                         self.__global_load__[self.__mesh__.freedom*self.__mesh__.fe[i][j] + k]
             r = fe.calc(uvw)
+            offset = 3 if self.__mesh__.is_shell() else self.__mesh__.freedom
             for m in range(0, len(r)):
                 for j in range(0, len(r[0])):
-                    res[self.__mesh__.freedom + m][self.__mesh__.fe[i][j]] += r[m][j]
+                    res[offset + m][self.__mesh__.fe[i][j]] += r[m][j]
                     if not m:
                         counter[self.__mesh__.fe[i][j]] += 1
         # Осредняем результаты
@@ -301,14 +301,7 @@ class TFEMStatic(TFEM):
         elif self.__mesh__.freedom == 2:
             # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy
             res = 8
-        elif self.__mesh__.freedom == 3:
-            if self.__mesh__.is_plate():
-                # u, v, w, Exx, Eyy, Exy, Sxx, Syy, Sxy
-                res = 9
-            else:
-                # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz
-                res = 15
-        elif self.__mesh__.freedom == 6:
+        elif self.__mesh__.freedom == 3 or self.__mesh__.freedom == 6:
             # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz
             res = 15
         return res
@@ -320,19 +313,12 @@ class TFEMStatic(TFEM):
         index1 = [4, 7, 13]
         # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy
         index2 = [4, 5, 7, 8, 10, 13, 14, 16]
-        # u, v, w, Exx, Eyy, Exy, Sxx, Syy, Sxy
-        index3 = [4, 5, 6, 7, 8, 10, 13, 14, 16]
         # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz
-        index4 = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+        index3 = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
         if self.__mesh__.freedom == 1:
             ret = index1[i]
         elif self.__mesh__.freedom == 2:
             ret = index2[i]
-        elif self.__mesh__.freedom == 3:
-            if self.__mesh__.is_plate():
-                ret = index3[i]
-            else:
-                ret = index4[i]
-        elif self.__mesh__.freedom == 6:
-            ret = index4[i]
+        elif self.__mesh__.freedom == 3 or self.__mesh__.freedom == 6:
+            ret = index3[i]
         return ret

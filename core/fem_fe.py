@@ -100,7 +100,6 @@ class TFE:
         return [[]], [[]]
 
 
-
 # Линейный (двухузловой) одномерный КЭ
 class TFE1D2(TFE):
     def __init__(self):
@@ -174,19 +173,17 @@ class TFE2D3(TFE):
         m = self.m[0]
         g = self.e[0]/(2.0 + 2.0*m)
         k = self.e[0]/(1.0 - m**2)
-        dx = zeros((self.size, self.size))
-        dy = zeros((self.size, self.size))
         res = zeros((6, self.size))
         for i in range(0, self.size):
             for j in range(0, self.size):
-                dx[i][j] = self.a[j][1]
-                dy[i][j] = self.a[j][2]
-                res[0][i] += u[2*j]*dx[i][j]
-                res[1][i] += u[2*j + 1]*dy[i][j]
-                res[2][i] += u[2*j]*dy[i][j] + u[2*j + 1]*dx[i][j]
-                res[3][i] += k*(u[2*j]*dx[i][j] + m*u[2*j + 1]*dy[i][j])
-                res[4][i] += k*(u[2*j + 1]*dy[i][j] + m*u[2*j]*dx[i][j])
-                res[5][i] += g*(u[2*j]*dy[i][j] + u[2*j + 1]*dx[i][j])
+                dx = self.a[j][1]
+                dy = self.a[j][2]
+                res[0][i] += u[2*j]*dx
+                res[1][i] += u[2*j + 1]*dy
+                res[2][i] += u[2*j]*dy + u[2*j + 1]*dx
+                res[3][i] += k*(u[2*j]*dx + m*u[2*j + 1]*dy)
+                res[4][i] += k*(u[2*j + 1]*dy + m*u[2*j]*dx)
+                res[5][i] += g*(u[2*j]*dy + u[2*j + 1]*dx)
         return res
 
     # Формирование локальной матриц жесткости
@@ -206,7 +203,7 @@ class TFE2D3(TFE):
             [0.0, shape_dy[0], 0.0, shape_dy[1], 0.0, shape_dy[2]],
             [shape_dy[0], shape_dx[0], shape_dy[1], shape_dx[1], shape_dy[2], shape_dx[2]]
         ])
-        return b.conj().transpose().dot(d).dot(b)*self.__square__()
+        return b.conj().transpose().dot(d).dot(b)*self.__square__()*self.h
 
     # Формирование локальных матриц масс и демпфирования
     def _generate_mass_damping_matrix_(self):
@@ -256,30 +253,24 @@ class TFE3D4(TFE):
     def calc(self, u):
         g = self.e[0]/(2.0 + 2.0*self.m[0])
         k = 2.0*self.m[0]*g/(1.0 - 2.0*self.m[0])
-        dx = zeros((self.size, self.size))
-        dy = zeros((self.size, self.size))
-        dz = zeros((self.size, self.size))
         res = zeros((12, self.size))
         for i in range(0, self.size):
             for j in range(0, self.size):
-                dx[i][j] = self.a[j][1]
-                dy[i][j] = self.a[j][2]
-                dz[i][j] = self.a[j][3]
-                res[0][i] += u[3*j]*dx[i][j]
-                res[1][i] += u[3*j + 1]*dy[i][j]
-                res[2][i] += u[3*j + 2]*dz[i][j]
-                res[3][i] += u[3*j]*dy[i][j] + u[3*j + 1]*dx[i][j]
-                res[4][i] += u[3*j]*dz[i][j] + u[3*j + 2]*dx[i][j]
-                res[5][i] += u[3*j + 1]*dz[i][j] + u[3*j + 2]*dy[i][j]
-                res[6][i] += 2.0*g*u[3*j]*dx[i][j] + k*(
-                            u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
-                res[7][i] += 2.0*g*u[3*j + 1]*dy[i][j] + k*(
-                            u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
-                res[8][i] += 2.0*g*u[3*j + 2]*dz[i][j] + k*(
-                            u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
-                res[9][i] += g*(u[3*j]*dy[i][j] + u[3*j + 1]*dx[i][j])
-                res[10][i] += g*(u[3*j]*dz[i][j] + u[3*j + 2]*dx[i][j])
-                res[11][i] += g*(u[3*j + 1]*dz[i][j] + u[3*j + 2]*dy[i][j])
+                dx = self.a[j][1]
+                dy = self.a[j][2]
+                dz = self.a[j][3]
+                res[0][i] += u[3*j]*dx
+                res[1][i] += u[3*j + 1]*dy
+                res[2][i] += u[3*j + 2]*dz
+                res[3][i] += u[3*j]*dy + u[3*j + 1]*dx
+                res[4][i] += u[3*j]*dz + u[3*j + 2]*dx
+                res[5][i] += u[3*j + 1]*dz + u[3*j + 2]*dy
+                res[6][i] += 2.0*g*u[3*j]*dx + k*(u[3*j]*dx + u[3*j + 1]*dy + u[3*j + 2]*dz)
+                res[7][i] += 2.0*g*u[3*j + 1]*dy + k*(u[3*j]*dx + u[3*j + 1]*dy + u[3*j + 2]*dz)
+                res[8][i] += 2.0*g*u[3*j + 2]*dz + k*(u[3*j]*dx + u[3*j + 1]*dy + u[3*j + 2]*dz)
+                res[9][i] += g*(u[3*j]*dy + u[3*j + 1]*dx)
+                res[10][i] += g*(u[3*j]*dz + u[3*j + 2]*dx)
+                res[11][i] += g*(u[3*j + 1]*dz + u[3*j + 2]*dy)
         return res
 
     # Формирование локальной матрицы жесткости
@@ -364,19 +355,17 @@ class TFE2D4(TFE):
         m = self.m[0]
         g = self.e[0]/(2.0 + 2.0*m)
         k = self.e[0]/(1.0 - m**2)
-        dx = zeros((self.size, self.size))
-        dy = zeros((self.size, self.size))
         res = zeros((6, self.size))
         for i in range(0, self.size):
             for j in range(0, self.size):
-                dx[i][j] = self.a[j][1] + self.a[j][3]*self.x[i][1]
-                dy[i][j] = self.a[j][2] + self.a[j][3]*self.x[i][0]
-                res[0][i] += u[2*j]*dx[i][j]
-                res[1][i] += u[2*j + 1]*dy[i][j]
-                res[2][i] += u[2*j]*dy[i][j] + u[2*j + 1]*dx[i][j]
-                res[3][i] += k*(u[2*j]*dx[i][j] + m*u[2*j + 1]*dy[i][j])
-                res[4][i] += k*(u[2*j + 1]*dy[i][j] + m*u[2*j]*dx[i][j])
-                res[5][i] += g*(u[2*j]*dy[i][j] + u[2*j + 1]*dx[i][j])
+                dx = self.a[j][1] + self.a[j][3]*self.x[i][1]
+                dy = self.a[j][2] + self.a[j][3]*self.x[i][0]
+                res[0][i] += u[2*j]*dx
+                res[1][i] += u[2*j + 1]*dy
+                res[2][i] += u[2*j]*dy + u[2*j + 1]*dx
+                res[3][i] += k*(u[2*j]*dx + m*u[2*j + 1]*dy)
+                res[4][i] += k*(u[2*j + 1]*dy + m*u[2*j]*dx)
+                res[5][i] += g*(u[2*j]*dy + u[2*j + 1]*dx)
         return res
 
     # Изопараметрические функции формы и их производные
@@ -434,7 +423,7 @@ class TFE2D4(TFE):
                 [0.0, shape_dy[0], 0.0, shape_dy[1], 0.0, shape_dy[2], 0.0, shape_dy[3]],
                 [shape_dy[0], shape_dx[0], shape_dy[1], shape_dx[1], shape_dy[2], shape_dx[2], shape_dy[3], shape_dx[3]]
             ])
-            local_k += b.conj().transpose().dot(d).dot(b)*jacobian*self.__w__[i]
+            local_k += b.conj().transpose().dot(d).dot(b)*jacobian*self.__w__[i]*self.h
         return local_k
 
     # Формирование локальных матриц масс и демпфирования
@@ -501,33 +490,27 @@ class TFE3D8(TFE):
     def calc(self, u):
         g = self.e[0]/(2.0 + 2.0*self.m[0])
         k = 2.0*self.m[0]*g/(1.0 - 2.0*self.m[0])
-        dx = zeros((self.size, self.size))
-        dy = zeros((self.size, self.size))
-        dz = zeros((self.size, self.size))
         res = zeros((12, self.size))
         for i in range(0, self.size):
             for j in range(0, self.size):
-                dx[i][j] = (self.a[j][1] + self.a[j][4]*self.x[i][1]) + \
-                           (self.a[j][5]*self.x[i][2] + self.a[j][7]*self.x[i][1]*self.x[i][2])
-                dy[i][j] = (self.a[j][2] + self.a[j][4]*self.x[i][0]) + \
+                dx = (self.a[j][1] + self.a[j][4]*self.x[i][1]) + \
+                     (self.a[j][5]*self.x[i][2] + self.a[j][7]*self.x[i][1]*self.x[i][2])
+                dy = (self.a[j][2] + self.a[j][4]*self.x[i][0]) + \
                            (self.a[j][6]*self.x[i][2] + self.a[j][7]*self.x[i][0]*self.x[i][2])
-                dz[i][j] = (self.a[j][3] + self.a[j][5]*self.x[i][0]) + \
+                dz = (self.a[j][3] + self.a[j][5]*self.x[i][0]) + \
                            (self.a[j][6]*self.x[i][1] + self.a[j][7]*self.x[i][0]*self.x[i][1])
-                res[0][i] += u[3*j]*dx[i][j]
-                res[1][i] += u[3*j + 1]*dy[i][j]
-                res[2][i] += u[3*j + 2]*dz[i][j]
-                res[3][i] += u[3*j]*dy[i][j] + u[3*j + 1]*dx[i][j]
-                res[4][i] += u[3*j]*dz[i][j] + u[3*j + 2]*dx[i][j]
-                res[5][i] += u[3*j + 1]*dz[i][j] + u[3*j + 2]*dy[i][j]
-                res[6][i] += 2.0*g*u[3*j]*dx[i][j] + k*(
-                            u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
-                res[7][i] += 2.0*g*u[3*j + 1]*dy[i][j] + k*(
-                            u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
-                res[8][i] += 2.0*g*u[3*j + 2]*dz[i][j] + k*(
-                            u[3*j]*dx[i][j] + u[3*j + 1]*dy[i][j] + u[3*j + 2]*dz[i][j])
-                res[9][i] += g*(u[3*j]*dy[i][j] + u[3*j + 1]*dx[i][j])
-                res[10][i] += g*(u[3*j]*dz[i][j] + u[3*j + 2]*dx[i][j])
-                res[11][i] += g*(u[3*j + 1]*dz[i][j] + u[3*j + 2]*dy[i][j])
+                res[0][i] += u[3*j]*dx
+                res[1][i] += u[3*j + 1]*dy
+                res[2][i] += u[3*j + 2]*dz
+                res[3][i] += u[3*j]*dy + u[3*j + 1]*dx
+                res[4][i] += u[3*j]*dz + u[3*j + 2]*dx
+                res[5][i] += u[3*j + 1]*dz + u[3*j + 2]*dy
+                res[6][i] += 2.0*g*u[3*j]*dx + k*(u[3*j]*dx + u[3*j + 1]*dy + u[3*j + 2]*dz)
+                res[7][i] += 2.0*g*u[3*j + 1]*dy + k*(u[3*j]*dx + u[3*j + 1]*dy + u[3*j + 2]*dz)
+                res[8][i] += 2.0*g*u[3*j + 2]*dz + k*(u[3*j]*dx + u[3*j + 1]*dy + u[3*j + 2]*dz)
+                res[9][i] += g*(u[3*j]*dy + u[3*j + 1]*dx)
+                res[10][i] += g*(u[3*j]*dz + u[3*j + 2]*dx)
+                res[11][i] += g*(u[3*j + 1]*dz + u[3*j + 2]*dy)
         return res
 
     # Изопараметрические функции формы и их производные
@@ -673,20 +656,25 @@ class TFE2D4P(TFE2D4):
         super().__init__()
 
     def calc(self, u):
-        d = self.e[0]*self.h**3/(1 - self.m[0]**2)/12.0
-        dx = zeros((self.size, self.size))
-        dy = zeros((self.size, self.size))
-        res = zeros((6, self.size))
+        k = 0.5*self.e[0]/(1.0 - self.m[0]**2)
+        g = 0.5*self.e[0]/(1.0 + self.m[0])
+        res = zeros((12, self.size))
         for i in range(0, self.size):
             for j in range(0, self.size):
-                dx[i][j] = self.a[j][1] + self.a[j][3]*self.x[i][1]
-                dy[i][j] = self.a[j][2] + self.a[j][3]*self.x[i][0]
-                res[0][i] += u[2*j + 1]*dx[i][j]
-                res[1][i] += u[2*j + 2]*dy[i][j]
-                res[2][i] += u[2*j + 1]*dy[i][j] + u[2*j + 2]*dx[i][j]
-                res[3][i] += d*(u[2*j + 1]*dx[i][j] + self.m[0]*u[2*j + 2]*dy[i][j])
-                res[4][i] += d*(u[2*j + 2]*dy[i][j] + self.m[0]*u[2*j + 1]*dx[i][j])
-                res[5][i] += 2.0*(1.0 - self.m[0])*d*(u[2*j + 1]*dy[i][j] + u[2*j + 2]*dx[i][j])
+                n = 1.0 if i == j else 0.0
+                dx = self.a[j][1] + self.a[j][3]*self.x[i][1]
+                dy = self.a[j][2] + self.a[j][3]*self.x[i][0]
+                res[0][i] += -u[3*j + 2]*dx                                 # Exx
+                res[1][i] += u[3*j + 1]*dy                                  # Eyy
+                res[3][i] += (u[3*j + 1]*dy - u[3*j + 2]*dx)                # Exy
+                res[4][i] += (u[3*j + 0]*dx + u[3*j + 2]*n)                 # Exz
+                res[5][i] += (u[3*j + 0]*dy - u[3*j + 1]*n)                 # Eyz
+
+                res[6][i] += k*(-u[3*j + 2]*dx + self.m[0]*u[3*j + 1]*dy)   # Sxx
+                res[7][i] += k*(-self.m[0]*u[3*j + 2]*dx + u[3*j + 1]*dy)   # Syy
+                res[9][i] += 0.5*g*(u[3*j + 1]*dx - u[3*j + 2]*dy)          # Sxy
+                res[10][i] += g*(u[3*j + 0]*dx + u[3*j + 2]*n)              # Sxz
+                res[11][i] += g*(u[3*j + 0]*dy - u[3*j + 1]*n)              # Syz
         return res
 
     # Формирование локальной матрицы жесткости
@@ -779,20 +767,25 @@ class TFE2D3P(TFE2D3):
         self.__w__ = [1.0, 1.0]
 
     def calc(self, u):
-        d = self.e[0]*self.h**3/(1 - self.m[0]**2)/12.0
-        dx = zeros((self.size, self.size))
-        dy = zeros((self.size, self.size))
-        res = zeros((6, self.size))
+        k = 0.5*self.e[0]/(1.0 - self.m[0]**2)
+        g = 0.5*self.e[0]/(1.0 + self.m[0])
+        res = zeros((12, self.size))
         for i in range(0, self.size):
             for j in range(0, self.size):
-                dx[i][j] = self.a[j][1]
-                dy[i][j] = self.a[j][2]
-                res[0][i] += u[2*j + 1]*dx[i][j]
-                res[1][i] += u[2*j + 2]*dy[i][j]
-                res[2][i] += u[2*j + 1]*dy[i][j] + u[2*j + 2]*dx[i][j]
-                res[3][i] += d*(u[2*j + 1]*dx[i][j] + self.m[0]*u[2*j + 2]*dy[i][j])
-                res[4][i] += d*(u[2*j + 2]*dy[i][j] + self.m[0]*u[2*j + 1]*dx[i][j])
-                res[5][i] += 2.0*d*(1.0 - self.m[0])*(u[2*j + 1]*dy[i][j] + u[2*j + 2]*dx[i][j])
+                n = 1 if i == j else 0
+                dx = self.a[j][1]
+                dy = self.a[j][2]
+                res[0][i] += -u[3*j + 2]*dx                                 # Exx
+                res[1][i] += u[3*j + 1]*dy                                  # Eyy
+                res[3][i] += (u[3*j + 1]*dy - u[3*j + 2]*dx)                # Exy
+                res[4][i] += (u[3*j + 0]*dx + u[3*j + 2]*n)                 # Exz
+                res[5][i] += (u[3*j + 0]*dy - u[3*j + 1]*n)                 # Eyz
+
+                res[6][i] += k*(-u[3*j + 2]*dx + self.m[0]*u[3*j + 1]*dy)   # Sxx
+                res[7][i] += k*(-self.m[0]*u[3*j + 2]*dx + u[3*j + 1]*dy)   # Syy
+                res[9][i] += 0.5*g*(u[3*j + 1]*dx - u[3*j + 2]*dy)          # Sxy
+                res[10][i] += g*(u[3*j + 0]*dx + u[3*j + 2]*n)              # Sxz
+                res[11][i] += g*(u[3*j + 0]*dy - u[3*j + 1]*n)              # Syz
         return res
 
     def __shape__(self, i):
@@ -875,7 +868,7 @@ class TFE2D3P(TFE2D3):
 
 
 # Треугольный КЭ оболочки
-class TFE2D3S(TFE2D3P, TFE2D3):
+class TFE2D3S(TFE2D3P):
     def __init__(self):
         super().__init__()
         self.size = 3
@@ -890,27 +883,7 @@ class TFE2D3S(TFE2D3P, TFE2D3):
         TFE2D3.__create__(self)
 #        self.x = x
 
-    def calc(self, u):
-        d = self.e[0]*self.h**3/(1 - self.m[0]**2)/12.0
-        dx = zeros((self.size, self.size))
-        dy = zeros((self.size, self.size))
-        res = zeros((6, self.size))
-        for i in range(0, self.size):
-            for j in range(0, self.size):
-                dx[i][j] = self.a[j][1]
-                dy[i][j] = self.a[j][2]
-                res[0][i] += u[2*j + 1]*dx[i][j]
-                res[1][i] += u[2*j + 2]*dy[i][j]
-                res[2][i] += u[2*j + 1]*dy[i][j] + u[2*j + 2]*dx[i][j]
-                res[3][i] += d*(u[2*j + 1]*dx[i][j] + self.m[0]*u[2*j + 2]*dy[i][j])
-                res[4][i] += d*(u[2*j + 2]*dy[i][j] + self.m[0]*u[2*j + 1]*dx[i][j])
-                res[5][i] += 2.0*d*(1.0 - self.m[0])*(u[2*j + 1]*dy[i][j] + u[2*j + 2]*dx[i][j])
-        return res
-
-    def _generate_stiffness_matrix_(self):
-        global_freedom = 6
-        local_k = identity(global_freedom*self.size)
-        # Создание матрицы преобразования
+    def __prepare_transform_matrix__(self):
         m = zeros((18, 18))
         for i in range(0, 3):
             for j in range(0, 3):
@@ -920,6 +893,60 @@ class TFE2D3S(TFE2D3P, TFE2D3):
                 m[i + 9][j + 9] = self.T[i][j]
                 m[i + 12][j + 12] = self.T[i][j]
                 m[i + 15][j + 15] = self.T[i][j]
+        return m
+
+    def calc(self, u):
+        # Подготовка матрицы преобразования
+        m = self.__prepare_transform_matrix__()
+        # Модифицируем перемещения
+        lu = m.dot(u)
+        # Вычисляем деформации и напряжения "мембранной" составляющей
+        membrane_u = []
+        for i in range(0, self.size):
+            membrane_u.append(lu[6*i])      # u
+            membrane_u.append(lu[6*i + 1])  # w
+        membrane_res = TFE2D3.calc(self, membrane_u)
+        # Вычисляем деформации и напряжения пластины
+        plate_u = []
+        for i in range(0, self.size):
+            plate_u.append(lu[6*i + 2])     # w
+            plate_u.append(lu[6*i + 3])     # Tx
+            plate_u.append(lu[6*i + 4])     # Ty
+        plate_res = TFE2D3P.calc(self, plate_u)
+        res = zeros((12, self.size))
+        for i in range(0, self.size):
+            ld = array([
+                [plate_res[0][i] + membrane_res[0][i], plate_res[3][i] + membrane_res[2][i], plate_res[4][i]],
+                [plate_res[3][i] + membrane_res[2][i], plate_res[1][i] + membrane_res[1][i], plate_res[5][i]],
+                [plate_res[4][i], plate_res[5][i], 0]
+            ])
+            ls = array([
+                [plate_res[6][i] + membrane_res[3][i], plate_res[9][i] + membrane_res[5][i], plate_res[10][i]],
+                [plate_res[9][i] + membrane_res[5][i], plate_res[7][i] + membrane_res[4][i], plate_res[11][i]],
+                [plate_res[10][i], plate_res[11][i], 0]
+            ])
+            gd = self.T.conj().transpose().dot(ld).dot(self.T)
+            gs = self.T.conj().transpose().dot(ls).dot(self.T)
+
+            res[0][i] = gd[0][0]    # Exx
+            res[1][i] = gd[1][1]    # Eyy
+            res[2][i] = gd[2][2]    # Ezz
+            res[3][i] = gd[0][1]    # Exy
+            res[4][i] = gd[0][2]    # Exz
+            res[5][i] = gd[1][2]    # Eyz
+            res[6][i] = gs[0][0]    # Sxx
+            res[7][i] = gs[1][1]    # Syy
+            res[8][i] = gs[2][2]    # Szz
+            res[9][i] = gs[0][1]    # Sxy
+            res[10][i] = gs[0][2]   # Sxz
+            res[11][i] = gs[1][2]   # Syz
+        return res
+
+    def _generate_stiffness_matrix_(self):
+        global_freedom = 6
+        local_k = identity(global_freedom*self.size)
+        # Создание матрицы преобразования
+        m = self.__prepare_transform_matrix__()
         # Локальная матрицыа жесткости плоского КЭ
         k1 = TFE2D3._generate_stiffness_matrix_(self)
         # ... КЭ пластины
@@ -936,10 +963,6 @@ class TFE2D3S(TFE2D3P, TFE2D3):
             for j in range(0, len(k2)):
                 q = (j//local_freedom2)*global_freedom + j % local_freedom2 + local_freedom1
                 local_k[p][q] = k2[i][j]
-        # Добавление фиктивных жесткостей
-#        for i in range(0, 6*self.size):
-#            if local_k[i][i] == 0:
-#                local_k[i][i] = 1
         return m.conj().transpose().dot(local_k).dot(m)
 
 
@@ -952,27 +975,53 @@ class TFE2D4S(TFE2D4P, TFE2D4):
         self.global_x = zeros((4, 4))
 
     def calc(self, u):
-        d = self.e[0]*self.h**3/(1 - self.m[0]**2)/12.0
-        dx = zeros((self.size, self.size))
-        dy = zeros((self.size, self.size))
-        res = zeros((6, self.size))
+        # Подготовка матрицы преобразования
+        m = self.__prepare_transform_matrix__()
+        # Модифицируем перемещения
+        lu = m.dot(u)
+        # Вычисляем деформации и напряжения "мембранной" составляющей
+        membrane_u = []
         for i in range(0, self.size):
-            for j in range(0, self.size):
-                dx[i][j] = self.a[j][1] + self.a[j][3]*self.x[i][1]
-                dy[i][j] = self.a[j][2] + self.a[j][3]*self.x[i][0]
-                res[0][i] += u[2*j + 1]*dx[i][j]
-                res[1][i] += u[2*j + 2]*dy[i][j]
-                res[2][i] += u[2*j + 1]*dy[i][j] + u[2*j + 2]*dx[i][j]
-                res[3][i] += d*(u[2*j + 1]*dx[i][j] + self.m[0]*u[2*j + 2]*dy[i][j])
-                res[4][i] += d*(u[2*j + 2]*dy[i][j] + self.m[0]*u[2*j + 1]*dx[i][j])
-                res[5][i] += 2.0*(1.0 - self.m[0])*d*(u[2*j + 1]*dy[i][j] + u[2*j + 2]*dx[i][j])
+            membrane_u.append(lu[6*i])      # u
+            membrane_u.append(lu[6*i + 1])  # w
+        membrane_res = TFE2D4.calc(self, membrane_u)
+        # Вычисляем деформации и напряжения пластины
+        plate_u = []
+        for i in range(0, self.size):
+            plate_u.append(lu[6*i + 2])     # w
+            plate_u.append(lu[6*i + 3])     # Tx
+            plate_u.append(lu[6*i + 4])     # Ty
+        plate_res = TFE2D4P.calc(self, plate_u)
+        res = zeros((12, self.size))
+        for i in range(0, self.size):
+            ld = array([
+                [plate_res[0][i] + membrane_res[0][i], plate_res[3][i] + membrane_res[2][i], plate_res[4][i]],
+                [plate_res[3][i] + membrane_res[2][i], plate_res[1][i] + membrane_res[1][i], plate_res[5][i]],
+                [plate_res[4][i], plate_res[5][i], 0]
+            ])
+            ls = array([
+                [plate_res[6][i] + membrane_res[3][i], plate_res[9][i] + membrane_res[5][i], plate_res[10][i]],
+                [plate_res[9][i] + membrane_res[5][i], plate_res[7][i] + membrane_res[4][i], plate_res[11][i]],
+                [plate_res[10][i], plate_res[11][i], 0]
+            ])
+            gd = self.T.conj().transpose().dot(ld).dot(self.T)
+            gs = self.T.conj().transpose().dot(ls).dot(self.T)
+
+            res[0][i] = gd[0][0]    # Exx
+            res[1][i] = gd[1][1]    # Eyy
+            res[2][i] = gd[2][2]    # Ezz
+            res[3][i] = gd[0][1]    # Exy
+            res[4][i] = gd[0][2]    # Exz
+            res[5][i] = gd[1][2]    # Eyz
+            res[6][i] = gs[0][0]    # Sxx
+            res[7][i] = gs[1][1]    # Syy
+            res[8][i] = gs[2][2]    # Szz
+            res[9][i] = gs[0][1]    # Sxy
+            res[10][i] = gs[0][2]   # Sxz
+            res[11][i] = gs[1][2]   # Syz
         return res
 
-    # Формирование локальной матрицы жесткости
-    def _generate_stiffness_matrix_(self):
-        global_freedom = 6
-        local_k = identity(global_freedom*self.size)
-        # Создание матрицы преобразования
+    def __prepare_transform_matrix__(self):
         m = zeros((24, 24))
         for i in range(0, 3):
             for j in range(0, 3):
@@ -984,7 +1033,14 @@ class TFE2D4S(TFE2D4P, TFE2D4):
                 m[i + 15][j + 15] = self.T[i][j]
                 m[i + 18][j + 18] = self.T[i][j]
                 m[i + 21][j + 21] = self.T[i][j]
+        return m
 
+    # Формирование локальной матрицы жесткости
+    def _generate_stiffness_matrix_(self):
+        global_freedom = 6
+        local_k = identity(global_freedom*self.size)
+        # Подготовка матрицы преобразования
+        m = self.__prepare_transform_matrix__()
         # Локальная матрицыа жесткости плоского КЭ
         k1 = TFE2D4._generate_stiffness_matrix_(self)
         # ... КЭ пластины
