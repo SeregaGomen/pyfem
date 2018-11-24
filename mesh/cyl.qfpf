@@ -1,0 +1,165 @@
+{
+    "Header": {
+        "DateTime": "2018-10-07T19:36:43.838",
+        "Object": "cyl",
+        "Title": "QFEM problem file"
+    },
+    "Mesh": {
+        "File": "D:/Work/python/pyfem/mesh/cyl.trpa"
+    },
+    "Parameters": {
+        "Accuracy": "1e-10",
+        "BoundaryConditions": [
+            {
+                "Direct": "1",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "8",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "64",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "2",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "16",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "128",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "4",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "32",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "256",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "4",
+                "Expression": "-1.0e+4*cos(atan2(y,z))",
+                "Predicate": "abs(y^2 + z^2 - 0.5^2) <= eps",
+                "Type": "5"
+            },
+            {
+                "Direct": "2",
+                "Expression": "-1.0e+4*sin(atan2(y,z))",
+                "Predicate": "abs(y^2 + z^2 - 0.5^2) <= eps",
+                "Type": "5"
+            },
+            {
+                "Direct": "4",
+                "Expression": "1.0e+4*cos(atan2(y,z))",
+                "Predicate": "abs(y^2 + z^2 - 0.25^2) <= eps",
+                "Type": "5"
+            },
+            {
+                "Direct": "2",
+                "Expression": "1.0e+4*sin(atan2(y,z))",
+                "Predicate": "abs(y^2 + z^2 - 0.25^2) <= eps",
+                "Type": "5"
+            },
+            {
+                "Direct": "7",
+                "Expression": "0",
+                "Predicate": "x=0",
+                "Type": "2"
+            },
+            {
+                "Direct": "7",
+                "Expression": "0",
+                "Predicate": "x=2",
+                "Type": "2"
+            }
+        ],
+        "DynamicParameters": {
+            "T0": "0",
+            "T1": "0",
+            "TH": "0",
+            "WilsonTheta": "1.37"
+        },
+        "GeometricalParameters": {
+            "Thickness": "1"
+        },
+        "Names": [
+            "x",
+            "y",
+            "z",
+            "t",
+            "U",
+            "V",
+            "W",
+            "Exx",
+            "Eyy",
+            "Ezz",
+            "Exy",
+            "Exz",
+            "Eyz",
+            "Sxx",
+            "Syy",
+            "Szz",
+            "Sxy",
+            "Sxz",
+            "Syz",
+            "Ut",
+            "Vt",
+            "Wt",
+            "Utt",
+            "Vtt",
+            "Wtt"
+        ],
+        "Nonlinearity": {
+            "CalculationMethod": 0,
+            "ForceStep": "0.01",
+            "MechanicalProperty": [
+            ]
+        },
+        "OutputParameters": {
+            "Precision": "5",
+            "Width": "12"
+        },
+        "PhysicalParameters": {
+            "Damping": "0",
+            "Density": "0",
+            "PoissonsRatio": "0.3",
+            "YoungsModulus": "6.5e+10"
+        },
+        "ProblemType": "Static",
+        "ThermalParameters": {
+            "Alpha": "0",
+            "dT": "0"
+        },
+        "Variables": [
+            "eps 1e-6"
+        ]
+    }
+}

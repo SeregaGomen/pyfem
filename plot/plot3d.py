@@ -485,7 +485,7 @@ class TGLWidget(QWidget):
         u = self.min_u
         h_u = (self.max_u - self.min_u)/float(self.num_color)
 
-        red = 0.3
+        red = 0.24
         for i in range(0, self.num_color):
             if i < step:
                 # фиолетовый-синий
