@@ -726,7 +726,7 @@ if __name__ == '__main__':
     # plate3('plate3')
     # plate3_test('plate3_test')
     # plate4_test('plate4_test')
-    # shell4_test('shell4_test')
+    shell4_test('shell4_test')
     # shell3_test('shell3_test')
     # tube_test('tube_test')
     # plate3d('plate3d')
@@ -751,11 +751,11 @@ if __name__ == '__main__':
     # TPlot('plate3')
     # TPlot('plate3_test')
     # TPlot('plate4_test')
-    # TPlot('shell4_test')
+    TPlot('shell4_test')
     # TPlot('shell3_test')
     # TPlot('tube_test')
     # TPlot('plate3d')
-    TPlot('tank3s')
+    # TPlot('tank3s')
 
 
 '''
