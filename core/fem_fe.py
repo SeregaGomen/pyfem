@@ -496,9 +496,9 @@ class TFE3D8(TFE):
                 dx = (self.a[j][1] + self.a[j][4]*self.x[i][1]) + \
                      (self.a[j][5]*self.x[i][2] + self.a[j][7]*self.x[i][1]*self.x[i][2])
                 dy = (self.a[j][2] + self.a[j][4]*self.x[i][0]) + \
-                           (self.a[j][6]*self.x[i][2] + self.a[j][7]*self.x[i][0]*self.x[i][2])
+                     (self.a[j][6]*self.x[i][2] + self.a[j][7]*self.x[i][0]*self.x[i][2])
                 dz = (self.a[j][3] + self.a[j][5]*self.x[i][0]) + \
-                           (self.a[j][6]*self.x[i][1] + self.a[j][7]*self.x[i][0]*self.x[i][1])
+                     (self.a[j][6]*self.x[i][1] + self.a[j][7]*self.x[i][0]*self.x[i][1])
                 res[0][i] += u[3*j]*dx
                 res[1][i] += u[3*j + 1]*dy
                 res[2][i] += u[3*j + 2]*dz

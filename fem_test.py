@@ -535,6 +535,95 @@ def tube_test(res_name):
             return True
         return False
 
+
+def tank3s(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/tank3s.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_elasticity([6.5E+10], [0.3])
+        obj.set_h(0.0015)
+        obj.add_variable('eps', 0.01)
+        obj.add_variable('L', 0.269)
+        obj.add_variable('P', 10000)
+        obj.add_variable('p', 5000)
+        obj.add_variable('R', 1.037)
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.add_boundary_condition('0', 'y = -0.643 and abs(x^2 + z^2 -1.641^2)<=eps', DIR_1 | DIR_2 | DIR_3)
+        obj.add_boundary_condition('0', 'abs(x) <= eps', DIR_1)
+        obj.add_boundary_condition('0', 'abs(z) <= eps', DIR_3)
+
+        obj.add_surface_load('P*cos(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x^2 + z^2 - R^2) <= eps)', DIR_1)
+        obj.add_surface_load('P*sin(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x^2 + z^2 - R^2) <= eps)', DIR_3)
+
+        obj.add_surface_load('P*cos(atan2(z,x))*sin(atan2((x^2 + z^2)^0.5,(y + L)))',
+                             '(y < -L) and (abs(x^2 + z^2 + (y + L)^2 - R^2) <= eps)', DIR_1)
+        obj.add_surface_load('P*cos(atan2((x^2 + z^2)^0.5,(y + L)))',
+                             '(y < -L) and (abs(x^2 + z^2 + (y + L)^2 - R^2) <= eps)', DIR_2)
+        obj.add_surface_load('P*sin(atan2(z,x))*sin(atan2((x^2 + z^2)^0.5,(y + L)))',
+                             '(y < -L) and (abs(x^2 + z^2 + (y + L)^2 - R^2) <= eps)', DIR_3)
+
+        obj.add_surface_load('P*cos(atan2(z,x))*sin(atan2((x^2 + z^2)^0.5,y))',
+                             '(y > 0) and (abs(x^2 + y^2 + z^2 - R^2) <= eps)', DIR_1)
+        obj.add_surface_load('P*cos(atan2((x^2 + z^2)^0.5,y))',
+                             '(y > 0) and (abs(x^2 + y^2 + z^2 - R^2) <= eps)', DIR_2)
+        obj.add_surface_load('P*sin(atan2(z,x))*sin(atan2((x^2 + z^2)^0.5,y))',
+                             '(y > 0) and (abs(x^2 + y^2 + z^2 - R^2) <= eps)', DIR_3)
+
+        obj.add_surface_load('-p*cos(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x^2 + z^2 - R^2) <= eps)', DIR_1)
+        obj.add_surface_load('-p*sin(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x^2 + z^2 - R^2) <= eps)', DIR_2)
+
+        obj.add_surface_load('-p*cos(atan2(z,x))*sin(atan2((x^2 + z^2)^0.5,(y + L)))',
+                             '(y < -L) and (abs(x^2 + z^2 + (y + L)^2 - R^2) <= eps)', DIR_1)
+        obj.add_surface_load('-p*cos(atan2((x^2 + z^2)^0.5,(y + L)))',
+                             '(y < -L) and (abs(x^2 + z^2 + (y + L)^2 - R^2) <= eps)', DIR_2)
+        obj.add_surface_load('-p*sin(atan2(z,x))*sin(atan2((x^2 + z^2)^0.5,(y + L)))',
+                             '(y < -L) and (abs(x^2 + z^2 + (y + L)^2 - R^2) <= eps)', DIR_3)
+
+        obj.add_surface_load('-p', '(y = -1.724) and (x^2+z^2 - 0.342^2 <= eps)', DIR_2)
+        obj.add_surface_load('-p', '(y = -1.944) and (x^2+z^2 - 0.660^2 <= eps)', DIR_2)
+
+        obj.add_surface_load('p*cos(atan2(z,x))', 'abs(y + 0.641) <= eps and abs(x^2 + z^2 - 1.643^2) <= eps', DIR_1)
+        obj.add_surface_load('p*sin(atan2(z,x))', 'abs(y + 0.641) <= eps and abs(x^2 + z^2 - 1.643^2) <= eps', DIR_2)
+
+        obj.add_surface_load('p*x*(1.0644108554^2)/(((x*(1.0644108554^2))^2+(y + 1.1013629509)^2 + '
+                             '(z*(1.0644108554^2))^2)^0.5)', '(y > -0.641 and y <-0.0234) and '
+                             'abs(y-((x^2+z^2)^0.5)*(-1.0644108554)-1.1013629509)<=eps', DIR_1)
+        obj.add_surface_load('p*(y+1.1013629509)/(((x*(1.0644108554^2))^2 + (y + 1.1013629509)^2 + '
+                             '(z*(1.0644108554^2))^2)^0.5)', '(y > -0.6431 and y < -0.0234) and '
+                             'abs(y-((x^2+z^2)^0.5)*(-1.0644108554)-1.1013629509)<=eps', DIR_2)
+        obj.add_surface_load('p*z*(1.0644108554^2)/(((x*(1.0644108554^2))^2 + (y + 1.1013629509)^2 + '
+                             '(z*(1.0644108554^2))^2)^0.5)', '(y>-0.6431 and y <-0.0234) and '
+                             'abs(y-((x^2+z^2)^0.5)*(-1.0644108554)-1.1013629509)<=eps', DIR_3)
+
+        obj.add_surface_load('-p*x*(1.0018498686^2)/(((x*(1.0018498686^2))^2 + (z*(1.0018498686^2))^2 + '
+                             '(y-1.3808172524)^2)^0.5)', '(y>-1.944 and y <-1.7235) and '
+                             'abs(y - ((x^2 + z^2)^0.5)*(-1.0018498686)+1.3808172524)<=eps', DIR_1)
+        obj.add_surface_load('p*(y-1.3808172524)/(((x*(1.0018498686^2))^2 + (z*(1.0018498686^2))^2 + '
+                             '(y - 1.3808172524)^2)^0.5)', '(y>-1.944 and y <-1.7235) and '
+                             'abs(y - ((x^2+z^2)^0.5)*(-1.0018498686)+1.3808172524)<=eps', DIR_2)
+        obj.add_surface_load('-p*z*(1.0018498686^2)/(((x*(1.0018498686^2))^2 + (z*(1.0018498686^2))^2 + '
+                             '(y - 1.3808172524)^2)^0.5)', '(y>-1.944 and y <-1.7235) and '
+                             'abs(y - ((x^2+z^2)^0.5)*(-1.0018498686)+1.3808172524)<=eps', DIR_3)
+
+        obj.add_surface_load('p*x*(1.3260378897^2)/(((3*x*(1.3260378897^2))^2 + (y - 2.8163434974)^2 + '
+                             '(3*z*(1.3260378897^2))^2)^0.5)', '(y>-1.944 and y < -0.6431) and '
+                             'abs(y-((x^2+z^2)^0.5)*(1.3260378897)+2.8163434974)<=eps', DIR_1)
+        obj.add_surface_load('p*(y-2.8163434974)/(((3*x*(1.3260378897^2))^2 + (y - 2.8163434974)^2 + '
+                             '(3*z*(1.3260378897^2))^2)^0.5)', '(y>-1.944 and y < -0.6431) and '
+                             'abs(y-((x^2+z^2)^0.5)*(1.3260378897)+2.8163434974)<=eps', DIR_2)
+        obj.add_surface_load('p*z*(1.3260378897^2)/(((3*x*(1.3260378897^2))^2+(y - 2.8163434974)^2 + '
+                             '(3*z*(1.3260378897^2))^2)^0.5)', '(y>-1.944 and y < -0.6431) and '
+                             'abs(y - ((x^2 + z^2)^0.5)*(1.3260378897) + 2.8163434974)<=eps', DIR_3)
+
+        if obj.calc():
+            obj.print_result('mesh/' + obj.object_name() + '.res')
+            obj.save_result(res_name)
+            return True
+        return False
+
+
 def plate3d(res_name):
     obj = TObject()
     if obj.set_mesh('mesh/plate3d.trpa'):
@@ -550,6 +639,7 @@ def plate3d(res_name):
             obj.save_result(res_name)
             return True
         return False
+
 
 def create_plate_mesh_4():
     x_min = [-0.5, -0.5]
@@ -613,7 +703,7 @@ def create_shell_mesh_4():
     return
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # create_shell_mesh_4()
     # create_plate_mesh_4()
     # beam('beam')
@@ -637,9 +727,10 @@ if __name__ == "__main__":
     # plate3_test('plate3_test')
     # plate4_test('plate4_test')
     # shell4_test('shell4_test')
-    shell3_test('shell3_test')
+    # shell3_test('shell3_test')
     # tube_test('tube_test')
     # plate3d('plate3d')
+    # tank3s('tank3s')
 
     # TPlot('console')
     # TPlot('tank3')
@@ -661,13 +752,14 @@ if __name__ == "__main__":
     # TPlot('plate3_test')
     # TPlot('plate4_test')
     # TPlot('shell4_test')
-    TPlot('shell3_test')
+    # TPlot('shell3_test')
     # TPlot('tube_test')
     # TPlot('plate3d')
+    TPlot('tank3s')
 
 
-"""
+'''
 2. Правильно отображать динамическую задачу в plot3d
 3. Рисовать оси координат
 4. Правильно рисовать маленькие величины (стержень) 
-"""
+'''
