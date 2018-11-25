@@ -818,7 +818,7 @@ class TGLWidget(QWidget):
     def __paint_3d__(self):
         # Изображение поверхности
 
-#        self.transform_coeff = 1.0E+5
+#        self.transform_coeff = 1.0E+3
 
 
         for i in range(0, len(self.be)):

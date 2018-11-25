@@ -541,6 +541,7 @@ def tank3s(res_name):
     if obj.set_mesh('mesh/tank3s.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
+#        obj.set_solve_method('iterative')
         obj.set_elasticity([6.5E+10], [0.3])
         obj.set_h(0.0015)
         obj.add_variable('eps', 0.01)
