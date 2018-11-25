@@ -499,7 +499,7 @@ def plate4_test(res_name):
 
 def shell4_test(res_name):
     obj = TObject()
-    if obj.set_mesh('mesh/shell4-1.0.trpa'):
+    if obj.set_mesh('mesh/shell4_1_0.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
@@ -726,11 +726,11 @@ if __name__ == '__main__':
     # plate3('plate3')
     # plate3_test('plate3_test')
     # plate4_test('plate4_test')
-    shell4_test('shell4_test')
+    # shell4_test('shell4_test')
     # shell3_test('shell3_test')
     # tube_test('tube_test')
     # plate3d('plate3d')
-    # tank3s('tank3s')
+    tank3s('tank3s')
 
     # TPlot('console')
     # TPlot('tank3')
@@ -751,11 +751,11 @@ if __name__ == '__main__':
     # TPlot('plate3')
     # TPlot('plate3_test')
     # TPlot('plate4_test')
-    TPlot('shell4_test')
+    # TPlot('shell4_test')
     # TPlot('shell3_test')
     # TPlot('tube_test')
     # TPlot('plate3d')
-    # TPlot('tank3s')
+    TPlot('tank3s')
 
 
 '''

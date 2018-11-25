@@ -22,7 +22,6 @@ from core.fem_defs import eps
 class TFE:
     def __init__(self):
         self.size = 0           # Размерность КЭ
-        self.freedom = 0        # Количество степеней свободы
         self.h = 1              # Толщина (для оболочек и пластин)
         self.density = 0        # Плотность
         self.damping = [0, 0]   # Параметры демпфирования
@@ -111,7 +110,6 @@ class TFE1D2(TFE):
     def __init__(self):
         super().__init__()
         self.size = 2
-        self.freedom = 1
 
     def __length__(self):
         return math.fabs(self.x[1][0] - self.x[0][0])
@@ -131,11 +129,14 @@ class TFE1D2(TFE):
         res[1][0] = res[1][1] = self.e[0]*(u[0]*self.a[0][1] + u[1]*self.a[1][1])
         return res
 
-    def _generate_stiffness_matrix_(self):
+    def __elastic_matrix__(self):
         return array([
             [1.0, -1.0],
             [-1.0, .0]
-        ])*self.e[0]/self.__length__()
+        ])*self.e[0]
+
+    def _generate_stiffness_matrix_(self):
+        return self.__elastic_matrix__()/self.__length__()
 
     # Формирование матрицы демпфирования по Релею
     def _generate_mass_damping_matrix_(self):
@@ -153,7 +154,6 @@ class TFE2D3(TFE):
     def __init__(self):
         super().__init__()
         self.size = 3
-        self.freedom = 2
 
     def __elastic_matrix__(self):
         # Матрица упругих свойст
@@ -166,15 +166,15 @@ class TFE2D3(TFE):
 
     def __gradient_matrix__(self):
         # Матрица градиентов
-        b = zeros([3, self.freedom*self.size])
+        b = zeros([3, 2*self.size])
         for i in range(0, self.size):
             # Производные функций формы
             dx = self.a[i][1]
             dy = self.a[i][2]
-            b[0][self.freedom*i + 0] = dx
-            b[1][self.freedom*i + 1] = dy
-            b[2][self.freedom*i + 0] = dy
-            b[2][self.freedom*i + 1] = dx
+            b[0][2*i + 0] = dx
+            b[1][2*i + 1] = dy
+            b[2][2*i + 0] = dy
+            b[2][2*i + 1] = dx
         return b
 
     def __square__(self):
@@ -234,7 +234,6 @@ class TFE3D4(TFE):
     def __init__(self):
         super().__init__()
         self.size = 4
-        self.freedom = 3
 
     def __elastic_matrix__(self):
         # Матрица упругих свойст
@@ -250,22 +249,22 @@ class TFE3D4(TFE):
 
     def __gradient_matrix__(self):
         # Матрица градиентов
-        b = zeros([6, self.size*self.freedom])
+        b = zeros([6, 3*self.size])
         for i in range(0, self.size):
             # Производные функций формы
             dx = self.a[i][1]
             dy = self.a[i][2]
             dz = self.a[i][3]
 
-            b[0][self.freedom*i + 0] = dx
-            b[1][self.freedom*i + 1] = dy
-            b[2][self.freedom*i + 2] = dz
-            b[3][self.freedom*i + 0] = dy
-            b[3][self.freedom*i + 1] = dx
-            b[4][self.freedom*i + 1] = dz
-            b[4][self.freedom*i + 2] = dy
-            b[5][self.freedom*i + 0] = dz
-            b[5][self.freedom*i + 2] = dx
+            b[0][3*i + 0] = dx
+            b[1][3*i + 1] = dy
+            b[2][3*i + 2] = dz
+            b[3][3*i + 0] = dy
+            b[3][3*i + 1] = dx
+            b[4][3*i + 1] = dz
+            b[4][3*i + 2] = dy
+            b[5][3*i + 0] = dz
+            b[5][3*i + 2] = dx
         return b
 
     def __volume__(self):
@@ -333,7 +332,6 @@ class TFE2D4(TFE):
     def __init__(self):
         super().__init__()
         self.size = 4
-        self.freedom = 2
         # Параметры квадратур Гаусса
         self.__xi__ = [-0.57735027, -0.57735027, 0.57735027, 0.57735027]
         self.__eta__ = [-0.57735027, 0.57735027, -0.57735027, 0.57735027]
@@ -370,14 +368,14 @@ class TFE2D4(TFE):
         res = zeros((6, self.size))
         for i in range(0, self.size):
             # Матрица градиентов
-            b = zeros([3, self.size*self.freedom])
+            b = zeros([3, 2*self.size])
             for j in range(0, self.size):
                 dx = self.a[j][1] + self.a[j][3] * self.x[i][1]
                 dy = self.a[j][2] + self.a[j][3] * self.x[i][0]
-                b[0][j*self.freedom + 0] = dx
-                b[1][j*self.freedom + 1] = dy
-                b[2][j*self.freedom + 0] = dy
-                b[2][j*self.freedom + 1] = dx
+                b[0][j*2 + 0] = dx
+                b[1][j*2 + 1] = dy
+                b[2][j*2 + 0] = dy
+                b[2][j*2 + 1] = dx
             e = b.dot(u)
             s = self.__elastic_matrix__().dot(e)
             for j in range(0, 3):
@@ -429,18 +427,18 @@ class TFE2D4(TFE):
             shape_dx = inverted_jacobi[0, 0]*shape_dxi + inverted_jacobi[0, 1]*shape_deta
             shape_dy = inverted_jacobi[1, 0]*shape_dxi + inverted_jacobi[1, 1]*shape_deta
             # Изопараметрическвая матрица градиентов
-            b = zeros([3, self.freedom*self.size])
+            b = zeros([3, 2*self.size])
             for j in range(0, self.size):
-                b[0][j*self.freedom + 0] = shape_dx[j]
-                b[1][j*self.freedom + 1] = shape_dy[j]
-                b[2][j*self.freedom + 0] = shape_dy[j]
-                b[2][j*self.freedom + 1] = shape_dx[j]
+                b[0][j*2 + 0] = shape_dx[j]
+                b[1][j*2 + 1] = shape_dy[j]
+                b[2][j*2 + 0] = shape_dy[j]
+                b[2][j*2 + 1] = shape_dx[j]
             local_k += b.conj().transpose().dot(self.__elastic_matrix__()).dot(b)*jacobian*self.__w__[i]*self.h
         return local_k
 
     # Формирование локальных матриц масс и демпфирования
     def _generate_mass_damping_matrix_(self):
-        local_m = zeros((self.freedom*self.size, self.freedom*self.size))
+        local_m = zeros((2*self.size, 2*self.size))
         # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(self.__w__)):
             # Изопараметрические функции формы и их производные
@@ -470,7 +468,6 @@ class TFE3D8(TFE):
     def __init__(self):
         super().__init__()
         self.size = 8
-        self.freedom = 3
         # Параметры квадратур Гаусса
         self.__xi__ = [-0.57735027, -0.57735027, -0.57735027, -0.57735027,
                        0.57735027, 0.57735027, 0.57735027, 0.57735027]
@@ -515,23 +512,23 @@ class TFE3D8(TFE):
         res = zeros((12, self.size))
         for i in range(0, self.size):
             # Матрица градиентов
-            b = zeros([6, self.size*self.freedom])
+            b = zeros([6, 3*self.size])
             for j in range(0, self.size):
                 dx = self.a[j][1] + self.a[j][4] * self.x[i][1] + self.a[j][5] * self.x[i][2] + \
-                     self.a[j][7] * self.x[i][1] * self.x[i][2]
+                    self.a[j][7] * self.x[i][1] * self.x[i][2]
                 dy = self.a[j][2] + self.a[j][4] * self.x[i][0] + self.a[j][6] * self.x[i][2] + \
-                     self.a[j][7] * self.x[i][0] * self.x[i][2]
+                    self.a[j][7] * self.x[i][0] * self.x[i][2]
                 dz = self.a[j][3] + self.a[j][5] * self.x[i][0] + self.a[j][6] * self.x[i][1] + \
-                     self.a[j][7] * self.x[i][0] * self.x[i][1]
-                b[0][j*self.freedom + 0] = dx
-                b[1][j*self.freedom + 1] = dy
-                b[2][j*self.freedom + 2] = dz
-                b[3][j*self.freedom + 0] = dy
-                b[3][j*self.freedom + 1] = dx
-                b[4][j*self.freedom + 1] = dz
-                b[4][j*self.freedom + 2] = dy
-                b[5][j*self.freedom + 0] = dz
-                b[5][j*self.freedom + 2] = dx
+                    self.a[j][7] * self.x[i][0] * self.x[i][1]
+                b[0][j*3 + 0] = dx
+                b[1][j*3 + 1] = dy
+                b[2][j*3 + 2] = dz
+                b[3][j*3 + 0] = dy
+                b[3][j*3 + 1] = dx
+                b[4][j*3 + 1] = dz
+                b[4][j*3 + 2] = dy
+                b[5][j*3 + 0] = dz
+                b[5][j*3 + 2] = dx
             e = b.dot(u)
             s = self.__elastic_matrix__().dot(e)
             for j in range(0, 6):
@@ -590,7 +587,7 @@ class TFE3D8(TFE):
 
     # Формирование локальной ыматрицы жесткости
     def _generate_stiffness_matrix_(self):
-        local_k = zeros((self.freedom*self.size, self.freedom*self.size))
+        local_k = zeros((3*self.size, 3*self.size))
         # Интегрирование по кубу [-1; 1] x [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(self.__w__)):
             # Изопараметрические функции формы и их производные
@@ -613,23 +610,23 @@ class TFE3D8(TFE):
             shape_dz = (inverted_jacobi[2, 0]*shape_dxi + inverted_jacobi[2, 1]*shape_deta) + \
                        (inverted_jacobi[2, 2]*shape_dpsi)
             # Изопараметрическая матрица градиентов
-            b = zeros([6, self.freedom*self.size])
+            b = zeros([6, 3*self.size])
             for j in range(0, self.size):
-                b[0][j*self.freedom + 0] = shape_dx[j]
-                b[1][j*self.freedom + 1] = shape_dy[j]
-                b[2][j*self.freedom + 2] = shape_dz[j]
-                b[3][j*self.freedom + 0] = shape_dy[j]
-                b[3][j*self.freedom + 1] = shape_dx[j]
-                b[4][j*self.freedom + 1] = shape_dz[j]
-                b[4][j*self.freedom + 2] = shape_dy[j]
-                b[5][j*self.freedom + 0] = shape_dz[j]
-                b[5][j*self.freedom + 2] = shape_dx[j]
+                b[0][j*3 + 0] = shape_dx[j]
+                b[1][j*3 + 1] = shape_dy[j]
+                b[2][j*3 + 2] = shape_dz[j]
+                b[3][j*3 + 0] = shape_dy[j]
+                b[3][j*3 + 1] = shape_dx[j]
+                b[4][j*3 + 1] = shape_dz[j]
+                b[4][j*3 + 2] = shape_dy[j]
+                b[5][j*3 + 0] = shape_dz[j]
+                b[5][j*3 + 2] = shape_dx[j]
             local_k += b.conj().transpose().dot(self.__elastic_matrix__()).dot(b)*jacobian*self.__w__[i]
         return local_k
 
     # Формирование локальных матриц масс и демпфирования
     def _generate_mass_damping_matrix_(self):
-        local_m = zeros((self.freedom*self.size, self.freedom*self.size))
+        local_m = zeros((3*self.size, 3*self.size))
         # Интегрирование по кубу [-1; 1] x [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(self.__w__)):
             # Изопараметрические функции формы и их производные
@@ -664,52 +661,48 @@ class TFE3D8(TFE):
 class TFE2D4P(TFE2D4):
     def __init__(self):
         super().__init__()
-        self.freedom = 3
 
     def __elastic_matrix__(self):
-        d1 = array([
+        return array([
             [1.0, self.m[0], 0.0],
             [self.m[0], 1.0, 0.0],
             [0.0, 0.0, 0.5*(1.0 - self.m[0])]
         ])*(self.e[0])/(1.0 - self.m[0]**2)
-        d2 = array([
+
+    def __elastic_matrix_1__(self):
+        return array([
             [1.0, 0.0],
             [0.0, 1.0],
         ])*self.e[0]/(2.0 + 2.0*self.m[0])
-        return d1, d2
 
     def calc(self, u):
         res = zeros((12, self.size))
         for i in range(0, self.size):
             # Матрица градиентов
-            b1 = zeros([3, self.size*self.freedom])
-            b2 = zeros([2, self.size*self.freedom])
+            b1 = zeros([3, 3*self.size])
+            b2 = zeros([2, 3*self.size])
             for j in range(0, self.size):
                 shape = self.a[j][0] + self.a[j][1]*self.x[i][0] + self.a[j][2]*self.x[i][1] + \
                         self.a[j][3]*self.x[i][0]*self.x[i][1]
                 dx = self.a[j][1] + self.a[j][3]*self.x[i][1]
                 dy = self.a[j][2] + self.a[j][3]*self.x[i][0]
-                b1[0][self.freedom*j + 2] = -dx
-                b1[1][self.freedom*j + 1] = dy
-                b1[2][self.freedom*j + 1] = dx
-                b1[2][self.freedom*j + 2] = -dy
-
-                b2[0][self.freedom*j + 0] = dx
-                b2[0][self.freedom*j + 2] = shape
-                b2[1][self.freedom*j + 0] = dy
-                b2[1][self.freedom*j + 1] = -shape
-
-            d1, d2 = self.__elastic_matrix__()
+                b1[0][3*j + 2] = -dx
+                b1[1][3*j + 1] = dy
+                b1[2][3*j + 1] = dx
+                b1[2][3*j + 2] = -dy
+                b2[0][3*j + 0] = dx
+                b2[0][3*j + 2] = shape
+                b2[1][3*j + 0] = dy
+                b2[1][3*j + 1] = -shape
             e1 = b1.dot(u)
-            s1 = d1.dot(e1)
+            s1 = self.__elastic_matrix__().dot(e1)
             e2 = b2.dot(u)
-            s2 = d2.dot(e2)
+            s2 = self.__elastic_matrix_1__().dot(e2)
             res[0][i] += e1[0]  # Exx
             res[1][i] += e1[1]  # Eyy
             res[3][i] += e1[2]  # Exy
             res[4][i] += e2[0]  # Exz
             res[5][i] += e2[1]  # Eyz
-
             res[6][i] += s1[0]  # Sxx
             res[7][i] += s1[1]  # Syy
             res[9][i] += s1[2]  # Sxy
@@ -719,7 +712,7 @@ class TFE2D4P(TFE2D4):
 
     # Формирование локальной матрицы жесткости
     def _generate_stiffness_matrix_(self):
-        local_k = zeros((self.freedom*self.size, self.freedom*self.size))
+        local_k = zeros((3*self.size, 3*self.size))
         # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
         for i in range(len(self.__w__)):
             # Изопараметрические функции формы и их производные
@@ -737,21 +730,21 @@ class TFE2D4P(TFE2D4):
             shape_dx = inverted_jacobi[0, 0]*shape_dxi + inverted_jacobi[0, 1]*shape_deta
             shape_dy = inverted_jacobi[1, 0]*shape_dxi + inverted_jacobi[1, 1]*shape_deta
             # Изопараметрические матрицы градиентов
-            b1 = zeros([3, self.size*self.freedom])
+            b1 = zeros([3, 3*self.size])
             for j in range(0, self.size):
-                b1[0][self.freedom*j + 2] = -shape_dx[j]
-                b1[1][self.freedom*j + 1] = shape_dy[j]
-                b1[2][self.freedom*j + 1] = shape_dx[j]
-                b1[2][self.freedom*j + 2] = -shape_dy[j]
-            b2 = zeros([2, self.size*self.freedom])
+                b1[0][3*j + 2] = -shape_dx[j]
+                b1[1][3*j + 1] = shape_dy[j]
+                b1[2][3*j + 1] = shape_dx[j]
+                b1[2][3*j + 2] = -shape_dy[j]
+            b2 = zeros([2, 3*self.size])
             for j in range(0, self.size):
-                b2[0][self.freedom*j + 0] = shape_dx[j]
-                b2[0][self.freedom*j + 2] = shape[j]
-                b2[1][self.freedom*j + 0] = shape_dy[j]
-                b2[1][self.freedom*j + 1] = -shape[j]
-            d1, d2 = self.__elastic_matrix__()
-            local_k += (b1.conj().transpose().dot(d1).dot(b1)*self.h**3/12.0 +
-                        b2.conj().transpose().dot(d2).dot(b2)*self.h*5.0/6.0)*jacobian*self.__w__[i]
+                b2[0][3*j + 0] = shape_dx[j]
+                b2[0][3*j + 2] = shape[j]
+                b2[1][3*j + 0] = shape_dy[j]
+                b2[1][3*j + 1] = -shape[j]
+            local_k += (b1.conj().transpose().dot(self.__elastic_matrix__()).
+                        dot(b1)*self.h**3/12.0 + b2.conj().transpose().dot(self.__elastic_matrix_1__()).
+                        dot(b2)*self.h*5.0/6.0)*jacobian*self.__w__[i]
         return local_k
 
     # Формирование локальных матриц жесткости, масс и демпфирования
@@ -791,49 +784,49 @@ class TFE2D4P(TFE2D4):
 class TFE2D3P(TFE2D3):
     def __init__(self):
         super().__init__()
-        self.freedom = 3
         # Параметры квадратур Гаусса
         self.__xi__ = [0.57735027, 0.57735027]
         self.__eta__ = [0.57735027, 0.57735027]
         self.__w__ = [1.0, 1.0]
 
     def __elastic_matrix__(self):
-        # Матрицы упругих свойст
-        d1 = array([
+        # Матрица упругих свойст
+        return array([
             [1.0, self.m[0], 0.0],
             [self.m[0], 1.0, 0.0],
             [0.0, 0.0, 0.5*(1.0 - self.m[0])]
         ])*(self.e[0])/(1.0 - self.m[0]**2)
-        d2 = array([
+
+    def __elastic_matrix_1__(self):
+        # Вспомогательная матрица упругих свойст
+        return array([
             [1.0, 0.0],
             [0.0, 1.0],
         ])*self.e[0]/(2.0 + 2.0*self.m[0])
-        return d1, d2
 
     def calc(self, u):
         res = zeros((12, self.size))
         for i in range(0, self.size):
             # Матрица градиентов
-            b1 = zeros([3, self.size*self.freedom])
-            b2 = zeros([2, self.size*self.freedom])
+            b1 = zeros([3, 3*self.size])
+            b2 = zeros([2, 3*self.size])
             for j in range(0, self.size):
                 shape = self.a[j][0] + self.a[j][1]*self.x[i][0] + self.a[j][2]*self.x[i][1]
                 dx = self.a[j][1]
                 dy = self.a[j][2]
-                b1[0][self.freedom*j + 2] = -dx
-                b1[1][self.freedom*j + 1] = dy
-                b1[2][self.freedom*j + 1] = dx
-                b1[2][self.freedom*j + 2] = -dy
+                b1[0][3*j + 2] = -dx
+                b1[1][3*j + 1] = dy
+                b1[2][3*j + 1] = dx
+                b1[2][3*j + 2] = -dy
 
-                b2[0][self.freedom*j + 0] = dx
-                b2[0][self.freedom*j + 2] = shape
-                b2[1][self.freedom*j + 0] = dy
-                b2[1][self.freedom*j + 1] = -shape
-            d1, d2 = self.__elastic_matrix__()
+                b2[0][3*j + 0] = dx
+                b2[0][3*j + 2] = shape
+                b2[1][3*j + 0] = dy
+                b2[1][3*j + 1] = -shape
             e1 = b1.dot(u)
-            s1 = d1.dot(e1)
+            s1 = self.__elastic_matrix__().dot(e1)
             e2 = b2.dot(u)
-            s2 = d2.dot(e2)
+            s2 = self.__elastic_matrix_1__().dot(e2)
             res[0][i] += e1[0]  # Exx
             res[1][i] += e1[1]  # Eyy
             res[3][i] += e1[2]  # Exy
@@ -851,7 +844,7 @@ class TFE2D3P(TFE2D3):
         return array([1.0 - self.__xi__[i], self.__xi__[i] - self.__eta__[i], self.__eta__[i]])
 
     def _generate_stiffness_matrix_(self):
-        local_k = zeros((self.freedom*self.size, self.freedom*self.size))
+        local_k = zeros((3*self.size, 3*self.size))
         # Интегрирование по треугольнику [0,0]-[1,0]-[1,1] (по формуле Гаусса)
         for i in range(len(self.__w__)):
             # Изопараметрические функции формы и их производные
@@ -869,26 +862,26 @@ class TFE2D3P(TFE2D3):
             shape_dx = inverted_jacobi[0, 0]*shape_dxi + inverted_jacobi[0, 1]*shape_deta
             shape_dy = inverted_jacobi[1, 0]*shape_dxi + inverted_jacobi[1, 1]*shape_deta
             # Матрицы градиентов
-            b1 = zeros([3, self.size*self.freedom])
+            b1 = zeros([3, 3*self.size])
             for j in range(0, self.size):
-                b1[0][self.freedom*j + 2] = -shape_dx[j]
-                b1[1][self.freedom*j + 1] = shape_dy[j]
-                b1[2][self.freedom*j + 1] = shape_dx[j]
-                b1[2][self.freedom*j + 2] = -shape_dy[j]
-            b2 = zeros([2, self.size*self.freedom])
+                b1[0][3*j + 2] = -shape_dx[j]
+                b1[1][3*j + 1] = shape_dy[j]
+                b1[2][3*j + 1] = shape_dx[j]
+                b1[2][3*j + 2] = -shape_dy[j]
+            b2 = zeros([2, 3*self.size])
             for j in range(0, self.size):
-                b2[0][self.freedom*j + 0] = shape_dx[j]
-                b2[0][self.freedom*j + 2] = shape[j]
-                b2[1][self.freedom*j + 0] = shape_dy[j]
-                b2[1][self.freedom*j + 1] = -shape[j]
+                b2[0][3*j + 0] = shape_dx[j]
+                b2[0][3*j + 2] = shape[j]
+                b2[1][3*j + 0] = shape_dy[j]
+                b2[1][3*j + 1] = -shape[j]
             # Вычисление компонент локальной матрицы жесткости
-            d1, d2 = self.__elastic_matrix__()
-            local_k += (b1.conj().transpose().dot(d1).dot(b1)*self.h**3/12.0 +
-                        b2.conj().transpose().dot(d2).dot(b2)*self.h*5.0/6.0)*jacobian*self.__w__[i]/4.0
+            local_k += 0.25*(b1.conj().transpose().dot(self.__elastic_matrix__()).
+                             dot(b1)*self.h**3/12.0 + b2.conj().transpose().
+                             dot(self.__elastic_matrix_1__()).dot(b2)*self.h*5.0/6.0)*jacobian*self.__w__[i]
         return local_k
 
     def _generate_mass_damping_matrix_(self):
-        local_m = zeros((self.freedom*self.size, self.freedom*self.size))
+        local_m = zeros((3*self.size, 3*self.size))
         # Интегрирование по треугольнику [0,0]-[1,0]-[1,1] (по формуле Гаусса)
         for i in range(len(self.__w__)):
             # Изопараметрические функции формы и их производные
@@ -924,7 +917,6 @@ class TFE2D3S(TFE2D3P):
     def __init__(self):
         super().__init__()
         self.size = 3
-        self.freedom = 6
         self.T = zeros((3, 3))  # Матрица преобразования глобальных координат в локальные
         self.global_x = zeros((3, 3))
 
@@ -937,7 +929,7 @@ class TFE2D3S(TFE2D3P):
 #        self.x = x
 
     def __prepare_transform_matrix__(self):
-        m = zeros((self.freedom*self.size, self.freedom*self.size))
+        m = zeros((6*self.size, 6*self.size))
         for i in range(0, 3):
             for j in range(0, 3):
                 m[i][j] = self.T[i][j]
@@ -956,15 +948,15 @@ class TFE2D3S(TFE2D3P):
         # Вычисляем деформации и напряжения "мембранной" составляющей
         membrane_u = []
         for i in range(0, self.size):
-            membrane_u.append(lu[self.freedom*i])      # u
-            membrane_u.append(lu[self.freedom*i + 1])  # w
+            membrane_u.append(lu[6*i])      # u
+            membrane_u.append(lu[6*i + 1])  # w
         membrane_res = TFE2D3.calc(self, membrane_u)
         # Вычисляем деформации и напряжения пластины
         plate_u = []
         for i in range(0, self.size):
-            plate_u.append(lu[self.freedom*i + 2])     # w
-            plate_u.append(lu[self.freedom*i + 3])     # Tx
-            plate_u.append(lu[self.freedom*i + 4])     # Ty
+            plate_u.append(lu[6*i + 2])     # w
+            plate_u.append(lu[6*i + 3])     # Tx
+            plate_u.append(lu[6*i + 4])     # Ty
         plate_res = TFE2D3P.calc(self, plate_u)
         res = zeros((12, self.size))
         for i in range(0, self.size):
@@ -996,34 +988,33 @@ class TFE2D3S(TFE2D3P):
         return res
 
     def _generate_stiffness_matrix_(self):
-        local_k = identity(self.freedom*self.size)
+        local_k = identity(6*self.size)
         # Создание матрицы преобразования
         m = self.__prepare_transform_matrix__()
         # Локальная матрицыа жесткости плоского КЭ
         k1 = TFE2D3._generate_stiffness_matrix_(self)
         # ... КЭ пластины
         k2 = TFE2D3P._generate_stiffness_matrix_(self)
+        global_freedom = 6
         local_freedom1 = 2
         for i in range(0, len(k1)):
-            p = (i//local_freedom1)*self.freedom + i % local_freedom1
+            p = (i//local_freedom1)*global_freedom + i % local_freedom1
             for j in range(0, len(k1)):
-                q = (j//local_freedom1)*self.freedom + j % local_freedom1
+                q = (j//local_freedom1)*global_freedom + j % local_freedom1
                 local_k[p][q] = k1[i][j]
         local_freedom2 = 3
         for i in range(0, len(k2)):
-            p = (i//local_freedom2)*self.freedom + i % local_freedom2 + local_freedom1
+            p = (i//local_freedom2)*global_freedom + i % local_freedom2 + local_freedom1
             for j in range(0, len(k2)):
-                q = (j//local_freedom2)*self.freedom + j % local_freedom2 + local_freedom1
+                q = (j//local_freedom2)*global_freedom + j % local_freedom2 + local_freedom1
                 local_k[p][q] = k2[i][j]
         return m.conj().transpose().dot(local_k).dot(m)
 
 
 # Четырехугольный КЭ оболочки
-class TFE2D4S(TFE2D4P, TFE2D4):
+class TFE2D4S(TFE2D4P):
     def __init__(self):
         super().__init__()
-        self.size = 4
-        self.freedom = 6
         self.T = zeros((3, 3))  # Матрица преобразования глобальных координат в локальные
         self.global_x = zeros((4, 4))
 
@@ -1035,15 +1026,15 @@ class TFE2D4S(TFE2D4P, TFE2D4):
         # Вычисляем деформации и напряжения "мембранной" составляющей
         membrane_u = []
         for i in range(0, self.size):
-            membrane_u.append(lu[self.freedom*i])      # u
-            membrane_u.append(lu[self.freedom*i + 1])  # w
+            membrane_u.append(lu[6*i])      # u
+            membrane_u.append(lu[6*i + 1])  # w
         membrane_res = TFE2D4.calc(self, membrane_u)
         # Вычисляем деформации и напряжения пластины
         plate_u = []
         for i in range(0, self.size):
-            plate_u.append(lu[self.freedom*i + 2])     # w
-            plate_u.append(lu[self.freedom*i + 3])     # Tx
-            plate_u.append(lu[self.freedom*i + 4])     # Ty
+            plate_u.append(lu[6*i + 2])     # w
+            plate_u.append(lu[6*i + 3])     # Tx
+            plate_u.append(lu[6*i + 4])     # Ty
         plate_res = TFE2D4P.calc(self, plate_u)
         res = zeros((12, self.size))
         for i in range(0, self.size):
@@ -1075,7 +1066,7 @@ class TFE2D4S(TFE2D4P, TFE2D4):
         return res
 
     def __prepare_transform_matrix__(self):
-        m = zeros((self.freedom*self.size, self.freedom*self.size))
+        m = zeros((6*self.size, 6*self.size))
         for i in range(0, 3):
             for j in range(0, 3):
                 m[i][j] = self.T[i][j]
@@ -1090,29 +1081,26 @@ class TFE2D4S(TFE2D4P, TFE2D4):
 
     # Формирование локальной матрицы жесткости
     def _generate_stiffness_matrix_(self):
-        local_k = identity(self.freedom*self.size)
+        local_k = identity(6*self.size)
         # Подготовка матрицы преобразования
         m = self.__prepare_transform_matrix__()
         # Локальная матрицыа жесткости плоского КЭ
-#        k1 = TFE2D4._generate_stiffness_matrix_(self)
-
-        k1 = super(TFE2D4S, self)._generate_stiffness_matrix_()
-
+        k1 = TFE2D4._generate_stiffness_matrix_(self)
 
         # ... КЭ пластины
         k2 = TFE2D4P._generate_stiffness_matrix_(self)
-
+        global_freedom = 6
         local_freedom1 = 2
         for i in range(0, len(k1)):
-            p = (i//local_freedom1)*self.freedom + i % local_freedom1
+            p = (i//local_freedom1)*global_freedom + i % local_freedom1
             for j in range(0, len(k1)):
-                q = (j//local_freedom1)*self.freedom + j % local_freedom1
+                q = (j//local_freedom1)*global_freedom + j % local_freedom1
                 local_k[p][q] = k1[i][j]
         local_freedom2 = 3
         for i in range(0, len(k2)):
-            p = (i//local_freedom2)*self.freedom + i % local_freedom2 + local_freedom1
+            p = (i//local_freedom2)*global_freedom + i % local_freedom2 + local_freedom1
             for j in range(0, len(k2)):
-                q = (j//local_freedom2)*self.freedom + j % local_freedom2 + local_freedom1
+                q = (j//local_freedom2)*global_freedom + j % local_freedom2 + local_freedom1
                 local_k[p][q] = k2[i][j]
 
         # import sys
