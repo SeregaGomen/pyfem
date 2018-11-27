@@ -154,9 +154,6 @@ class TFE2D3(TFE):
     def __init__(self):
         super().__init__()
         self.size = 3
-        self._xi_ = [1/3]
-        self._eta_ = [1/3]
-        self._w_ = [1/2]
 
     def _elastic_matrix_(self):
         # Матрица упругих свойст
@@ -213,39 +210,9 @@ class TFE2D3(TFE):
         return res
 
     # Формирование локальной матриц жесткости
-    # def _generate_stiffness_matrix_(self):
-    #    return self._gradient_matrix_().conj().transpose().dot(self._elastic_matrix_()).\
-    #               dot(self._gradient_matrix_())*self._square_()*self.h
-
     def _generate_stiffness_matrix_(self):
-        local_k = zeros((2*self.size, 2*self.size))
-        # Интегрирование по треугольнику [0,0]-[1,0]-[0,1] (по формуле Гаусса)
-        for i in range(len(self._w_)):
-            # Изопараметрические функции формы и их производные
-            shape_dxi = array([-1.0, 1.0, 0.0])
-            shape_deta = array([-1.0, 0.0, 1.0])
-            # Матрица Якоби
-            jacobi = array([
-                [sum(shape_dxi*self.x[:, 0]), sum(shape_dxi*self.x[:, 1])],
-                [sum(shape_deta*self.x[:, 0]), sum(shape_deta*self.x[:, 1])]
-            ])
-            # Якобиан
-            jacobian = det(jacobi)
-            inverted_jacobi = inv(jacobi)
-            shape_dx = inverted_jacobi[0, 0]*shape_dxi + inverted_jacobi[0, 1]*shape_deta
-            shape_dy = inverted_jacobi[1, 0]*shape_dxi + inverted_jacobi[1, 1]*shape_deta
-            # Матрицы градиентов
-            b = zeros([3, 2*self.size])
-            for j in range(0, self.size):
-                b[0][2*j + 0] = shape_dx[j]
-                b[1][2*j + 1] = shape_dy[j]
-                b[2][2*j + 0] = shape_dy[j]
-                b[2][2*j + 1] = shape_dx[j]
-            # Вычисление компонент локальной матрицы жесткости
-            local_k += (b.conj().transpose().dot(self._elastic_matrix_()).
-                        dot(b)*self.h)*abs(jacobian)*self._w_[i]
-        return local_k
-
+        return self._gradient_matrix_().conj().transpose().dot(self._elastic_matrix_()).\
+                   dot(self._gradient_matrix_())*self._square_()*self.h
 
     # Формирование локальных матриц масс и демпфирования
     def _generate_mass_damping_matrix_(self):
@@ -808,9 +775,9 @@ class TFE2D3P(TFE2D3):
     def __init__(self):
         super().__init__()
         # Параметры квадратур Гаусса
-        #self._xi_ = [0.2113248654, 0.78867751346]
-        #self._eta_ = [0.2113248654, 0.78867751346]
-        #self._w_ = [0.5, 0.5]
+        self._xi_ = [0, 1/2, 1/2]
+        self._eta_ = [1/2, 0, 1/2]
+        self._w_ = [1/6, 1/6, 1/6]
 
     def _extra_elastic_matrix_(self):
         # Вспомогательная матрица упругих свойст
