@@ -24,6 +24,7 @@ def body1d(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -45,6 +46,7 @@ def cube(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -64,6 +66,7 @@ def cube_test(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -83,6 +86,7 @@ def beam(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -111,6 +115,7 @@ def beam_dynamic(res_name):
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -131,6 +136,7 @@ def console(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -152,6 +158,7 @@ def console4(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -171,6 +178,7 @@ def quad(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -197,6 +205,7 @@ def cylinder(res_name):
             # obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -280,6 +289,7 @@ def tank3(res_name):
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -303,6 +313,7 @@ def head3d(res_name):
         if obj.calc():
             obj.save_result('head3d')
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -332,6 +343,7 @@ def console_dynamic(res_name):
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -354,6 +366,7 @@ def plate4(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -374,6 +387,7 @@ def plate3(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -395,6 +409,7 @@ def shell3(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -416,6 +431,7 @@ def shell4(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -436,6 +452,7 @@ def shell_plate3(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -455,6 +472,7 @@ def shell3_test(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -474,6 +492,7 @@ def plate3_test(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -493,6 +512,7 @@ def plate4_test(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -514,6 +534,7 @@ def shell4_test(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -532,6 +553,7 @@ def tube_test(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -621,6 +643,7 @@ def tank3s(res_name):
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -638,6 +661,7 @@ def plate3d(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
+            TPlot(res_name)
             return True
         return False
 
@@ -732,32 +756,6 @@ if __name__ == '__main__':
     # tube_test('tube_test')
     # plate3d('plate3d')
     # tank3s('tank3s')
-
-    # TPlot('console')
-    # TPlot('tank3')
-    # TPlot('head3d')
-    # TPlot('cylinder')
-    # TPlot('quad')
-    # TPlot('cube_test')
-    # TPlot('console4')
-    # TPlot('beam')
-    # TPlot('plate4')
-    # TPlot('body1d')
-    # TPlot('beam_dynamic')
-    # TPlot('console_dynamic')
-    # TPlot('cube')
-    # TPlot('shell3')
-    # TPlot('shell4')
-    # TPlot('shell_plate3')
-    # TPlot('plate3')
-    # TPlot('plate3_test')
-    TPlot('plate4_test')
-    # TPlot('shell4_test')
-    # TPlot('shell3_test')
-    # TPlot('tube_test')
-    # TPlot('plate3d')
-    # TPlot('tank3s')
-
 
 '''
 2. Правильно отображать динамическую задачу в plot3d
