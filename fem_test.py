@@ -728,7 +728,7 @@ def create_shell_mesh_4():
     return
 
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     # create_shell_mesh_4()
     # create_plate_mesh_4()
     # beam('beam')
@@ -750,12 +750,12 @@ if __name__ == '__main__':
     # shell_plate3('shell_plate3')
     # plate3('plate3')
     # plate3_test('plate3_test')
-    plate4_test('plate4_test')
+    # plate4_test('plate4_test')
     # shell4_test('shell4_test')
     # shell3_test('shell3_test')
     # tube_test('tube_test')
     # plate3d('plate3d')
-    # tank3s('tank3s')
+    tank3s('tank3s')
 
 '''
 2. Правильно отображать динамическую задачу в plot3d
