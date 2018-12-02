@@ -78,10 +78,11 @@ class TFEM:
         return fe
 
     # Создание и настройка парсера
-    def create_parser(self):
+    def create_parser(self, x, t=0):
         parser = TParser()
-        for i in range(0, len(self.params.names)):
-            parser.add_variable(self.params.names[i])
+        for i in range(0, len(x)):
+            parser.add_variable(self.params.names[i], x[i])
+        parser.add_variable(self.params.names[3], t)
         for key, value in self.params.var_list.items():
             parser.add_variable(key, value)
         return parser

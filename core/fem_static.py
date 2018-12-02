@@ -62,7 +62,6 @@ class TFEMStatic(TFEM):
 
     # Вычисление сосредоточенных нагрузок
     def _prepare_concentrated_load(self, t=0):
-        parser = self.create_parser()
         counter = 0
         for i in range(0, len(self.params.bc_list)):
             if self.params.bc_list[i].type == 'concentrated':
@@ -77,28 +76,24 @@ class TFEMStatic(TFEM):
             for j in range(0, len(self.mesh.x)):
                 self._progress.set_progress(counter)
                 counter += 1
-                x = self.mesh.get_coord(j)
-                for k in range(0, len(x)):
-                    parser.set_variable(self.params.names[k], x[k])
-                parser.set_variable(self.params.names[3], t)
+                parser = self.create_parser(self.mesh.get_coord(j), t)
                 if len(self.params.bc_list[i].predicate):
                     parser.set_code(self.params.bc_list[i].predicate)
                     if parser.run() == 0:
                         continue
                 parser.set_code(self.params.bc_list[i].expression)
-                val = parser.run()
+                load = parser.run()
                 if self.params.bc_list[i].direct & DIR_1:
-                    self._global_load[j * self.mesh.freedom + 0] += val
+                    self._global_load[j * self.mesh.freedom + 0] += load
                 if self.params.bc_list[i].direct & DIR_2:
-                    self._global_load[j * self.mesh.freedom + 1] += val
+                    self._global_load[j * self.mesh.freedom + 1] += load
                 if self.params.bc_list[i].direct & DIR_3:
-                    self._global_load[j * self.mesh.freedom + 2] += val
+                    self._global_load[j * self.mesh.freedom + 2] += load
 
     # Вычисление поверхностных нагрузок
     def _prepare_surface_load(self, t=0):
         if not len(self.mesh.be):
             return
-        parser = self.create_parser()
         counter = 0
         for i in range(0, len(self.params.bc_list)):
             if self.params.bc_list[i].type == 'surface':
@@ -113,26 +108,22 @@ class TFEMStatic(TFEM):
             for j in range(0, len(self.mesh.be)):
                 self._progress.set_progress(counter)
                 counter += 1
-                if not self.__check_boundary_elements(j, self.params.bc_list[i].predicate):
+                if not self.__check_be(j, self.params.bc_list[i].predicate):
                     continue
                 rel_se = self.mesh.square(j) / float(len(self.mesh.be[j]))
                 for k in range(0, len(self.mesh.be[j])):
-                    x = self.mesh.get_coord(self.mesh.be[j][k])
-                    for l in range(0, len(x)):
-                        parser.set_variable(self.params.names[l], x[l])
-                    parser.set_variable(self.params.names[3], t)
+                    parser = self.create_parser(self.mesh.get_coord(self.mesh.be[j][k]), t)
                     parser.set_code(self.params.bc_list[i].expression)
-                    val = parser.run()
+                    load = parser.run()
                     if self.params.bc_list[i].direct & DIR_1:
-                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += val * rel_se
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += load * rel_se
                     if self.params.bc_list[i].direct & DIR_2:
-                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 1] += val * rel_se
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 1] += load * rel_se
                     if self.params.bc_list[i].direct & DIR_3:
-                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 2] += val * rel_se
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 2] += load * rel_se
 
     # Вычисление объемных нагрузок
     def _prepare_volume_load(self, t=0):
-        parser = self.create_parser()
         counter = 0
         for i in range(0, len(self.params.bc_list)):
             if self.params.bc_list[i].type == 'volume':
@@ -147,20 +138,23 @@ class TFEMStatic(TFEM):
             for j in range(0, len(self.mesh.fe)):
                 self._progress.set_progress(counter)
                 counter += 1
+                if not self.__check_fe(j, self.params.bc_list[i].predicate):
+                    continue
                 rel_ve = self.mesh.volume(j) / float(len(self.mesh.fe[j]))
                 for k in range(0, len(self.mesh.fe[j])):
-                    x = self.mesh.get_coord(self.mesh.fe[j][k])
-                    for l in range(0, len(x)):
-                        parser.set_variable(self.params.names[l], x[l])
-                    parser.set_variable(self.params.names[3], t)
+                    parser = self.create_parser(self.mesh.get_coord(self.mesh.fe[j][k]), t)
+                    if len(self.params.bc_list[i].predicate):
+                        parser.set_code(self.params.bc_list[i].predicate)
+                        if parser.run() == 0:
+                            continue
                     parser.set_code(self.params.bc_list[i].expression)
-                    val = parser.run()
+                    load = parser.run()
                     if self.params.bc_list[i].direct & DIR_1:
-                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 0] += val * rel_ve
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 0] += load * rel_ve
                     if self.params.bc_list[i].direct & DIR_2:
-                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 1] += val * rel_ve
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 1] += load * rel_ve
                     if self.params.bc_list[i].direct & DIR_3:
-                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 2] += val * rel_ve
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 2] += load * rel_ve
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...)
     def _calc_results(self, t=0):
@@ -221,7 +215,6 @@ class TFEMStatic(TFEM):
 
     # Учет граничных условий
     def _use_boundary_condition(self):
-        parser = self.create_parser()
         counter = 0
         for i in range(0, len(self.params.bc_list)):
             if self.params.bc_list[i].type == 'boundary':
@@ -233,9 +226,7 @@ class TFEMStatic(TFEM):
                 for j in range(0, len(self.mesh.x)):
                     self._progress.set_progress(counter)
                     counter += 1
-                    x = self.mesh.get_coord(j)
-                    for k in range(0, len(x)):
-                        parser.set_variable(self.params.names[k], x[k])
+                    parser = self.create_parser(self.mesh.get_coord(j))
                     if len(self.params.bc_list[i].predicate):
                         parser.set_code(self.params.bc_list[i].predicate)
                         if parser.run() == 0:
@@ -271,14 +262,22 @@ class TFEMStatic(TFEM):
         return True if not info else False
 
     # Проверка соответствия граничного элемента предикату отбора (всех его вершин)
-    def __check_boundary_elements(self, i, predicate):
+    def __check_be(self, i, predicate):
         if not len(predicate):
             return True
-        parser = self.create_parser()
         for k in range(0, len(self.mesh.be[0])):
-            x = self.mesh.get_coord(self.mesh.be[i][k])
-            for l in range(0, len(x)):
-                parser.set_variable(self.params.names[l], x[l])
+            parser = self.create_parser(self.mesh.get_coord(self.mesh.be[i][k]))
+            parser.set_code(predicate)
+            if parser.run() == 0:
+                return False
+        return True
+
+    # Проверка соответствия элемента предикату отбора (всех его вершин)
+    def __check_fe(self, i, predicate):
+        if not len(predicate):
+            return True
+        for k in range(0, len(self.mesh.fe[0])):
+            parser = self.create_parser(self.mesh.get_coord(self.mesh.fe[i][k]))
             parser.set_code(predicate)
             if parser.run() == 0:
                 return False
