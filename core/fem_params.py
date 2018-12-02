@@ -75,7 +75,7 @@ class TFEMParams:
         self.width = 12         # Формат вывода результатов
         self.precision = 5
         self.eps = 1.0E-6       # Точность вычислений
-        self.h = 1.0            # Толщина (пластины, оболочки, ...)
+        self.thickness = 1.0    # Толщина (пластины, оболочки, ...)
         self.density = 0        # Плотность материала
         self.damping = [0, 0]   # Параметры демпфирования
         self.t0 = 0             # Начальный момент времени расчета
@@ -87,7 +87,7 @@ class TFEMParams:
         self.bc_list = []       # Список краевых условий
         self.var_list = {}      # Список вспомогательных переменных и их значений
 
-    def __add_condition__(self, t, e, p, d):
+    def __add_condition(self, t, e, p, d):
         c = TBoundaryCondition()
         c.type = t
         c.direct = d
@@ -96,19 +96,19 @@ class TFEMParams:
         self.bc_list.append(c)
 
     def add_boundary_condition(self, e, p, d):
-        self.__add_condition__('boundary', e, p, d)
+        self.__add_condition('boundary', e, p, d)
 
     def add_initial_condition(self, e, p, d):
-        self.__add_condition__('initial', e, p, d)
+        self.__add_condition('initial', e, p, d)
 
     def add_volume_load(self, e, p, d):
-        self.__add_condition__('volume', e, p, d)
+        self.__add_condition('volume', e, p, d)
 
     def add_surface_load(self, e, p, d):
-        self.__add_condition__('surface', e, p, d)
+        self.__add_condition('surface', e, p, d)
 
     def add_concentrated_load(self, e, p, d):
-        self.__add_condition__('concentrated', e, p, d)
+        self.__add_condition('concentrated', e, p, d)
 
     def add_variable(self, var, val):
         self.var_list.setdefault(var, val)

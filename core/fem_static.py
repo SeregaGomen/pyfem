@@ -14,294 +14,292 @@ from core.fem_result import TResult
 class TFEMStatic(TFEM):
     def __init__(self):
         super().__init__()
-        self._global_matrix_stiffness_ = lil_matrix((0, 0))   # Глобальная матрица жесткости (ГМЖ)
-        self._global_load_ = []                               # Глобальный вектор нагрузок (правая часть)
+        self._global_matrix_stiffness = lil_matrix((0, 0))   # Глобальная матрица жесткости (ГМЖ)
+        self._global_load = []                               # Глобальный вектор нагрузок (правая часть)
 
     # Расчет статической задачи методом конечных элементов
-    def _calc_problem_(self):
+    def _calc_problem(self):
         # Создание ГМЖ
-        size = len(self._mesh_.x) * self._mesh_.freedom
-        self._global_matrix_stiffness_ = lil_matrix((size, size))
-        self._global_load_ = [0] * size
+        size = len(self.mesh.x) * self.mesh.freedom
+        self._global_matrix_stiffness = lil_matrix((size, size))
+        self._global_load = [0] * size
 
-        fe = self._create_fe_()
-        fe.set_elasticity(self._params_.e, self._params_.m)
-        fe.set_h(self._params_.h)
+        fe = self.create_fe()
+        fe.set_params(self.params)
         # Вычисление компонент нагрузки
-        self._prepare_concentrated_load_()
-        self._prepare_surface_load_()
-        self._prepare_volume_load_()
+        self._prepare_concentrated_load()
+        self._prepare_surface_load()
+        self._prepare_volume_load()
         # Формирование глобальной матрицы жесткости
-        self._progress_.set_process('Assembling global stiffness matrix...', 1, len(self._mesh_.fe))
-        for i in range(0, len(self._mesh_.fe)):
-            self._progress_.set_progress(i + 1)
-            x = self._mesh_.get_fe_coord(i)
+        self._progress.set_process('Assembling global stiffness matrix...', 1, len(self.mesh.fe))
+        for i in range(0, len(self.mesh.fe)):
+            self._progress.set_progress(i + 1)
+            x = self.mesh.get_fe_coord(i)
             fe.set_coord(x)
             fe.generate()
             # Ансамблирование ЛМЖ к ГМЖ
-            self._assembly_(fe, i)
+            self.__assembly(fe, i)
         # Учет краевых условий
-        self._use_boundary_condition_()
+        self._use_boundary_condition()
         # Решение СЛАУ
-        if not self._solve_():
+        if not self._solve():
             print('The system of equations is not solved!')
             return False
-        self._calc_results_()
+        self._calc_results()
         print('**************** Success! ****************')
         return True
 
     # Добавление локальной матрицы жесткости (ЛМЖ) к ГМЖ
-    def _assembly_(self, fe, index):
+    def __assembly(self, fe, index):
         # Добавление матрицы
         for i in range(0, len(fe.K)):
-            k = self._mesh_.fe[index][i // self._mesh_.freedom] * self._mesh_.freedom + i % self._mesh_.freedom
+            k = self.mesh.fe[index][i // self.mesh.freedom] * self.mesh.freedom + i % self.mesh.freedom
             for j in range(i, len(fe.K)):
-                r = self._mesh_.fe[index][j // self._mesh_.freedom] * self._mesh_.freedom + j % self._mesh_.freedom
-                self._global_matrix_stiffness_[k, r] += fe.K[i][j]
+                r = self.mesh.fe[index][j // self.mesh.freedom] * self.mesh.freedom + j % self.mesh.freedom
+                self._global_matrix_stiffness[k, r] += fe.K[i][j]
                 if k != r:
-                    self._global_matrix_stiffness_[r, k] += fe.K[i][j]
+                    self._global_matrix_stiffness[r, k] += fe.K[i][j]
 
     # Вычисление сосредоточенных нагрузок
-    def _prepare_concentrated_load_(self, t=0):
-        parser = self._create_parser_()
+    def _prepare_concentrated_load(self, t=0):
+        parser = self.create_parser()
         counter = 0
-        for i in range(0, len(self._params_.bc_list)):
-            if self._params_.bc_list[i].type == 'concentrated':
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type == 'concentrated':
                 counter += 1
         if not counter:
             return
-        self._progress_.set_process('Computation of concentrated load...', 1, counter * len(self._mesh_.x))
+        self._progress.set_process('Computation of concentrated load...', 1, counter * len(self.mesh.x))
         counter = 1
-        for i in range(0, len(self._params_.bc_list)):
-            if not self._params_.bc_list[i].type == 'concentrated':
+        for i in range(0, len(self.params.bc_list)):
+            if not self.params.bc_list[i].type == 'concentrated':
                 continue
-            for j in range(0, len(self._mesh_.x)):
-                self._progress_.set_progress(counter)
+            for j in range(0, len(self.mesh.x)):
+                self._progress.set_progress(counter)
                 counter += 1
-                x = self._mesh_.get_coord(j)
+                x = self.mesh.get_coord(j)
                 for k in range(0, len(x)):
-                    parser.set_variable(self._params_.names[k], x[k])
-                parser.set_variable(self._params_.names[3], t)
-                if len(self._params_.bc_list[i].predicate):
-                    parser.set_code(self._params_.bc_list[i].predicate)
+                    parser.set_variable(self.params.names[k], x[k])
+                parser.set_variable(self.params.names[3], t)
+                if len(self.params.bc_list[i].predicate):
+                    parser.set_code(self.params.bc_list[i].predicate)
                     if parser.run() == 0:
                         continue
-                parser.set_code(self._params_.bc_list[i].expression)
+                parser.set_code(self.params.bc_list[i].expression)
                 val = parser.run()
-                if self._params_.bc_list[i].direct & DIR_1:
-                    self._global_load_[j * self._mesh_.freedom + 0] += val
-                if self._params_.bc_list[i].direct & DIR_2:
-                    self._global_load_[j * self._mesh_.freedom + 1] += val
-                if self._params_.bc_list[i].direct & DIR_3:
-                    self._global_load_[j * self._mesh_.freedom + 2] += val
+                if self.params.bc_list[i].direct & DIR_1:
+                    self._global_load[j * self.mesh.freedom + 0] += val
+                if self.params.bc_list[i].direct & DIR_2:
+                    self._global_load[j * self.mesh.freedom + 1] += val
+                if self.params.bc_list[i].direct & DIR_3:
+                    self._global_load[j * self.mesh.freedom + 2] += val
 
     # Вычисление поверхностных нагрузок
-    def _prepare_surface_load_(self, t=0):
-        if not len(self._mesh_.be):
+    def _prepare_surface_load(self, t=0):
+        if not len(self.mesh.be):
             return
-        parser = self._create_parser_()
+        parser = self.create_parser()
         counter = 0
-        for i in range(0, len(self._params_.bc_list)):
-            if self._params_.bc_list[i].type == 'surface':
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type == 'surface':
                 counter += 1
         if not counter:
             return
-        self._progress_.set_process('Computation of surface load...', 1, counter * len(self._mesh_.be))
+        self._progress.set_process('Computation of surface load...', 1, counter * len(self.mesh.be))
         counter = 1
-        for i in range(0, len(self._params_.bc_list)):
-            if self._params_.bc_list[i].type != 'surface':
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type != 'surface':
                 continue
-            for j in range(0, len(self._mesh_.be)):
-                self._progress_.set_progress(counter)
+            for j in range(0, len(self.mesh.be)):
+                self._progress.set_progress(counter)
                 counter += 1
-                if not self._check_boundary_elements_(j, self._params_.bc_list[i].predicate):
+                if not self.__check_boundary_elements(j, self.params.bc_list[i].predicate):
                     continue
-                rel_se = self._mesh_.square(j) / float(len(self._mesh_.be[j]))
-                for k in range(0, len(self._mesh_.be[j])):
-                    x = self._mesh_.get_coord(self._mesh_.be[j][k])
+                rel_se = self.mesh.square(j) / float(len(self.mesh.be[j]))
+                for k in range(0, len(self.mesh.be[j])):
+                    x = self.mesh.get_coord(self.mesh.be[j][k])
                     for l in range(0, len(x)):
-                        parser.set_variable(self._params_.names[l], x[l])
-                    parser.set_variable(self._params_.names[3], t)
-                    parser.set_code(self._params_.bc_list[i].expression)
+                        parser.set_variable(self.params.names[l], x[l])
+                    parser.set_variable(self.params.names[3], t)
+                    parser.set_code(self.params.bc_list[i].expression)
                     val = parser.run()
-                    if self._params_.bc_list[i].direct & DIR_1:
-                        self._global_load_[self._mesh_.be[j][k] * self._mesh_.freedom + 0] += val * rel_se
-                    if self._params_.bc_list[i].direct & DIR_2:
-                        self._global_load_[self._mesh_.be[j][k] * self._mesh_.freedom + 1] += val * rel_se
-                    if self._params_.bc_list[i].direct & DIR_3:
-                        self._global_load_[self._mesh_.be[j][k] * self._mesh_.freedom + 2] += val * rel_se
+                    if self.params.bc_list[i].direct & DIR_1:
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += val * rel_se
+                    if self.params.bc_list[i].direct & DIR_2:
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 1] += val * rel_se
+                    if self.params.bc_list[i].direct & DIR_3:
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 2] += val * rel_se
 
     # Вычисление объемных нагрузок
-    def _prepare_volume_load_(self, t=0):
-        parser = self._create_parser_()
+    def _prepare_volume_load(self, t=0):
+        parser = self.create_parser()
         counter = 0
-        for i in range(0, len(self._params_.bc_list)):
-            if self._params_.bc_list[i].type == 'volume':
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type == 'volume':
                 counter += 1
         if not counter:
             return
-        self._progress_.set_process('Computation of volume load...', 1, counter * len(self._mesh_.fe))
+        self._progress.set_process('Computation of volume load...', 1, counter * len(self.mesh.fe))
         counter = 1
-        for i in range(0, len(self._params_.bc_list)):
-            if self._params_.bc_list[i].type != 'volume':
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type != 'volume':
                 continue
-            for j in range(0, len(self._mesh_.fe)):
-                self._progress_.set_progress(counter)
+            for j in range(0, len(self.mesh.fe)):
+                self._progress.set_progress(counter)
                 counter += 1
-                rel_ve = self._mesh_.volume(j) / float(len(self._mesh_.fe[j]))
-                for k in range(0, len(self._mesh_.fe[j])):
-                    x = self._mesh_.get_coord(self._mesh_.fe[j][k])
+                rel_ve = self.mesh.volume(j) / float(len(self.mesh.fe[j]))
+                for k in range(0, len(self.mesh.fe[j])):
+                    x = self.mesh.get_coord(self.mesh.fe[j][k])
                     for l in range(0, len(x)):
-                        parser.set_variable(self._params_.names[l], x[l])
-                    parser.set_variable(self._params_.names[3], t)
-                    parser.set_code(self._params_.bc_list[i].expression)
+                        parser.set_variable(self.params.names[l], x[l])
+                    parser.set_variable(self.params.names[3], t)
+                    parser.set_code(self.params.bc_list[i].expression)
                     val = parser.run()
-                    if self._params_.bc_list[i].direct & DIR_1:
-                        self._global_load_[self._mesh_.fe[j][k] * self._mesh_.freedom + 0] += val * rel_ve
-                    if self._params_.bc_list[i].direct & DIR_2:
-                        self._global_load_[self._mesh_.fe[j][k] * self._mesh_.freedom + 1] += val * rel_ve
-                    if self._params_.bc_list[i].direct & DIR_3:
-                        self._global_load_[self._mesh_.fe[j][k] * self._mesh_.freedom + 2] += val * rel_ve
+                    if self.params.bc_list[i].direct & DIR_1:
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 0] += val * rel_ve
+                    if self.params.bc_list[i].direct & DIR_2:
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 1] += val * rel_ve
+                    if self.params.bc_list[i].direct & DIR_3:
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 2] += val * rel_ve
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...)
-    def _calc_results_(self, t=0):
+    def _calc_results(self, t=0):
         # Выделяем память для хранения результатов
         res = []
-        for i in range(0, self._num_result_()):
-            r = [0]*len(self._mesh_.x)
+        for i in range(0, self.__num_result()):
+            r = [0]*len(self.mesh.x)
             res.append(r)
-        uvw = [0] * len(self._mesh_.fe[0]) * self._mesh_.freedom
-        counter = [0]*len(self._mesh_.x)  # Счетчик кол-ва вхождения узлов для осреднения результатов
+        uvw = [0] * len(self.mesh.fe[0]) * self.mesh.freedom
+        counter = [0]*len(self.mesh.x)  # Счетчик кол-ва вхождения узлов для осреднения результатов
         # Копируем полученные перемещения
-        for i in range(0, len(self._mesh_.x)):
-            if self._mesh_.is_plate():  # Для пластин перемещения меняются местами и вычисляются u и v
-                res[0][i] = self._global_load_[i * self._mesh_.freedom + 1]   # u (Tau_x)
-                res[1][i] = self._global_load_[i * self._mesh_.freedom + 2]   # v (Tau_y)
-                res[2][i] = self._global_load_[i * self._mesh_.freedom + 0]   # w
+        for i in range(0, len(self.mesh.x)):
+            if self.mesh.is_plate():  # Для пластин перемещения меняются местами и вычисляются u и v
+                res[0][i] = self._global_load[i * self.mesh.freedom + 1]   # u (Tau_x)
+                res[1][i] = self._global_load[i * self.mesh.freedom + 2]   # v (Tau_y)
+                res[2][i] = self._global_load[i * self.mesh.freedom + 0]   # w
             else:
-                for j in range(0, self._mesh_.freedom):
-                    res[j][i] = self._global_load_[i * self._mesh_.freedom + j]
+                for j in range(0, self.mesh.freedom):
+                    res[j][i] = self._global_load[i * self.mesh.freedom + j]
         # Вычисляем стандартные результаты по всем КЭ
-        fe = self._create_fe_()
-        fe.set_elasticity(self._params_.e, self._params_.m)
-        fe.set_h(self._params_.h)
-        self._progress_.set_process('Calculation results...', 1, len(self._mesh_.fe))
-        for i in range(0, len(self._mesh_.fe)):
-            self._progress_.set_progress(i + 1)
-            x = self._mesh_.get_fe_coord(i)
+        fe = self.create_fe()
+        fe.set_params(self.params)
+        self._progress.set_process('Calculation results...', 1, len(self.mesh.fe))
+        for i in range(0, len(self.mesh.fe)):
+            self._progress.set_progress(i + 1)
+            x = self.mesh.get_fe_coord(i)
             fe.set_coord(x)
-            for j in range(0, len(self._mesh_.fe[i])):
-                for k in range(0, self._mesh_.freedom):
-                    uvw[j * self._mesh_.freedom + k] = \
-                        self._global_load_[self._mesh_.freedom * self._mesh_.fe[i][j] + k]
+            for j in range(0, len(self.mesh.fe[i])):
+                for k in range(0, self.mesh.freedom):
+                    uvw[j * self.mesh.freedom + k] = \
+                        self._global_load[self.mesh.freedom * self.mesh.fe[i][j] + k]
             r = fe.calc(uvw)
-            offset = 3 if self._mesh_.is_shell() else self._mesh_.freedom
+            offset = 3 if self.mesh.is_shell() else self.mesh.freedom
             for m in range(0, len(r)):
                 for j in range(0, len(r[0])):
-                    res[offset + m][self._mesh_.fe[i][j]] += r[m][j]
+                    res[offset + m][self.mesh.fe[i][j]] += r[m][j]
                     if not m:
-                        counter[self._mesh_.fe[i][j]] += 1
+                        counter[self.mesh.fe[i][j]] += 1
         # Осредняем результаты
-        for i in range(self._mesh_.freedom, self._num_result_()):
-            for j in range(0, len(self._mesh_.x)):
+        for i in range(self.mesh.freedom, self.__num_result()):
+            for j in range(0, len(self.mesh.x)):
                 res[i][j] /= counter[j]
         # Сохраняем полученные результаты в списке
-        for i in range(0, self._num_result_()):
+        for i in range(0, self.__num_result()):
             r = TResult()
-            r.name = self._params_.names[self._index_result_(i)]
+            r.name = self.params.names[self.__index_result(i)]
             r.results = res[i]
             r.t = t
-            self._result_.append(r)
+            self._result.append(r)
 
     # Задание граничных условий
-    def _set_boundary_condition_(self, i, j, val):
-        r = i * self._mesh_.freedom + j
-        for k in self._global_matrix_stiffness_[r].nonzero()[1]:
+    def _set_boundary_condition(self, i, j, val):
+        r = i * self.mesh.freedom + j
+        for k in self._global_matrix_stiffness[r].nonzero()[1]:
             if r != k:
-                self._global_matrix_stiffness_[r, k] = self._global_matrix_stiffness_[k, r] = 0
-        self._global_load_[r] = val * self._global_matrix_stiffness_[r, r]
+                self._global_matrix_stiffness[r, k] = self._global_matrix_stiffness[k, r] = 0
+        self._global_load[r] = val * self._global_matrix_stiffness[r, r]
 
     # Учет граничных условий
-    def _use_boundary_condition_(self):
-        parser = self._create_parser_()
+    def _use_boundary_condition(self):
+        parser = self.create_parser()
         counter = 0
-        for i in range(0, len(self._params_.bc_list)):
-            if self._params_.bc_list[i].type == 'boundary':
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type == 'boundary':
                 counter += 1
-        self._progress_.set_process('Use of boundary conditions...', 1, counter * len(self._mesh_.x))
+        self._progress.set_process('Use of boundary conditions...', 1, counter * len(self.mesh.x))
         counter = 1
-        for i in range(0, len(self._params_.bc_list)):
-            if self._params_.bc_list[i].type == 'boundary':
-                for j in range(0, len(self._mesh_.x)):
-                    self._progress_.set_progress(counter)
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type == 'boundary':
+                for j in range(0, len(self.mesh.x)):
+                    self._progress.set_progress(counter)
                     counter += 1
-                    x = self._mesh_.get_coord(j)
+                    x = self.mesh.get_coord(j)
                     for k in range(0, len(x)):
-                        parser.set_variable(self._params_.names[k], x[k])
-                    if len(self._params_.bc_list[i].predicate):
-                        parser.set_code(self._params_.bc_list[i].predicate)
+                        parser.set_variable(self.params.names[k], x[k])
+                    if len(self.params.bc_list[i].predicate):
+                        parser.set_code(self.params.bc_list[i].predicate)
                         if parser.run() == 0:
                             continue
-                    parser.set_code(self._params_.bc_list[i].expression)
+                    parser.set_code(self.params.bc_list[i].expression)
                     val = parser.run()
-                    direct = self._params_.bc_list[i].direct
+                    direct = self.params.bc_list[i].direct
                     if direct & DIR_1:
-                        self._set_boundary_condition_(j, 0, val)
+                        self._set_boundary_condition(j, 0, val)
                     if direct & DIR_2:
-                        self._set_boundary_condition_(j, 1, val)
+                        self._set_boundary_condition(j, 1, val)
                     if direct & DIR_3:
-                        self._set_boundary_condition_(j, 2, val)
+                        self._set_boundary_condition(j, 2, val)
 
     # Прямое решение СЛАУ
-    def _solve_direct_(self):
-        self._progress_.set_process('Solving of equation system...', 1, 1)
-        self._global_matrix_stiffness_ = self._global_matrix_stiffness_.tocsr()
+    def _solve_direct(self):
+        self._progress.set_process('Solving of equation system...', 1, 1)
+        self._global_matrix_stiffness = self._global_matrix_stiffness.tocsr()
         try:
-            self._global_load_ = spsolve(self._global_matrix_stiffness_, self._global_load_)
+            self._global_load = spsolve(self._global_matrix_stiffness, self._global_load)
         except ArpackError:
             return False
-        self._progress_.set_progress(1)
+        self._progress.set_progress(1)
         return True
 
     # Приближенное решение СЛАУ
-    def _solve_iterative_(self):
-        self._progress_.set_process('Solving of equation system...', 1, 1)
-        self._global_matrix_stiffness_ = self._global_matrix_stiffness_.tocsr()
-        self._global_load_, info = bicgstab(self._global_matrix_stiffness_, self._global_load_,
-                                            self._global_load_, self._params_.eps)
-        self._progress_.set_progress(1)
+    def _solve_iterative(self):
+        self._progress.set_process('Solving of equation system...', 1, 1)
+        self._global_matrix_stiffness = self._global_matrix_stiffness.tocsr()
+        self._global_load, info = bicgstab(self._global_matrix_stiffness, self._global_load,
+                                           self._global_load, self.params.eps)
+        self._progress.set_progress(1)
         return True if not info else False
 
     # Проверка соответствия граничного элемента предикату отбора (всех его вершин)
-    def _check_boundary_elements_(self, i, predicate):
+    def __check_boundary_elements(self, i, predicate):
         if not len(predicate):
             return True
-        parser = self._create_parser_()
-        for k in range(0, len(self._mesh_.be[0])):
-            x = self._mesh_.get_coord(self._mesh_.be[i][k])
+        parser = self.create_parser()
+        for k in range(0, len(self.mesh.be[0])):
+            x = self.mesh.get_coord(self.mesh.be[i][k])
             for l in range(0, len(x)):
-                parser.set_variable(self._params_.names[l], x[l])
+                parser.set_variable(self.params.names[l], x[l])
             parser.set_code(predicate)
             if parser.run() == 0:
                 return False
         return True
 
     # Определение кол-ва результатов в зависимости от размерности задачи
-    def _num_result_(self):
+    def __num_result(self):
         res = 0
-        if self._mesh_.freedom == 1:
+        if self.mesh.freedom == 1:
             # u, Exx, Sxx
             res = 3
-        elif self._mesh_.freedom == 2:
+        elif self.mesh.freedom == 2:
             # u, v, Exx, Eyy, Exy, Sxx, Syy, Sxy
             res = 8
-        elif self._mesh_.freedom == 3 or self._mesh_.freedom == 6:
+        elif self.mesh.freedom == 3 or self.mesh.freedom == 6:
             # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz
             res = 15
         return res
 
     # Индекс функции в зависимости от размерности задачи
-    def _index_result_(self, i):
+    def __index_result(self, i):
         ret = 0
         # u, Exx, Sxx
         index1 = [4, 7, 13]
@@ -309,10 +307,10 @@ class TFEMStatic(TFEM):
         index2 = [4, 5, 7, 8, 10, 13, 14, 16]
         # u, v, w, Exx, Eyy, Ezz, Exy, Exz, Eyz, Sxx, Syy, Szz, Sxy, Sxz, Syz
         index3 = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
-        if self._mesh_.freedom == 1:
+        if self.mesh.freedom == 1:
             ret = index1[i]
-        elif self._mesh_.freedom == 2:
+        elif self.mesh.freedom == 2:
             ret = index2[i]
-        elif self._mesh_.freedom == 3 or self._mesh_.freedom == 6:
+        elif self.mesh.freedom == 3 or self.mesh.freedom == 6:
             ret = index3[i]
         return ret

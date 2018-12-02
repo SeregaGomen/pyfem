@@ -16,94 +16,82 @@ from core.fem_error import TFEMException
 # Абстрактный базовый класс, реализующий МКЭ
 class TFEM:
     def __init__(self):
-        self._mesh_ = TMesh()                                 # Дискретная модель объекта
-        self._params_ = TFEMParams()                          # Параметры расчета
-        self._progress_ = TProgress()                         # Индикатор прогресса расчета
-        self._result_ = []                                    # Список результатов расчета
+        self.mesh = TMesh()                                     # Дискретная модель объекта
+        self.params = TFEMParams()                          # Параметры расчета
+        self._progress = TProgress()                         # Индикатор прогресса расчета
+        self._result = []                                    # Список результатов расчета
 
     @abstractmethod
-    def _calc_problem_(self):
-        raise NotImplementedError('Method TFEM._calc_problem_ is pure virtual')
+    def _calc_problem(self):
+        raise NotImplementedError('Method TFEM._calc_problem is pure virtual')
 
     # Добавление локальной матрицы жесткости (масс, демпфирования) к глобальной
     @abstractmethod
-    def _assembly_(self, fe, index):
-        raise NotImplementedError('Method TFEM._assembly_ is pure virtual')
+    def __assembly(self, fe, index):
+        raise NotImplementedError('Method TFEM.__assembly is pure virtual')
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...) 
     @abstractmethod
-    def _calc_results_(self):
-        raise NotImplementedError('Method TFEM.calc_results is pure virtual')
+    def _calc_results(self):
+        raise NotImplementedError('Method TFEM._calc_results is pure virtual')
 
     # Прямое решение СЛАУ
     @abstractmethod
-    def _solve_direct_(self):
-        raise NotImplementedError('Method TFEM._solve_direct_ is pure virtual')
+    def _solve_direct(self):
+        raise NotImplementedError('Method TFEM._solve_direct is pure virtual')
 
     # Приближенное решение СЛАУ
     @abstractmethod
-    def _solve_iterative_(self):
-        raise NotImplementedError('Method TFEM._solve_iterative_ is pure virtual')
+    def _solve_iterative(self):
+        raise NotImplementedError('Method TFEM._solve_iterative is pure virtual')
 
     # Решение СЛАУ
-    def _solve_(self):
+    def _solve(self):
         ret = False
-        if self._params_.solve_method == 'direct':
-            ret = self._solve_direct_()
-        elif self._params_.solve_method == 'iterative':
-            ret = self._solve_iterative_()
+        if self.params.solve_method == 'direct':
+            ret = self._solve_direct()
+        elif self.params.solve_method == 'iterative':
+            ret = self._solve_iterative()
         return ret
 
     # Создание нужного типа КЭ
-    def _create_fe_(self):
+    def create_fe(self):
         fe = TFE()
-        if self._mesh_.fe_type == 'fe_1d_2':
+        if self.mesh.fe_type == 'fe_1d_2':
             fe = TFE1D2()
-        elif self._mesh_.fe_type == 'fe_2d_3':
+        elif self.mesh.fe_type == 'fe_2d_3':
             fe = TFE2D3()
-        elif self._mesh_.fe_type == 'fe_2d_4':
+        elif self.mesh.fe_type == 'fe_2d_4':
             fe = TFE2D4()
-        elif self._mesh_.fe_type == 'fe_3d_4':
+        elif self.mesh.fe_type == 'fe_3d_4':
             fe = TFE3D4()
-        elif self._mesh_.fe_type == 'fe_3d_8':
+        elif self.mesh.fe_type == 'fe_3d_8':
             fe = TFE3D8()
-        elif self._mesh_.fe_type == 'fe_2d_3_p':
+        elif self.mesh.fe_type == 'fe_2d_3_p':
             fe = TFE2D3P()
-        elif self._mesh_.fe_type == 'fe_2d_4_p':
+        elif self.mesh.fe_type == 'fe_2d_4_p':
             fe = TFE2D4P()
-        elif self._mesh_.fe_type == 'fe_2d_3_s':
+        elif self.mesh.fe_type == 'fe_2d_3_s':
             fe = TFE2D3S()
-        elif self._mesh_.fe_type == 'fe_2d_4_s':
+        elif self.mesh.fe_type == 'fe_2d_4_s':
             fe = TFE2D4S()
         return fe
 
     # Создание и настройка парсера
-    def _create_parser_(self):
+    def create_parser(self):
         parser = TParser()
-        for i in range(0, len(self._params_.names)):
-            parser.add_variable(self._params_.names[i])
-        for key, value in self._params_.var_list.items():
+        for i in range(0, len(self.params.names)):
+            parser.add_variable(self.params.names[i])
+        for key, value in self.params.var_list.items():
             parser.add_variable(key, value)
         return parser
-
-    # Вычисление значения нагрузки
-    def _setup_parser_(self, parser, x, t, p_code, f_code):
-        for i in range(0, len(x)):
-            parser.set_variable(self._params_.names[i], x[i])
-        parser.set_variable(self._params_.names[3], t)
-        if len(p_code):
-            parser.set_code(p_code)
-            if parser.run() == 0:
-                return False, 0
-        parser.set_code(f_code)
-        return True, parser.run()
 
     # Запуск процедуры расчета
     def calc(self):
         try:
             # Проверка наличия и соответствия необходимых параметров расчета
-            self._params_.check_params()
-            ret = self._calc_problem_()
+            self.params.check_params()
+            ret = self._calc_problem()
         except TFEMException as err:
             ret = False
             err.print_error()
@@ -111,12 +99,12 @@ class TFEM:
 
     # Задание сетки
     def set_mesh(self, mesh):
-        self._mesh_ = mesh
+        self.mesh = mesh
 
     # Задание параметров расчета
     def set_params(self, params):
-        self._params_ = params
+        self.params = params
 
     # Возврат результатов расчета
     def get_result(self):
-        return self._result_
+        return self._result

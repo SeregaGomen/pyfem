@@ -354,7 +354,7 @@ def plate4(res_name):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
-        obj.set_h(0.01)
+        obj.set_thickness(0.01)
         obj.set_precision(5)
         obj.set_elasticity([2E+6], [0.3])
 #        obj.set_names(['W', 'Tx', 'Ty', 'Exx', 'Eyy', 'Exy', 'Sxx', 'Syy', 'Sxy'])
@@ -377,7 +377,7 @@ def plate3(res_name):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
-        obj.set_h(0.01)
+        obj.set_thickness(0.01)
         obj.set_precision(5)
         obj.set_elasticity([2E+6], [0.3])
         obj.add_boundary_condition('0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1', DIR_1 | DIR_2 | DIR_3)
@@ -398,7 +398,7 @@ def shell3(res_name):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
-        obj.set_h(0.01)
+        obj.set_thickness(0.01)
         obj.set_precision(5)
         obj.set_elasticity([2E+6], [0.3])
 #        obj.add_boundary_condition('0', 'y = 0', DIR_1 | DIR_2 | DIR_3)
@@ -420,7 +420,7 @@ def shell4(res_name):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
-        obj.set_h(0.01)
+        obj.set_thickness(0.01)
         obj.set_precision(5)
         obj.set_elasticity([2E+6], [0.3])
 #        obj.set_names(['x1', 'x2',  'x3', 't', 'u1', 'u2', 'u3', 'e11', 'e22', 'e33', 'e12', 'e13', 'e23', 's11',
@@ -442,7 +442,7 @@ def shell_plate3(res_name):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
-        obj.set_h(0.01)
+        obj.set_thickness(0.01)
         obj.set_precision(5)
         obj.set_elasticity([2E+6], [0.3])
         obj.add_boundary_condition('0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1', DIR_1 | DIR_2 | DIR_3)
@@ -464,7 +464,7 @@ def shell3_test(res_name):
         obj.set_solve_method('direct')
         obj.set_width(10)
         obj.set_precision(5)
-        obj.set_h(0.0369)
+        obj.set_thickness(0.0369)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z = 0 or z = 4.014', DIR_1 | DIR_2 | DIR_3)
         obj.add_surface_load('0.05*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_1)
@@ -479,11 +479,11 @@ def shell3_test(res_name):
 
 def plate3_test(res_name):
     obj = TObject()
+    # if obj.set_mesh('mesh/plate3.trpa'):
     if obj.set_mesh('mesh/plate3_1_0.trpa'):
-#    if obj.set_mesh('mesh/plate3.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_h(0.01)
+        obj.set_thickness(0.01)
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
@@ -503,7 +503,7 @@ def plate4_test(res_name):
     if obj.set_mesh('mesh/plate4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_h(0.01)
+        obj.set_thickness(0.01)
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
@@ -524,7 +524,7 @@ def shell4_test(res_name):
         obj.set_solve_method('direct')
         obj.set_width(10)
         obj.set_precision(5)
-        obj.set_h(0.0369)
+        obj.set_thickness(0.0369)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z = 0 or z = 4.014', DIR_1 | DIR_2 | DIR_3)
         obj.add_surface_load('0.05*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_1)
@@ -565,7 +565,7 @@ def tank3s(res_name):
         obj.set_solve_method('direct')
 #        obj.set_solve_method('iterative')
         obj.set_elasticity([6.5E+10], [0.3])
-        obj.set_h(0.0015)
+        obj.set_thickness(0.0015)
         obj.add_variable('eps', 0.01)
         obj.add_variable('L', 0.269)
         obj.add_variable('P', 10000)
@@ -689,7 +689,7 @@ def create_plate_mesh_4():
         file.write(str(n**2) + '\n')
         for i in range(0, len(index) - 1):
             for j in range(0, len(index) - 1):
-                file.write(str(index[i][j]) + ' ' +str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' +
+                file.write(str(index[i][j]) + ' ' + str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' +
                            str(index[i + 1][j]) + '\n')
         file.write('0\n')
     return
@@ -732,7 +732,7 @@ if __name__ == '__main__':
     # create_shell_mesh_4()
     # create_plate_mesh_4()
     # beam('beam')
-    # head3d('head3d')
+    head3d('head3d')
     # cube('cube')
     # tank3('tank3')
     # cylinder('cylinder')
@@ -755,7 +755,7 @@ if __name__ == '__main__':
     # shell3_test('shell3_test')
     # tube_test('tube_test')
     # plate3d('plate3d')
-    tank3s('tank3s')
+    # tank3s('tank3s')
 
 '''
 2. Правильно отображать динамическую задачу в plot3d

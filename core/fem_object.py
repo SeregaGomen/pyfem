@@ -24,16 +24,16 @@ def print_error(err_msg):
 
 class TObject:
     def __init__(self):
-        self.__params__ = TFEMParams()          # Параметры расчета
-        self.__mesh__ = TMesh()                 # КЭ-модель
-        self.__results__ = []                   # Список результатов расчета для перемещений, деформаций, ...
+        self.__params = TFEMParams()          # Параметры расчета
+        self.__mesh = TMesh()                 # КЭ-модель
+        self.__results = []                   # Список результатов расчета для перемещений, деформаций, ...
 
     def set_mesh(self, name):
         try:
-            self.__mesh__.load(name)
+            self.__mesh.load(name)
             print('Object: %s' % self.object_name())
-            print('Points: %d' % len(self.__mesh__.x))
-            print('FE: %d - %s' % (len(self.__mesh__.fe), self.__mesh__.fe_name()))
+            print('Points: %d' % len(self.__mesh.x))
+            print('FE: %d - %s' % (len(self.__mesh.fe), self.__mesh.fe_name()))
         except TFEMException as err:
             err.print_error()
             return False
@@ -41,73 +41,73 @@ class TObject:
 
     # Название объекта
     def object_name(self):
-        return os.path.splitext(os.path.basename(self.__mesh__.mesh_file))[0]
+        return os.path.splitext(os.path.basename(self.__mesh.mesh_file))[0]
 
     def set_problem_type(self, problem_type):
-        self.__params__.problem_type = problem_type
+        self.__params.problem_type = problem_type
 
     def set_solve_method(self, solve_method):
-        self.__params__.solve_method = solve_method
+        self.__params.solve_method = solve_method
 
     def set_eps(self, e):
-        self.__params__.eps = e
+        self.__params.eps = e
 
-    def set_h(self, h):
-        self.__params__.h = h
+    def set_thickness(self, h):
+        self.__params.thickness = h
 
     def set_width(self, width):
-        self.__params__.width = width
+        self.__params.width = width
 
     def set_names(self, names):
-        self.__params__.names = names
+        self.__params.names = names
 
     def set_precision(self, precision):
-        self.__params__.precision = precision
+        self.__params.precision = precision
 
     def set_elasticity(self, e, m):
-        self.__params__.e = e
-        self.__params__.m = m
+        self.__params.e = e
+        self.__params.m = m
 
     def set_density(self, density):
-        self.__params__.density = density
+        self.__params.density = density
 
     def set_time(self, t0, t1, th):
-        self.__params__.t0 = t0
-        self.__params__.t1 = t1
-        self.__params__.th = th
+        self.__params.t0 = t0
+        self.__params.t1 = t1
+        self.__params.th = th
 
     def set_damping(self, damping):
-        self.__params__.damping = damping
+        self.__params.damping = damping
 
     def add_boundary_condition(self, e, p, d):
-        self.__params__.add_boundary_condition(e, p, d)
+        self.__params.add_boundary_condition(e, p, d)
 
     def add_initial_condition(self, e, d):
-        self.__params__.add_initial_condition(e, '', d)
+        self.__params.add_initial_condition(e, '', d)
 
     def add_volume_load(self, e, p, d):
-        self.__params__.add_volume_load(e, p, d)
+        self.__params.add_volume_load(e, p, d)
 
     def add_concentrated_load(self, e, p, d):
-        self.__params__.add_concentrated_load(e, p, d)
+        self.__params.add_concentrated_load(e, p, d)
 
     def add_surface_load(self, e, p, d):
-        self.__params__.add_surface_load(e, p, d)
+        self.__params.add_surface_load(e, p, d)
 
     def add_variable(self, var, val):
-        self.__params__.add_variable(var, val)
+        self.__params.add_variable(var, val)
 
     def calc(self):
         fem = TFEM()
-        if self.__params__.problem_type == 'static':
+        if self.__params.problem_type == 'static':
             fem = TFEMStatic()
-        elif self.__params__.problem_type == 'dynamic':
+        elif self.__params.problem_type == 'dynamic':
             fem = TFEMDynamic()
-        fem.set_mesh(self.__mesh__)
-        fem.set_params(self.__params__)
+        fem.set_mesh(self.__mesh)
+        fem.set_params(self.__params)
         ret = fem.calc()
         if ret:
-            self.__results__ = fem.get_result()
+            self.__results = fem.get_result()
         return ret
 
     # Вывод результатов расчета
@@ -119,16 +119,16 @@ class TObject:
         except IOError:
             print_error('Error: unable to open file %s' % argv[0])
             return
-        if self.__params__.problem_type == 'static':
-            self.__print__(file)
+        if self.__params.problem_type == 'static':
+            self.__print(file)
         else:
-            t = self.__params__.t0
-            while t <= self.__params__.t1:
+            t = self.__params.t0
+            while t <= self.__params.t1:
                 file.write('t = %5.2f\n' % t)
-                self.__print__(file, t)
-                t += self.__params__.th
-                if fabs(t - self.__params__.t1) < self.__params__.eps:
-                    t = self.__params__.t1
+                self.__print(file, t)
+                t += self.__params.th
+                if fabs(t - self.__params.t1) < self.__params.eps:
+                    t = self.__params.t1
         if len(argv) == 1:
             file.close()
 
@@ -142,23 +142,23 @@ class TObject:
         tm = str(now.hour) + ':' + str(now.minute) + ':' + str(now.second)
         # Формирование структуры файла
         header = dict()
-        header['name'] = self.__mesh__.mesh_file[self.__mesh__.mesh_file.rfind('/') + 1:
-                                                 self.__mesh__.mesh_file.rfind('.')]
-        header['type'] = self.__params__.problem_type
+        header['name'] = self.__mesh.mesh_file[self.__mesh.mesh_file.rfind('/') + 1:
+                                                 self.__mesh.mesh_file.rfind('.')]
+        header['type'] = self.__params.problem_type
         header['date_time'] = dt + " " + tm
 
         mesh = dict()
-        mesh['fe_type'] = self.__mesh__.fe_type
-        mesh['vertex'] = self.__mesh__.x
-        mesh['fe'] = self.__mesh__.fe
-        mesh['be'] = self.__mesh__.be
+        mesh['fe_type'] = self.__mesh.fe_type
+        mesh['vertex'] = self.__mesh.x
+        mesh['fe'] = self.__mesh.fe
+        mesh['be'] = self.__mesh.be
 
         results = list()
-        for i in range(0, len(self.__results__)):
+        for i in range(0, len(self.__results)):
             res = dict()
-            res['function'] = self.__results__[i].name
-            res['t'] = self.__results__[i].t
-            res['results'] = self.__results__[i].results
+            res['function'] = self.__results[i].name
+            res['t'] = self.__results[i].t
+            res['results'] = self.__results[i].results
             results.append(res)
 
         data = dict()
@@ -171,56 +171,56 @@ class TObject:
             json.dump(json_data, file)
 
     # Вывод результатов расчета для одного момента времени
-    def __print__(self, file, t=0):
+    def __print(self, file, t=0):
         # Определение ширины позиции
-        len1 = len('%+*.*E' % (self.__params__.width, self.__params__.precision, 3.14159))
-        len2 = len('%d' % len(self.__mesh__.x))
+        len1 = len('%+*.*E' % (self.__params.width, self.__params.precision, 3.14159))
+        len2 = len('%d' % len(self.__mesh.x))
         # Вывод заголовка
         file.write('| %*s  (' % (len2, 'N'))
-        for i in range(0, self.__mesh__.dimension):
-            file.write(' %*s' % (len1, self.__params__.names[i]))
-            if i < self.__mesh__.dimension - 1:
+        for i in range(0, self.__mesh.dimension):
+            file.write(' %*s' % (len1, self.__params.names[i]))
+            if i < self.__mesh.dimension - 1:
                 file.write(',')
         file.write(') |')
-        for i in range(0, len(self.__results__)):
-            if self.__results__[i].t == t:
-                file.write(' %*s |' % (len1, self.__results__[i].name))
+        for i in range(0, len(self.__results)):
+            if self.__results[i].t == t:
+                file.write(' %*s |' % (len1, self.__results[i].name))
         file.write('\n')
-        for i in range(0, len(self.__mesh__.x)):
+        for i in range(0, len(self.__mesh.x)):
             file.write('| %*d  (' % (len2, i + 1))
-            file.write(' %+*.*E' % (self.__params__.width, self.__params__.precision, self.__mesh__.x[i][0]))
-            if self.__mesh__.dimension > 1:
-                file.write(', %+*.*E' % (self.__params__.width, self.__params__.precision, self.__mesh__.x[i][1]))
-            if self.__mesh__.dimension > 2:
-                file.write(', %+*.*E' % (self.__params__.width, self.__params__.precision, self.__mesh__.x[i][2]))
+            file.write(' %+*.*E' % (self.__params.width, self.__params.precision, self.__mesh.x[i][0]))
+            if self.__mesh.dimension > 1:
+                file.write(', %+*.*E' % (self.__params.width, self.__params.precision, self.__mesh.x[i][1]))
+            if self.__mesh.dimension > 2:
+                file.write(', %+*.*E' % (self.__params.width, self.__params.precision, self.__mesh.x[i][2]))
             file.write(') | ')
-            for k in range(0, len(self.__results__)):
-                if self.__results__[k].t == t:
+            for k in range(0, len(self.__results)):
+                if self.__results[k].t == t:
                     file.write('%+*.*E' %
-                               (self.__params__.width, self.__params__.precision, self.__results__[k].results[i]))
+                               (self.__params.width, self.__params.precision, self.__results[k].results[i]))
                     file.write(' | ')
             file.write('\n')
         file.write('\n')
         # Печать итогов
         file.write('|  %*s  ' % (len2, ' '))
-        for i in range(0, self.__mesh__.dimension):
+        for i in range(0, self.__mesh.dimension):
             file.write(' %*s' % (len1, ' '))
-            if i < self.__mesh__.dimension - 1:
+            if i < self.__mesh.dimension - 1:
                 file.write(' ')
         file.write('  |')
-        for i in range(0, len(self.__results__)):
-            if self.__results__[i].t == t:
-                file.write(' %*s |' % (len1, self.__results__[i].name))
+        for i in range(0, len(self.__results)):
+            if self.__results[i].t == t:
+                file.write(' %*s |' % (len1, self.__results[i].name))
         file.write('\n')
-        file.write('|   %*s  |' % (self.__mesh__.dimension*(len1 + 1) + self.__mesh__.dimension + len2, 'min:'))
-        for i in range(0, len(self.__results__)):
-            if self.__results__[i].t == t:
-                file.write(' %+*.*E ' % (self.__params__.width, self.__params__.precision, self.__results__[i].min()))
+        file.write('|   %*s  |' % (self.__mesh.dimension * (len1 + 1) + self.__mesh.dimension + len2, 'min:'))
+        for i in range(0, len(self.__results)):
+            if self.__results[i].t == t:
+                file.write(' %+*.*E ' % (self.__params.width, self.__params.precision, self.__results[i].min()))
                 file.write('|')
         file.write('\n')
-        file.write('|   %*s  |' % (self.__mesh__.dimension*(len1 + 1) + self.__mesh__.dimension + len2, 'max:'))
-        for i in range(0, len(self.__results__)):
-            if self.__results__[i].t == t:
-                file.write(' %+*.*E ' % (self.__params__.width, self.__params__.precision, self.__results__[i].max()))
+        file.write('|   %*s  |' % (self.__mesh.dimension * (len1 + 1) + self.__mesh.dimension + len2, 'max:'))
+        for i in range(0, len(self.__results)):
+            if self.__results[i].t == t:
+                file.write(' %+*.*E ' % (self.__params.width, self.__params.precision, self.__results[i].max()))
                 file.write('|')
         file.write('\n\n\n')
