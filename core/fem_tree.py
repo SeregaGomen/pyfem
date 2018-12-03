@@ -88,9 +88,9 @@ class TBinaryNode(TNode):
         elif self.__op__ == '-':
             return self.left.value() - self.right.value()
         elif self.__op__ == '*':
-            return self.left.value()*self.right.value()
+            return self.left.value() * self.right.value()
         elif self.__op__ == '/':
-            return self.left.value()/self.right.value()
+            return self.left.value() / self.right.value()
         elif self.__op__ == '^':
             return math.pow(self.left.value(), self.right.value())
         elif self.__op__ == '=':

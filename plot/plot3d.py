@@ -350,10 +350,10 @@ class TGLWidget(QWidget):
             self.__xlist_skeleton__ = 0
         self.__gl__.updateGL()
 
-    def set_data(self, fe_type, x, fe, be, results, fun_index):
+    def set_data(self, fe_type, px, fe, be, results, fun_index):
         self.__gl__.glInit()
         self.fe_type = fe_type
-        self.x = x
+        self.x = px
         self.fe = fe
         self.be = be
         self.results = results
@@ -421,7 +421,7 @@ class TGLWidget(QWidget):
         self.__gl__.update()
 
     def set_colors(self, colors):
-        self.num_color = 2*colors
+        self.num_color = 2 * colors
         self.__init_color_table__()
         self.redraw()
         self.__gl__.update()
@@ -451,10 +451,10 @@ class TGLWidget(QWidget):
         self.__last_pos__ = event.pos()
         if event.buttons() & Qt.LeftButton:
             if event.modifiers() & Qt.ShiftModifier:
-                self.angle_z += (dy/abs(dy) if dy != 0 else 0) + (dx/abs(dx) if dx != 0 else 0)
+                self.angle_z += (dy / abs(dy) if dy != 0 else 0) + (dx / abs(dx) if dx != 0 else 0)
             else:
-                self.angle_x += dy/abs(dy) if dy != 0 else 0
-                self.angle_y += dx/abs(dx) if dx != 0 else 0
+                self.angle_x += dy / abs(dy) if dy != 0 else 0
+                self.angle_y += dx / abs(dx) if dx != 0 else 0
             self.__gl__.repaint()
 
     def __wheel_event__(self, event):
@@ -470,22 +470,22 @@ class TGLWidget(QWidget):
         for k in range(0, len(self.x[0])):
             min_x[k] = min(self.x[i][k] for i in range(0, len(self.x)))
             max_x[k] = max(self.x[i][k] for i in range(0, len(self.x)))
-        x_c = [(max_x[0] + min_x[0])/2, (max_x[1] + min_x[1])/2, (max_x[2] + min_x[2])/2]
-        radius = ((max_x[0] - min_x[0])**2 + (max_x[1] - min_x[1])**2 + (max_x[2] - min_x[2])**2)**0.5
+        x_c = [(max_x[0] + min_x[0]) / 2, (max_x[1] + min_x[1]) / 2, (max_x[2] + min_x[2]) / 2]
+        radius = ((max_x[0] - min_x[0]) ** 2 + (max_x[1] - min_x[1]) ** 2 + (max_x[2] - min_x[2]) ** 2) ** 0.5
         return min_x, max_x, x_c, radius
 
     def __init_color_table__(self):
         self.__color_table__.clear()
-        step = self.num_color/6
-        h = 1.0/step
+        step = self.num_color / 6
+        h = 1.0 / step
         if self.min_u == self.max_u:
             self.max_u += 1
         green = 0
-        blue = red = 1
+        blue = 1
+        red = 0.24  # Темно-фиолетовый
         u = self.min_u
-        h_u = (self.max_u - self.min_u)/float(self.num_color)
+        h_u = (self.max_u - self.min_u) / float(self.num_color)
 
-        red = 0.24
         for i in range(0, self.num_color):
             if i < step:
                 # фиолетовый-синий
@@ -493,28 +493,28 @@ class TGLWidget(QWidget):
                 red -= h
                 if red < 0:
                     red = 0
-            elif step <= i < 2*step:
+            elif step <= i < 2 * step:
                 # синий-голубой
                 self.__color_table__.append([0, green, 1, u])
                 green += h
                 if green > 1:
                     green = 1
-            elif 2*step <= i < 3*step:
+            elif 2 * step <= i < 3 * step:
                 # голубой-зеленый
                 self.__color_table__.append([0, 1, blue, u])
                 blue -= h
                 if blue < 0:
                     blue = 0
-            elif 3*step <= i < 4*step:
+            elif 3 * step <= i < 4 * step:
                 # зеленый-желтый
                 self.__color_table__.append([red, 1, 0, u])
                 red += h
                 if red > 1:
                     red = 1
-            elif i > 4*step:
+            elif i > 4 * step:
                 # желтый-оранжевый-красный
                 self.__color_table__.append([1, green, 0, u])
-                green -= 0.5*h
+                green -= 0.5 * h
                 if green < 0:
                     green = 0
             u += h_u
@@ -526,10 +526,10 @@ class TGLWidget(QWidget):
             glColor3f(self.__color_table__[i][0], self.__color_table__[i][1], self.__color_table__[i][2])
 
     def __resize__(self, w, h):
-        aspect = w/h
+        aspect = w / h
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(60.0, aspect, 0.01*self.radius, 10*self.radius)
+        gluPerspective(60.0, aspect, 0.01 * self.radius, 10 * self.radius)
         gluLookAt(0, 0, self.radius, 0, 0, 0, 0, 1, 0)
         glViewport(0, 0, w, h)
         glMatrixMode(GL_MODELVIEW)
@@ -542,13 +542,13 @@ class TGLWidget(QWidget):
         ambient = 0.4
         specular = 0.7
         shininess = 50
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [r*diffuse, g*diffuse, b*diffuse, a])
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [r*ambient, g*ambient, b*ambient, a])
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [r * diffuse, g * diffuse, b * diffuse, a])
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [r * ambient, g * ambient, b * ambient, a])
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [specular, specular, specular, a])
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess)
 
     def __get_color_index__(self, u):
-        ret = int(floor((u - self.min_u)/((self.max_u - self.min_u)/self.num_color))) - 1
+        ret = int(floor((u - self.min_u) / ((self.max_u - self.min_u) / self.num_color))) - 1
         return ret - 1 if ret > 0 else 0
 
     def show_legend(self):
@@ -562,7 +562,7 @@ class TGLWidget(QWidget):
         cy = self.rect().top() + 20
         v = start
         n = 8 if self.min_u != self.max_u else 1
-        step = (self.max_u - self.min_u)/n
+        step = (self.max_u - self.min_u) / n
         for k in range(0, n):
             if k == n - 1:
                 v = stop
@@ -597,12 +597,12 @@ class TGLWidget(QWidget):
         glFrontFace(GL_CCW if inv == 1 else GL_CW)
         if self.is_light:
             # Задание нормали
-            a = (tri[1][1] - tri[0][1])*(tri[2][2] - tri[0][2]) - (tri[2][1] - tri[0][1])*(tri[1][2] - tri[0][2])
-            b = (tri[2][0] - tri[0][0])*(tri[1][2] - tri[0][2]) - (tri[1][0] - tri[0][0])*(tri[2][2] - tri[0][2])
-            c = (tri[1][0] - tri[0][0])*(tri[2][1] - tri[0][1]) - (tri[2][0] - tri[0][0])*(tri[1][1] - tri[0][1])
+            a = (tri[1][1] - tri[0][1]) * (tri[2][2] - tri[0][2]) - (tri[2][1] - tri[0][1]) * (tri[1][2] - tri[0][2])
+            b = (tri[2][0] - tri[0][0]) * (tri[1][2] - tri[0][2]) - (tri[1][0] - tri[0][0]) * (tri[2][2] - tri[0][2])
+            c = (tri[1][0] - tri[0][0]) * (tri[2][1] - tri[0][1]) - (tri[2][0] - tri[0][0]) * (tri[1][1] - tri[0][1])
             if self.is_invert_normal:
                 inv *= -1
-            glNormal3f(inv*a, inv*b, inv*c)
+            glNormal3f(inv * a, inv * b, inv * c)
         color_index = []
         for i in range(0, 3):
             color_index.append(self.__get_color_index__(tri[i][3]))
@@ -618,27 +618,27 @@ class TGLWidget(QWidget):
             step = color_index[2] - color_index[0] + 1
             p02 = []
             x = [tri[0][0], tri[0][1], tri[0][2], color_index[0]]
-            h = [(tri[2][0] - tri[0][0])/step, (tri[2][1] - tri[0][1])/step, (tri[2][2] - tri[0][2])/step,
-                 (color_index[2] - color_index[0])/step]
+            h = [(tri[2][0] - tri[0][0]) / step, (tri[2][1] - tri[0][1]) / step, (tri[2][2] - tri[0][2]) / step,
+                 (color_index[2] - color_index[0]) / step]
             for i in range(0, step):
-                p02.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], color_index[0] + i*h[3]])
+                p02.append([x[0] + i * h[0], x[1] + i * h[1], x[2] + i * h[2], color_index[0] + i * h[3]])
             p02.append([tri[2][0], tri[2][1], tri[2][2], color_index[2]])
 
             step = color_index[1] - color_index[0] + 1
             p012 = []
             x = [tri[0][0], tri[0][1], tri[0][2], color_index[0]]
-            h = [(tri[1][0] - tri[0][0])/step, (tri[1][1] - tri[0][1])/step, (tri[1][2] - tri[0][2])/step,
-                 (color_index[1] - color_index[0])/step]
+            h = [(tri[1][0] - tri[0][0]) / step, (tri[1][1] - tri[0][1]) / step, (tri[1][2] - tri[0][2]) / step,
+                 (color_index[1] - color_index[0]) / step]
             for i in range(1, step):
-                p012.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], color_index[0] + i*h[3]])
+                p012.append([x[0] + i * h[0], x[1] + i * h[1], x[2] + i * h[2], color_index[0] + i * h[3]])
             p012.append([tri[1][0], tri[1][1], tri[1][2], color_index[1]])
 
             step = color_index[2] - color_index[1] + 1
             x = [tri[1][0], tri[1][1], tri[1][2], color_index[1]]
-            h = [(tri[2][0] - tri[1][0])/step, (tri[2][1] - tri[1][1])/step, (tri[2][2] - tri[1][2])/step,
-                 (color_index[2] - color_index[1])/step]
+            h = [(tri[2][0] - tri[1][0]) / step, (tri[2][1] - tri[1][1]) / step, (tri[2][2] - tri[1][2]) / step,
+                 (color_index[2] - color_index[1]) / step]
             for i in range(1, step):
-                p012.append([x[0] + i*h[0], x[1] + i*h[1], x[2] + i*h[2], color_index[1] + i*h[3]])
+                p012.append([x[0] + i * h[0], x[1] + i * h[1], x[2] + i * h[2], color_index[1] + i * h[3]])
 
             for i in range(0, len(p02) - 1):
                 if i < len(p012):
@@ -775,13 +775,13 @@ class TGLWidget(QWidget):
         for i in range(0, len(self.fe)):
             data = []
             for j in range(0, len(self.fe[0])):
-                data.append([self.x[self.fe[i][j]][0] + self.transform_coeff*self.results[0].results[self.fe[i][j]],
+                data.append([self.x[self.fe[i][j]][0] + self.transform_coeff * self.results[0].results[self.fe[i][j]],
                             self.results[self.fun_index].results[self.fe[i][j]]])
             color1 = self.__get_color_index__(data[0][1])
             color2 = self.__get_color_index__(data[1][1])
             delta_color = 1 if color1 < color2 else -1
             step = abs(color1 - color2)
-            h = (data[1][0] - data[0][0])/step if step > 0 else 0
+            h = (data[1][0] - data[0][0]) / step if step > 0 else 0
             glBegin(GL_LINE_STRIP)
             color = color1
             self.color(color)
@@ -803,8 +803,8 @@ class TGLWidget(QWidget):
             # for i in range(212, 214):
             tri = []
             for j in range(0, len(self.fe[0])):
-                tri.append([self.x[self.fe[i][j]][0] + self.transform_coeff*self.results[0].results[self.fe[i][j]],
-                            self.x[self.fe[i][j]][1] + self.transform_coeff*self.results[1].results[self.fe[i][j]], 0,
+                tri.append([self.x[self.fe[i][j]][0] + self.transform_coeff * self.results[0].results[self.fe[i][j]],
+                            self.x[self.fe[i][j]][1] + self.transform_coeff * self.results[1].results[self.fe[i][j]], 0,
                             self.results[self.fun_index].results[self.fe[i][j]]])
             if len(tri) == 3:
                 self.draw_triangle_3d(tri)
@@ -817,16 +817,13 @@ class TGLWidget(QWidget):
     # Визуализация пространственной задачи
     def __paint_3d__(self):
         # Изображение поверхности
-
-#        self.transform_coeff = 1.0E+3
-
-
+        # self.transform_coeff = 1.0E+3
         for i in range(0, len(self.be)):
             tri = []
             for j in range(0, len(self.be[0])):
-                tri.append([self.x[self.be[i][j]][0] + self.transform_coeff*self.results[0].results[self.be[i][j]],
-                            self.x[self.be[i][j]][1] + self.transform_coeff*self.results[1].results[self.be[i][j]],
-                            self.x[self.be[i][j]][2] + self.transform_coeff*self.results[2].results[self.be[i][j]],
+                tri.append([self.x[self.be[i][j]][0] + self.transform_coeff * self.results[0].results[self.be[i][j]],
+                            self.x[self.be[i][j]][1] + self.transform_coeff * self.results[1].results[self.be[i][j]],
+                            self.x[self.be[i][j]][2] + self.transform_coeff * self.results[2].results[self.be[i][j]],
                             self.results[self.fun_index].results[self.be[i][j]]])
             if len(tri) == 3:
                 self.draw_triangle_3d(tri)

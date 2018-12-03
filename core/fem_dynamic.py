@@ -127,8 +127,8 @@ class TFEMDynamic(TFEMStatic):
                 u_0 = u0[i * self.mesh.freedom + j]
                 u_1 = self._global_load[i * self.mesh.freedom + j]
                 u_t_0 = ut0[i * self.mesh.freedom + j]
-                u_t_1 = (u_1 - u_0)/th
-                u_t_t_1 = (u_t_1 - u_t_0)/th
+                u_t_1 = (u_1 - u_0) / th
+                u_t_t_1 = (u_t_1 - u_t_0) / th
                 u0[i * self.mesh.freedom + j] = u_1
                 ut0[i * self.mesh.freedom + j] = u_t_1
                 utt0[i * self.mesh.freedom + j] = u_t_t_1
@@ -163,9 +163,9 @@ class TFEMDynamic(TFEMStatic):
     # Формирование правой части (вектора) уравнения квазистатического равновесия
     def __create_dynamic_vector(self, u0, ut0, utt0, t):
         theta = 1.37
-        k1 = 6.0/(theta ** 2 ** self.params.th ** 2)
-        k2 = 3.0/(theta * self.params.th)
-        k3 = 0.5*(theta * self.params.th)
+        k1 = 6.0 / (theta ** 2 ** self.params.th ** 2)
+        k2 = 3.0 / (theta * self.params.th)
+        k3 = 0.5 * (theta * self.params.th)
         self._global_load = zeros(len(self.mesh.x) * self.mesh.freedom)
         # Вычисление компонент нагрузки для текущего момента времени
         self._prepare_concentrated_load(t)
