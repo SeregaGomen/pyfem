@@ -110,17 +110,17 @@ class TFEMStatic(TFEM):
                 counter += 1
                 if not self.__check_be(j, self.params.bc_list[i].predicate):
                     continue
-                rel_se = self.mesh.square(j) / float(len(self.mesh.be[j]))
+                share = self.__surface_load_share(j)
                 for k in range(0, len(self.mesh.be[j])):
                     parser = self.create_parser(self.mesh.get_coord(self.mesh.be[j][k]), t)
                     parser.set_code(self.params.bc_list[i].expression)
                     load = parser.run()
                     if self.params.bc_list[i].direct & DIR_1:
-                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += load * rel_se
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += load * share[0]
                     if self.params.bc_list[i].direct & DIR_2:
-                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 1] += load * rel_se
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 1] += load * share[1]
                     if self.params.bc_list[i].direct & DIR_3:
-                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 2] += load * rel_se
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 2] += load * share[2]
 
     # Вычисление объемных нагрузок
     def _prepare_volume_load(self, t=0):
@@ -140,7 +140,7 @@ class TFEMStatic(TFEM):
                 counter += 1
                 if not self.__check_fe(j, self.params.bc_list[i].predicate):
                     continue
-                rel_ve = self.mesh.volume(j) / float(len(self.mesh.fe[j]))
+                share = self.__volume_load_share(j)
                 for k in range(0, len(self.mesh.fe[j])):
                     parser = self.create_parser(self.mesh.get_coord(self.mesh.fe[j][k]), t)
                     if len(self.params.bc_list[i].predicate):
@@ -150,11 +150,11 @@ class TFEMStatic(TFEM):
                     parser.set_code(self.params.bc_list[i].expression)
                     load = parser.run()
                     if self.params.bc_list[i].direct & DIR_1:
-                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 0] += load * rel_ve
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 0] += load * share[0]
                     if self.params.bc_list[i].direct & DIR_2:
-                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 1] += load * rel_ve
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 1] += load * share[1]
                     if self.params.bc_list[i].direct & DIR_3:
-                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 2] += load * rel_ve
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 2] += load * share[2]
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...)
     def _calc_results(self, t=0):
@@ -313,3 +313,27 @@ class TFEMStatic(TFEM):
         elif self.mesh.freedom == 3 or self.mesh.freedom == 6:
             ret = index3[i]
         return ret
+
+    # Определение компонент поверхностной нагрузки в зависимости от типа КЭ
+    def __surface_load_share(self, index):
+        share = [0, 0, 0]
+        if self.mesh.fe_type == 'fe_1d_2':
+            share[0] = 1.0 * self.params.thickness
+        elif self.mesh.fe_type == 'fe_2d_3':
+            share[0] = share[1] = self.mesh.square(index) * 0.5
+        elif self.mesh.fe_type == 'fe_3d_4':
+            share[0] = share[1] = share[2] = self.mesh.square(index) / 3.0
+
+        return share
+
+        # Определение компонент объемной нагрузки в зависимости от типа КЭ
+    def __volume_load_share(self, index):
+        share = [0, 0, 0]
+        if self.mesh.fe_type == 'fe_1d_2':
+            share[0] = self.mesh.volume(index) * self.params.thickness * 0.5
+        elif self.mesh.fe_type == 'fe_2d_3':
+            share[0] = share[1] = self.mesh.volume(index) / 3.0
+        elif self.mesh.fe_type == 'fe_3d_4':
+            share[0] = share[1] = share[2] = self.mesh.volume(index) * 0.25
+
+        return share

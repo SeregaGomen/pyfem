@@ -82,7 +82,8 @@ def beam(res_name):
         obj.set_precision(5)
         obj.set_elasticity(e, m)
         obj.add_boundary_condition('0', 'y=0', DIR_1 | DIR_2 | DIR_3)
-        obj.add_volume_load('-1.0E+5', '', DIR_2)
+        # obj.add_volume_load('-1.0E+5', '', DIR_2)
+        obj.add_surface_load('-1.0E+5', 'y=4', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -731,9 +732,9 @@ def create_shell_mesh_4():
 if __name__ == '__main__':
     # create_shell_mesh_4()
     # create_plate_mesh_4()
-    # beam('beam')
+    beam('beam')
     # head3d('head3d')
-    cube('cube')
+    # cube('cube')
     # tank3('tank3')
     # cylinder('cylinder')
     # quad('quad')
