@@ -319,11 +319,12 @@ class TFEMStatic(TFEM):
         share = [0, 0, 0]
         if self.mesh.fe_type == 'fe_1d_2':
             share[0] = 1.0 * self.params.thickness
-        elif self.mesh.fe_type == 'fe_2d_3':
+        elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_4':
             share[0] = share[1] = self.mesh.square(index) * 0.5
-        elif self.mesh.fe_type == 'fe_3d_4':
+        elif self.mesh.fe_type == 'fe_3d_4' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
             share[0] = share[1] = share[2] = self.mesh.square(index) / 3.0
-
+        elif self.mesh.fe_type == 'fe_3d_8' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
+            share[0] = share[1] = share[2] = self.mesh.square(index)
         return share
 
         # Определение компонент объемной нагрузки в зависимости от типа КЭ
@@ -333,7 +334,13 @@ class TFEMStatic(TFEM):
             share[0] = self.mesh.volume(index) * self.params.thickness * 0.5
         elif self.mesh.fe_type == 'fe_2d_3':
             share[0] = share[1] = self.mesh.volume(index) / 3.0
+        elif self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
+            share[0] = share[1] = share[2] = self.mesh.square(index) * self.params.thickness / 3.0
         elif self.mesh.fe_type == 'fe_3d_4':
             share[0] = share[1] = share[2] = self.mesh.volume(index) * 0.25
+        elif self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
+            share[0] = share[1] = share[2] = self.mesh.square(index) * self.params.thickness
+        elif self.mesh.fe_type == 'fe_3d_8':
+            share[0] = share[1] = share[2] = self.mesh.volume(index)
 
         return share

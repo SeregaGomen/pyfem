@@ -732,7 +732,7 @@ def create_shell_mesh_4():
 if __name__ == '__main__':
     # create_shell_mesh_4()
     # create_plate_mesh_4()
-    beam('beam')
+    # beam('beam')
     # head3d('head3d')
     # cube('cube')
     # tank3('tank3')
@@ -753,7 +753,7 @@ if __name__ == '__main__':
     # plate3_test('plate3_test')
     # plate4_test('plate4_test')
     # shell4_test('shell4_test')
-    # shell3_test('shell3_test')
+    shell3_test('shell3_test')
     # tube_test('tube_test')
     # plate3d('plate3d')
     # tank3s('tank3s')
