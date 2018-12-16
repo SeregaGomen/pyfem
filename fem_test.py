@@ -40,9 +40,37 @@ def cube(res_name):
         obj.set_precision(5)
         obj.set_elasticity(e, m)
         obj.add_boundary_condition('0', 'z=0', DIR_1 | DIR_2 | DIR_3)
-        obj.add_volume_load('-1000', 'z>0.5', DIR_3)
-    #    obj.add_surface_load('-1000', 'z=1', DIR_3)
-    #    obj.add_concentrated_load('-1000', 'z=1', DIR_Z)
+        # obj.add_volume_load('-1000', '', DIR_3)
+        # obj.add_surface_load('-1000', 'z = 1', DIR_3)
+        obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 0', DIR_3)
+        obj.add_concentrated_load('-1000', 'z = 1 and x = 1 and y = 0', DIR_3)
+        obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 1', DIR_3)
+        obj.add_concentrated_load('-1000', 'z = 1 and x = 1 and y = 1', DIR_3)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
+def cube4(res_name):
+    obj = TObject()
+    e = [203200]
+    m = [0.27]
+    if obj.set_mesh('mesh/cube4.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity(e, m)
+        obj.add_boundary_condition('0', 'z=0', DIR_1 | DIR_2 | DIR_3)
+        # obj.add_volume_load('-1000', '', DIR_3)
+        # obj.add_surface_load('-1000', 'z = 1', DIR_3)
+        obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 0', DIR_3)
+        obj.add_concentrated_load('-1000', 'z = 1 and x = 1 and y = 0', DIR_3)
+        obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 1', DIR_3)
+        obj.add_concentrated_load('-1000', 'z = 1 and x = 1 and y = 1', DIR_3)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -156,6 +184,44 @@ def console4(res_name):
         obj.add_boundary_condition('0', 'x=0', DIR_1 | DIR_2)
     #    obj.add_concentrated_load('-1.0E+5', 'x=10', DIR_Y)
         obj.add_volume_load('-1.0E+5', '', DIR_2)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
+def rod4(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/rod4.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'x = 0 or x = 10', DIR_1 | DIR_2)
+        # obj.add_surface_load('-1.0E+2', 'y = 1', DIR_2)
+        obj.add_volume_load('-1.0E+2', '', DIR_2)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
+def rod3(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/rod3.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'x = 0 or x = 10', DIR_1 | DIR_2)
+        # obj.add_surface_load('-1.0E+2', 'y = 1', DIR_2)
+        obj.add_volume_load('-1.0E+2', '', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -732,9 +798,13 @@ def create_shell_mesh_4():
 if __name__ == '__main__':
     # create_shell_mesh_4()
     # create_plate_mesh_4()
+
+    # rod4('rod4')
+    # rod3('rod3')
     # beam('beam')
     # head3d('head3d')
-    # cube('cube')
+    cube('cube')
+    # cube4('cube4')
     # tank3('tank3')
     # cylinder('cylinder')
     # quad('quad')
@@ -753,7 +823,7 @@ if __name__ == '__main__':
     # plate3_test('plate3_test')
     # plate4_test('plate4_test')
     # shell4_test('shell4_test')
-    shell3_test('shell3_test')
+    # shell3_test('shell3_test')
     # tube_test('tube_test')
     # plate3d('plate3d')
     # tank3s('tank3s')
