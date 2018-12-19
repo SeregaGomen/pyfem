@@ -795,7 +795,74 @@ def create_shell_mesh_4():
     return
 
 
+def convert_msh_2_trpa(file_msh, file_trpa):
+    with open(file_msh, 'r') as file:
+        line = file.readline()
+        if line != '$MeshFormat\n':
+            print('Error file format %s' % file_msh)
+            return False
+        while line != '':
+            line = file.readline()
+            if line == '$EndMeshFormat\n':
+                break
+        line = file.readline()
+        if line == '$Entities\n':
+            while line != '':
+                line = file.readline()
+                if line == '$EndEntities\n':
+                    break
+        x = []
+        line = file.readline()
+        if line == '$Nodes\n':
+            line = file.readline()
+            while line != '':
+                line = file.readline()
+                if line == '$EndNodes\n':
+                    break
+                sx = line.split(' ')
+                n = int(sx[3])  # Количество координат в текущем блоке
+                for i in range(0, n):
+                    line = file.readline()
+                    sx = line.split(' ')
+                    cx = []
+                    for j in range(1, len(sx)):
+                        cx.append(float(sx[j]))
+                    x.append(cx)
+
+        fe = []
+        be = []
+        line = file.readline()
+        if line == '$Elements\n':
+            line = file.readline()
+            while line != '':
+                line = file.readline()
+                if line == '$EndElements\n':
+                    break
+                sl = line.split(' ')
+                n = int(sl[3])  # Количество элементов в текущем блоке
+                for i in range(0, n):
+                    line = file.readline()
+                    se = line.split(' ')
+                    if len(se) == 2 + 1:
+                        continue
+                    if len(se) == 3 + 1: # ГЭ в форме отрезка
+                        cbe = []
+                        for j in range(1, len(se)):
+                            cbe.append(float(se[j]))
+                        be.append(cbe)
+                    if len(se) == 5 + 1: # КЭ в форме четрыехугольника
+                        cfe = []
+                        for j in range(1, len(se)):
+                            cfe.append(float(se[j]))
+                        fe.append(cfe)
+
+    return True
+
+
 if __name__ == '__main__':
+    convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', '/mesh/quad-1-4.trpa')
+
+
     # create_shell_mesh_4()
     # create_plate_mesh_4()
 
