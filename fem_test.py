@@ -733,6 +733,23 @@ def plate3d(res_name):
         return False
 
 
+def quad4(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/quad-3.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'y = -0.5', DIR_1 | DIR_2)
+        obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
 def create_plate_mesh_4():
     x_min = [-0.5, -0.5]
     x_max = [0.5, 0.5]
@@ -841,26 +858,47 @@ def convert_msh_2_trpa(file_msh, file_trpa):
                 sl = line.split(' ')
                 n = int(sl[3])  # Количество элементов в текущем блоке
                 for i in range(0, n):
-                    line = file.readline()
+                    line = file.readline().replace('\n', '').strip()
                     se = line.split(' ')
-                    if len(se) == 2 + 1:
+                    if len(se) == 2:
                         continue
-                    if len(se) == 3 + 1: # ГЭ в форме отрезка
+                    if len(se) == 3: # ГЭ в форме отрезка
                         cbe = []
                         for j in range(1, len(se)):
-                            cbe.append(float(se[j]))
+                            cbe.append(int(se[j]) - 1)
                         be.append(cbe)
-                    if len(se) == 5 + 1: # КЭ в форме четрыехугольника
+                    if len(se) == 4 or len(se) == 5: # КЭ в форме треугольника или четрыехугольника
                         cfe = []
                         for j in range(1, len(se)):
-                            cfe.append(float(se[j]))
+                            cfe.append(int(se[j]) - 1)
                         fe.append(cfe)
+
+    with open(file_trpa, 'w') as file:
+        file.write('24\n')
+        file.write('%d\n' % len(x))
+        for i in range(0, len(x)):
+            for j in range(0, len(x[i]) - 1):
+                file.write(str(x[i][j]) + ' ')
+            file.write('\n')
+        file.write('%d\n' % len(fe))
+        for i in range(0, len(fe)):
+            for j in range(0, len(fe[i])):
+                file.write(str(fe[i][j]) + ' ')
+            file.write('\n')
+        file.write('%d\n' % len(be))
+        for i in range(0, len(be)):
+            for j in range(0, len(be[i])):
+                file.write(str(be[i][j]) + ' ')
+            file.write('\n')
 
     return True
 
 
 if __name__ == '__main__':
-    convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', '/mesh/quad-1-4.trpa')
+    # convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', '/mesh/quad-1-4.trpa')
+    #convert_msh_2_trpa('mesh/quad-4.msh', 'mesh/quad-4.trpa')
+
+    # quad4('quad-4')
 
 
     # create_shell_mesh_4()
@@ -870,7 +908,7 @@ if __name__ == '__main__':
     # rod3('rod3')
     # beam('beam')
     # head3d('head3d')
-    cube('cube')
+    # cube('cube')
     # cube4('cube4')
     # tank3('tank3')
     # cylinder('cylinder')
@@ -893,7 +931,7 @@ if __name__ == '__main__':
     # shell3_test('shell3_test')
     # tube_test('tube_test')
     # plate3d('plate3d')
-    # tank3s('tank3s')
+    tank3s('tank3s')
 
 '''
 2. Правильно отображать динамическую задачу в plot3d
