@@ -735,7 +735,7 @@ def plate3d(res_name):
 
 def quad4(res_name):
     obj = TObject()
-    if obj.set_mesh('mesh/quad-3.trpa'):
+    if obj.set_mesh('mesh/quad-4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
@@ -829,6 +829,7 @@ def convert_msh_2_trpa(file_msh, file_trpa):
                 if line == '$EndEntities\n':
                     break
         x = []
+        t_index = []
         line = file.readline()
         if line == '$Nodes\n':
             line = file.readline()
@@ -842,9 +843,15 @@ def convert_msh_2_trpa(file_msh, file_trpa):
                     line = file.readline()
                     sx = line.split(' ')
                     cx = []
+                    t_index.append(int(sx[0]))
                     for j in range(1, len(sx)):
                         cx.append(float(sx[j]))
                     x.append(cx)
+        # Переиндексируем номера узлов
+        max_index = t_index[len(t_index) - 1]
+        index = [0]*max_index
+        for i in range(len(t_index)):
+            index[t_index[i] - 1] = i
 
         fe = []
         be = []
@@ -865,12 +872,12 @@ def convert_msh_2_trpa(file_msh, file_trpa):
                     if len(se) == 3: # ГЭ в форме отрезка
                         cbe = []
                         for j in range(1, len(se)):
-                            cbe.append(int(se[j]) - 1)
+                            cbe.append(index[int(se[j]) - 1])
                         be.append(cbe)
                     if len(se) == 4 or len(se) == 5: # КЭ в форме треугольника или четрыехугольника
                         cfe = []
                         for j in range(1, len(se)):
-                            cfe.append(int(se[j]) - 1)
+                            cfe.append(index[int(se[j]) - 1])
                         fe.append(cfe)
 
     with open(file_trpa, 'w') as file:
@@ -895,10 +902,10 @@ def convert_msh_2_trpa(file_msh, file_trpa):
 
 
 if __name__ == '__main__':
-    # convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', '/mesh/quad-1-4.trpa')
+    convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', 'mesh/quad-4.trpa')
     #convert_msh_2_trpa('mesh/quad-4.msh', 'mesh/quad-4.trpa')
 
-    # quad4('quad-4')
+    quad4('quad-4')
 
 
     # create_shell_mesh_4()
@@ -931,7 +938,7 @@ if __name__ == '__main__':
     # shell3_test('shell3_test')
     # tube_test('tube_test')
     # plate3d('plate3d')
-    tank3s('tank3s')
+    # tank3s('tank3s')
 
 '''
 2. Правильно отображать динамическую задачу в plot3d
