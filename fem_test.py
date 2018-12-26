@@ -743,12 +743,33 @@ def quad4(res_name):
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'y = -0.5', DIR_1 | DIR_2)
         obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
+        # obj.add_volume_load('-0.05', '', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
             TPlot(res_name)
             return True
         return False
+
+
+def quad3(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/quad-3.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'y = -0.5', DIR_1 | DIR_2)
+        obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
+        # obj.add_volume_load('-0.05', '', DIR_2)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
 
 def create_plate_mesh_4():
     x_min = [-0.5, -0.5]
@@ -902,11 +923,11 @@ def convert_msh_2_trpa(file_msh, file_trpa):
 
 
 if __name__ == '__main__':
-    convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', 'mesh/quad-4.trpa')
-    #convert_msh_2_trpa('mesh/quad-4.msh', 'mesh/quad-4.trpa')
+    # convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', 'mesh/quad-3.trpa')
+    # convert_msh_2_trpa('mesh/quad-4.msh', 'mesh/quad-4.trpa')
 
-    quad4('quad-4')
-
+    # quad4('quad-4')
+    quad3('quad-3')
 
     # create_shell_mesh_4()
     # create_plate_mesh_4()
