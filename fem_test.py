@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import math
 from core.fem_defs import DIR_1, DIR_2, DIR_3, INIT_U, INIT_V, INIT_W, INIT_U_T, INIT_V_T, INIT_W_T, INIT_U_T_T, \
     INIT_V_T_T, INIT_W_T_T
 from core.fem_object import TObject
 from plot.plot3d import TPlot
-
 
 def body1d(res_name):
     obj = TObject()
@@ -742,8 +740,8 @@ def quad4(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'y = -0.5', DIR_1 | DIR_2)
-        obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
-        # obj.add_volume_load('-0.05', '', DIR_2)
+        # obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
+        obj.add_concentrated_load('-0.05', 'y = 0.5 and (x = -0.5 or x = 0.5)', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -761,8 +759,8 @@ def quad3(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'y = -0.5', DIR_1 | DIR_2)
-        obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
-        # obj.add_volume_load('-0.05', '', DIR_2)
+        # obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
+        obj.add_concentrated_load('-0.05', 'y = 0.5 and (x = -0.5 or x = 0.5)', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -771,166 +769,51 @@ def quad3(res_name):
         return False
 
 
-def create_plate_mesh_4():
-    x_min = [-0.5, -0.5]
-    x_max = [0.5, 0.5]
-    n = 200
-    h = [(x_max[0] - x_min[0])/n, (x_max[1] - x_min[1])/n]
-    index = []
-    x = []
-    counter = 0
-    for i in range(0, n + 1):
-        c_index = []
-        for j in range(0, n + 1):
-            c_index.append(counter)
-            counter += 1
-            x.append([x_min[0] + i*h[0], x_min[1] + j*h[1]])
-        index.append(c_index)
-    with open('mesh/plate4-1.0.trpa', 'w') as file:
-        file.write('124\n')
-        file.write(str(counter) + '\n')
-        for i in range(0, len(x)):
-            file.write(str(x[i][0]) + ' ' + str(x[i][1]) + '\n')
-        file.write(str(n**2) + '\n')
-        for i in range(0, len(index) - 1):
-            for j in range(0, len(index) - 1):
-                file.write(str(index[i][j]) + ' ' + str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' +
-                           str(index[i + 1][j]) + '\n')
-        file.write('0\n')
-    return
+def quad6(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/quad-6.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'y = -0.5', DIR_1 | DIR_2)
+        # obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
+        obj.add_concentrated_load('-0.05', 'y = 0.5 and (x = -0.5 or x = 0.5)', DIR_2)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
 
 
-def create_shell_mesh_4():
-    r = 3.98/2
-    height = 4.014
-    n_xy = 100
-    n_z = 50
-    d_fi = 2*math.pi/n_xy
-    d_h = height/n_z
-    index = []
-    x = []
-    counter = 0
-    for i in range(0, n_z + 1):
-        c_index = []
-        for j in range(0, n_xy):
-            c_index.append(counter)
-            counter += 1
-            x.append([r*math.cos(j*d_fi), r*math.sin(j*d_fi), i*d_h])
-        index.append(c_index)
-    with open('mesh/shell4-1.0.trpa', 'w') as file:
-        file.write('224\n')
-        file.write(str(counter) + '\n')
-        for i in range(0, len(x)):
-            file.write(str(x[i][0]) + ' ' + str(x[i][1]) + ' ' + str(x[i][2]) + '\n')
-        file.write(str(n_xy*n_z) + '\n')
-        for i in range(0, len(index) - 1):
-            for j in range(0, len(index[0]) - 1):
-                file.write(str(index[i][j]) + ' ' +str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' +
-                           str(index[i + 1][j]) + '\n')
-            file.write(str(index[i][j + 1]) + ' ' + str(index[i][0]) + ' ' + str(index[i + 1][0]) + ' ' +
-                       str(index[i + 1][j + 1]) + '\n')
-        file.write('0\n')
-    return
-
-
-def convert_msh_2_trpa(file_msh, file_trpa):
-    with open(file_msh, 'r') as file:
-        line = file.readline()
-        if line != '$MeshFormat\n':
-            print('Error file format %s' % file_msh)
-            return False
-        while line != '':
-            line = file.readline()
-            if line == '$EndMeshFormat\n':
-                break
-        line = file.readline()
-        if line == '$Entities\n':
-            while line != '':
-                line = file.readline()
-                if line == '$EndEntities\n':
-                    break
-        x = []
-        t_index = []
-        line = file.readline()
-        if line == '$Nodes\n':
-            line = file.readline()
-            while line != '':
-                line = file.readline()
-                if line == '$EndNodes\n':
-                    break
-                sx = line.split(' ')
-                n = int(sx[3])  # Количество координат в текущем блоке
-                for i in range(0, n):
-                    line = file.readline()
-                    sx = line.split(' ')
-                    cx = []
-                    t_index.append(int(sx[0]))
-                    for j in range(1, len(sx)):
-                        cx.append(float(sx[j]))
-                    x.append(cx)
-        # Переиндексируем номера узлов
-        max_index = t_index[len(t_index) - 1]
-        index = [0]*max_index
-        for i in range(len(t_index)):
-            index[t_index[i] - 1] = i
-
-        fe = []
-        be = []
-        line = file.readline()
-        if line == '$Elements\n':
-            line = file.readline()
-            while line != '':
-                line = file.readline()
-                if line == '$EndElements\n':
-                    break
-                sl = line.split(' ')
-                n = int(sl[3])  # Количество элементов в текущем блоке
-                for i in range(0, n):
-                    line = file.readline().replace('\n', '').strip()
-                    se = line.split(' ')
-                    if len(se) == 2:
-                        continue
-                    if len(se) == 3: # ГЭ в форме отрезка
-                        cbe = []
-                        for j in range(1, len(se)):
-                            cbe.append(index[int(se[j]) - 1])
-                        be.append(cbe)
-                    if len(se) == 4 or len(se) == 5: # КЭ в форме треугольника или четрыехугольника
-                        cfe = []
-                        for j in range(1, len(se)):
-                            cfe.append(index[int(se[j]) - 1])
-                        fe.append(cfe)
-
-    with open(file_trpa, 'w') as file:
-        file.write('24\n')
-        file.write('%d\n' % len(x))
-        for i in range(0, len(x)):
-            for j in range(0, len(x[i]) - 1):
-                file.write(str(x[i][j]) + ' ')
-            file.write('\n')
-        file.write('%d\n' % len(fe))
-        for i in range(0, len(fe)):
-            for j in range(0, len(fe[i])):
-                file.write(str(fe[i][j]) + ' ')
-            file.write('\n')
-        file.write('%d\n' % len(be))
-        for i in range(0, len(be)):
-            for j in range(0, len(be[i])):
-                file.write(str(be[i][j]) + ' ')
-            file.write('\n')
-
-    return True
+def tri6(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/tri-6.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'y = 0', DIR_1 | DIR_2)
+        obj.add_surface_load('-0.05', 'y = 1', DIR_2)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
 
 
 if __name__ == '__main__':
-    # convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', 'mesh/quad-3.trpa')
-    # convert_msh_2_trpa('mesh/quad-4.msh', 'mesh/quad-4.trpa')
+    # tri6('tri-6')
 
     # quad4('quad-4')
-    quad3('quad-3')
+    # quad3('quad-3')
+    quad6('quad-6')
 
-    # create_shell_mesh_4()
-    # create_plate_mesh_4()
+
 
     # rod4('rod4')
     # rod3('rod3')

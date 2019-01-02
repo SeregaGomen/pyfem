@@ -327,6 +327,9 @@ class TFEMStatic(TFEM):
             share[0] = 1.0 * self.params.thickness
         elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_4':
             share[0] = share[1] = self.mesh.square(index) * 0.5
+        elif self.mesh.fe_type == 'fe_2d_6':
+            share[0] = share[1] = self.mesh.square(index) / 6.0
+            share[2] = 2 * self.mesh.square(index) / 3.0
         elif self.mesh.fe_type == 'fe_3d_4' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
             share[0] = share[1] = share[2] = self.mesh.square(index) / 3.0
         elif self.mesh.fe_type == 'fe_3d_8' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':

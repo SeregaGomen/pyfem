@@ -29,17 +29,17 @@ class TMainWindow(QMainWindow):
         self.be = []                # ... ГЭ
         self.results = []           # Результаты расчета
 
-        self.__gl_widget__ = TGLWidget()
-        self.setCentralWidget(self.__gl_widget__)
+        self.__gl_widget = TGLWidget()
+        self.setCentralWidget(self.__gl_widget)
         self.resize(640, 480)
         # Загрузка данных
-        if self.__load_file__():
-            self.__gl_widget__.set_data(self.fe_type, self.x, self.fe, self.be, self.results, 0)
+        if self.__load_file():
+            self.__gl_widget.set_data(self.fe_type, self.x, self.fe, self.be, self.results, 0)
         # Настройка окна
-        self.__init_main_menu__()
+        self.__init_main_menu()
 
     # Загрузка данных из файла
-    def __load_file__(self):
+    def __load_file(self):
         # Подготовка имени файла
         if len(self.file_name) < 5 or self.file_name[len(self.file_name) - 5:] != '.json':
             self.file_name += '.json'
@@ -73,7 +73,7 @@ class TMainWindow(QMainWindow):
             self.results.append(res)
         return True
 
-    def __init_main_menu__(self):
+    def __init_main_menu(self):
         # Пункты главного меню
         file_menu = self.menuBar().addMenu('&File')
         function_menu = self.menuBar().addMenu('F&unction')
@@ -82,11 +82,11 @@ class TMainWindow(QMainWindow):
         # Настройка File
         open_action = QAction('&Open...', self)
         open_action.setStatusTip('Open a data file')
-        open_action.triggered.connect(self.__open_action__)
+        open_action.triggered.connect(self.__open_action)
         file_menu.addAction(open_action)
         close_action = QAction('&Close', self)
         close_action.setStatusTip('Close current file')
-        close_action.triggered.connect(self.__close_action__)
+        close_action.triggered.connect(self.__close_action)
         file_menu.addAction(close_action)
         file_menu.addSeparator()
         exit_action = QAction('E&xit', self)
@@ -95,38 +95,38 @@ class TMainWindow(QMainWindow):
         file_menu.addAction(exit_action)
 
         # Настройка Function
-        self.__init_function_menu__()
+        self.__init_function_menu()
 
         # Настройка Options
         light_action = QAction('&Light', self)
         light_action.setStatusTip('Enable light')
-        light_action.triggered.connect(self.__light_action__)
+        light_action.triggered.connect(self.__light_action)
         light_action.setCheckable(True)
         light_action.setChecked(True)
         options_menu.addAction(light_action)
         fe_border_action = QAction('&FE border', self)
         fe_border_action.setStatusTip('Enable drawing FE border')
-        fe_border_action.triggered.connect(self.__fe_border_action__)
+        fe_border_action.triggered.connect(self.__fe_border_action)
         fe_border_action.setCheckable(True)
         fe_border_action.setChecked(False)
         options_menu.addAction(fe_border_action)
         legend_action = QAction('Le&gend', self)
         legend_action.setStatusTip('Enable drawing legend')
-        legend_action.triggered.connect(self.__legend_action__)
+        legend_action.triggered.connect(self.__legend_action)
         legend_action.setCheckable(True)
         legend_action.setChecked(True)
         options_menu.addAction(legend_action)
         options_menu.addSeparator()
         invert_normal_action = QAction('&Invert normal', self)
         invert_normal_action.setStatusTip('Invert polygon normnal vector')
-        invert_normal_action.triggered.connect(self.__invert_normal_action__)
+        invert_normal_action.triggered.connect(self.__invert_normal_action)
         invert_normal_action.setCheckable(True)
         invert_normal_action.setChecked(False)
         options_menu.addAction(invert_normal_action)
 
         light_two_side_action = QAction('&Two-sided lighting', self)
         light_two_side_action.setStatusTip('Invert polygon normnal vector')
-        light_two_side_action.triggered.connect(self.__light_two_side_action__)
+        light_two_side_action.triggered.connect(self.__light_two_side_action)
         light_two_side_action.setCheckable(True)
         light_two_side_action.setChecked(False)
         options_menu.addAction(light_two_side_action)
@@ -138,31 +138,31 @@ class TMainWindow(QMainWindow):
         color_16_action.setActionGroup(qa)
         color_16_action.setCheckable(True)
         color_16_action.setChecked(True)
-        color_16_action.triggered.connect(self.__colors_action__)
+        color_16_action.triggered.connect(self.__colors_action)
         color_32_action = QAction('3&2', self)
         color_32_action.setStatusTip('Set 32 grading colors')
         color_32_action.setActionGroup(qa)
         color_32_action.setCheckable(True)
         color_32_action.setChecked(False)
-        color_32_action.triggered.connect(self.__colors_action__)
+        color_32_action.triggered.connect(self.__colors_action)
         color_64_action = QAction('6&4', self)
         color_64_action.setStatusTip('Set 64 grading colors')
         color_64_action.setActionGroup(qa)
         color_64_action.setCheckable(True)
         color_64_action.setChecked(False)
-        color_64_action.triggered.connect(self.__colors_action__)
+        color_64_action.triggered.connect(self.__colors_action)
         color_128_action = QAction('1&28', self)
         color_128_action.setStatusTip('Set 128 grading colors')
         color_128_action.setActionGroup(qa)
         color_128_action.setCheckable(True)
         color_128_action.setChecked(False)
-        color_128_action.triggered.connect(self.__colors_action__)
+        color_128_action.triggered.connect(self.__colors_action)
         color_256_action = QAction('25&6', self)
         color_256_action.setStatusTip('Set 256 grading colors')
         color_256_action.setActionGroup(qa)
         color_256_action.setCheckable(True)
         color_256_action.setChecked(False)
-        color_256_action.triggered.connect(self.__colors_action__)
+        color_256_action.triggered.connect(self.__colors_action)
 
         color_menu = QMenu('&Colors', self)
         color_menu.setStatusTip('Set grading colors')
@@ -175,7 +175,7 @@ class TMainWindow(QMainWindow):
 
         self.show()
 
-    def __init_function_menu__(self):
+    def __init_function_menu(self):
         qa = QActionGroup(self)
         for i in range(0, len(self.results)):
             if i < 9:
@@ -187,17 +187,17 @@ class TMainWindow(QMainWindow):
             function_action.setActionGroup(qa)
             function_action.setCheckable(True)
             function_action.setChecked(True if i == 0 else False)
-            function_action.triggered.connect(self.__fun_action__)
+            function_action.triggered.connect(self.__fun_action)
             self.menuBar().actions()[1].menu().addAction(function_action)
 
-    def __open_action__(self):
+    def __open_action(self):
         dlg = QFileDialog(self, 'Open data file', '', 'JSON data files (*.json)')
         if dlg.exec_():
             if len(self.x):
-                self.__close_action__()
-            self.__set_file__(dlg.selectedFiles()[0])
+                self.__close_action()
+            self.__set_file(dlg.selectedFiles()[0])
 
-    def __close_action__(self):
+    def __close_action(self):
         self.setWindowTitle('PyFEM results viewer')
         self.file_name = ''
         self.fe_type = ''
@@ -205,7 +205,7 @@ class TMainWindow(QMainWindow):
         self.fe.clear()
         self.be.clear()
         self.results.clear()
-        self.__gl_widget__.clear()
+        self.__gl_widget.clear()
         # Сброс меню
         self.menuBar().actions()[0].menu().actions()[1].setEnabled(False)   # Close
         self.menuBar().actions()[1].menu().clear()                          # Очистка меню function
@@ -218,40 +218,40 @@ class TMainWindow(QMainWindow):
         self.menuBar().actions()[2].menu().actions()[5].setChecked(False)
         self.menuBar().actions()[2].menu().actions()[7].menu().actions()[0].setChecked(True)
 
-    def __colors_action__(self):
+    def __colors_action(self):
         num = int(QObject.sender(self).text().replace('&', ''))
-        self.__gl_widget__.set_colors(num)
+        self.__gl_widget.set_colors(num)
 
-    def __fun_action__(self):
-        index = self.__get_fun_index__(QObject.sender(self).text()[3:])
-        self.__gl_widget__.set_fun_index(index)
+    def __fun_action(self):
+        index = self.__get_fun_index(QObject.sender(self).text()[3:])
+        self.__gl_widget.set_fun_index(index)
 
-    def __light_action__(self):
+    def __light_action(self):
         self.menuBar().actions()[2].menu().actions()[4].setEnabled(not self.menuBar().actions()[2].
                                                                    menu().actions()[4].isEnabled())
         self.menuBar().actions()[2].menu().actions()[5].setEnabled(not self.menuBar().actions()[2].
                                                                    menu().actions()[5].isEnabled())
-        self.__gl_widget__.trigger_light()
+        self.__gl_widget.trigger_light()
         self.repaint()
 
-    def __fe_border_action__(self):
-        self.__gl_widget__.trigger_fe_border()
+    def __fe_border_action(self):
+        self.__gl_widget.trigger_fe_border()
         self.repaint()
 
-    def __legend_action__(self):
-        self.__gl_widget__.trigger_legend()
+    def __legend_action(self):
+        self.__gl_widget.trigger_legend()
         self.repaint()
 
-    def __invert_normal_action__(self):
-        self.__gl_widget__.trigger_invert_normal()
+    def __invert_normal_action(self):
+        self.__gl_widget.trigger_invert_normal()
         self.repaint()
 
-    def __light_two_side_action__(self):
-        self.__gl_widget__.trigger_light_two_side()
+    def __light_two_side_action(self):
+        self.__gl_widget.trigger_light_two_side()
         self.repaint()
 
     # Поиск индекса функции по ее имени
-    def __get_fun_index__(self, fun_name, t=0):
+    def __get_fun_index(self, fun_name, t=0):
         # Поиск индекса функции в списке результатов
         index = -1
         for i in range(0, len(self.results)):
@@ -261,14 +261,14 @@ class TMainWindow(QMainWindow):
         return index
 
     # Задание нового файла
-    def __set_file__(self, file_name):
+    def __set_file(self, file_name):
         self.file_name = file_name
         # Загрузка данных
-        if self.__load_file__() is False:
+        if self.__load_file() is False:
             QMessageBox.critical(self, 'Error', 'Error read data from file ' + file_name, QMessageBox.Ok)
             return
-        self.__init_function_menu__()
-        self.__gl_widget__.set_data(self.fe_type, self.x, self.fe, self.be, self.results, 0)
+        self.__init_function_menu()
+        self.__gl_widget.set_data(self.fe_type, self.x, self.fe, self.be, self.results, 0)
         # Настройка меню
         self.menuBar().actions()[0].menu().actions()[1].setEnabled(True)
         self.menuBar().actions()[1].setEnabled(True)                       # Function
@@ -303,28 +303,21 @@ class TGLWidget(QWidget):
         self.angle_z = 0
         self.scale = 1
         self.num_color = 16
-        self.__is_idle__ = True
-        self.__last_pos__ = QPoint()
-        self.__color_table__ = []
-        self.__gl__ = QGLWidget(self)
-        self.__gl__.initializeGL()
-        self.__gl__.resizeGL = self.__resize__
-        self.__gl__.paintGL = self.__paint__
-        self.__init_color_table__()
-        QVBoxLayout(self).addWidget(self.__gl__)
+        self.__is_idle = True
+        self.__last_pos = QPoint()
+        self.__color_table = []
+        self.__gl = QGLWidget(self)
+        self.__gl.initializeGL()
+        self.__gl.resizeGL = self.__resize
+        self.__gl.paintGL = self.__paint
+        self.__init_color_table()
+        QVBoxLayout(self).addWidget(self.__gl)
         self.mousePressEvent = self.__mouse_press_event
         self.mouseReleaseEvent = self.__mouse_release_event
-        self.__gl__.mouseMoveEvent = self.__mouse_move__
-        self.wheelEvent = self.__wheel_event__
-        self.__xlist_object__ = 0
-        self.__xlist_skeleton__ = 0
-
-    """def __del__(self):
-        print('Delete')
-        if self.__xlist_object__ != 0:
-            glDeleteLists(self.__xlist_object__, 1)
-        if self.__xlist_sceleton__ != 0:
-            glDeleteLists(self.__xlist_sceleton__, 1)"""
+        self.__gl.mouseMoveEvent = self.__mouse_move
+        self.wheelEvent = self.__wheel_event
+        self.__xlist_object = 0
+        self.__xlist_skeleton = 0
 
     def clear(self):
         self.is_light = True
@@ -341,24 +334,24 @@ class TGLWidget(QWidget):
         self.min_x.clear()
         self.max_x.clear()
         self.x_c.clear()
-        self.__color_table__.clear()
-        if self.__xlist_object__ != 0:
-            glDeleteLists(self.__xlist_object__, 1)
-            self.__xlist_object__ = 0
-        if self.__xlist_skeleton__ != 0:
-            glDeleteLists(self.__xlist_skeleton__, 1)
-            self.__xlist_skeleton__ = 0
-        self.__gl__.updateGL()
+        self.__color_table.clear()
+        if self.__xlist_object != 0:
+            glDeleteLists(self.__xlist_object, 1)
+            self.__xlist_object = 0
+        if self.__xlist_skeleton != 0:
+            glDeleteLists(self.__xlist_skeleton, 1)
+            self.__xlist_skeleton = 0
+        self.__gl.updateGL()
 
     def set_data(self, fe_type, px, fe, be, results, fun_index):
-        self.__gl__.glInit()
+        self.__gl.glInit()
         self.fe_type = fe_type
         self.x = px
         self.fe = fe
         self.be = be
         self.results = results
         self.fun_index = fun_index
-        self.min_x, self.max_x, self.x_c, self.radius = self.__get_coord_info__()
+        self.min_x, self.max_x, self.x_c, self.radius = self.__get_coord_info()
         self.min_u = min(self.results[self.fun_index].results)
         self.max_u = max(self.results[self.fun_index].results)
         self.is_light = True
@@ -372,99 +365,99 @@ class TGLWidget(QWidget):
         self.angle_z = 0
         self.scale = 1
         self.num_color = 32
-        self.__is_idle__ = True
-        self.__last_pos__ = QPoint()
-        self.__color_table__ = []
-        self.__init_color_table__()
-        if self.__xlist_object__ != 0:
-            glDeleteLists(self.__xlist_object__, 1)
-            self.__xlist_object__ = 0
-        if self.__xlist_skeleton__ != 0:
-            glDeleteLists(self.__xlist_skeleton__, 1)
-            self.__xlist_skeleton__ = 0
-        self.__resize__(self.width(), self.height())
-        self.__gl__.updateGL()
+        self.__is_idle = True
+        self.__last_pos = QPoint()
+        self.__color_table = []
+        self.__init_color_table()
+        if self.__xlist_object != 0:
+            glDeleteLists(self.__xlist_object, 1)
+            self.__xlist_object = 0
+        if self.__xlist_skeleton != 0:
+            glDeleteLists(self.__xlist_skeleton, 1)
+            self.__xlist_skeleton = 0
+        self.__resize(self.width(), self.height())
+        self.__gl.updateGL()
 
     def redraw(self):
-        if self.__xlist_object__ != 0:
-            glDeleteLists(self.__xlist_object__, 1)
-            self.__xlist_object__ = 0
-        if self.__xlist_skeleton__ != 0:
-            glDeleteLists(self.__xlist_skeleton__, 1)
-            self.__xlist_skeleton__ = 0
-        self.__gl__.updateGL()
+        if self.__xlist_object != 0:
+            glDeleteLists(self.__xlist_object, 1)
+            self.__xlist_object = 0
+        if self.__xlist_skeleton != 0:
+            glDeleteLists(self.__xlist_skeleton, 1)
+            self.__xlist_skeleton = 0
+        self.__gl.updateGL()
 
     def trigger_light(self):
         self.is_light = not self.is_light
         self.redraw()
-        self.__gl__.update()
+        self.__gl.update()
 
     def trigger_fe_border(self):
         self.is_fe_border = not self.is_fe_border
         self.redraw()
-        self.__gl__.update()
+        self.__gl.update()
 
     def trigger_legend(self):
         self.is_legend = not self.is_legend
         self.redraw()
-        self.__gl__.update()
+        self.__gl.update()
 
     def trigger_invert_normal(self):
         self.is_invert_normal = not self.is_invert_normal
         self.redraw()
-        self.__gl__.update()
+        self.__gl.update()
 
     def trigger_light_two_side(self):
         self.is_light_two_side = not self.is_light_two_side
-        self.__setup_light__()
+        self.__setup_light()
         self.redraw()
-        self.__gl__.update()
+        self.__gl.update()
 
     def set_colors(self, colors):
         self.num_color = 2 * colors
-        self.__init_color_table__()
+        self.__init_color_table()
         self.redraw()
-        self.__gl__.update()
+        self.__gl.update()
 
     def set_fun_index(self, fun_index):
         self.fun_index = fun_index
         self.min_u = min(self.results[self.fun_index].results)
         self.max_u = max(self.results[self.fun_index].results)
-        self.__init_color_table__()
+        self.__init_color_table()
         self.redraw()
-        self.__gl__.update()
+        self.__gl.update()
 
     def __mouse_press_event(self, event):
         super(TGLWidget, self).mousePressEvent(event)
         if event.buttons() & Qt.LeftButton:
-            self.__is_idle__ = False
+            self.__is_idle = False
 
     def __mouse_release_event(self, event):
         super(TGLWidget, self).mouseReleaseEvent(event)
-        if self.__is_idle__ is False:
-            self.__is_idle__ = True
-            self.__gl__.repaint()
+        if self.__is_idle is False:
+            self.__is_idle = True
+            self.__gl.repaint()
 
-    def __mouse_move__(self, event):
-        dx = event.x() - self.__last_pos__.x()
-        dy = event.y() - self.__last_pos__.y()
-        self.__last_pos__ = event.pos()
+    def __mouse_move(self, event):
+        dx = event.x() - self.__last_pos.x()
+        dy = event.y() - self.__last_pos.y()
+        self.__last_pos = event.pos()
         if event.buttons() & Qt.LeftButton:
             if event.modifiers() & Qt.ShiftModifier:
                 self.angle_z += (dy / abs(dy) if dy != 0 else 0) + (dx / abs(dx) if dx != 0 else 0)
             else:
                 self.angle_x += dy / abs(dy) if dy != 0 else 0
                 self.angle_y += dx / abs(dx) if dx != 0 else 0
-            self.__gl__.repaint()
+            self.__gl.repaint()
 
-    def __wheel_event__(self, event):
+    def __wheel_event(self, event):
         if event.angleDelta().y() > 0:
             self.scale *= 1.05
         else:
             self.scale /= 1.05
-        self.__gl__.repaint()
+        self.__gl.repaint()
 
-    def __get_coord_info__(self):
+    def __get_coord_info(self):
         min_x = [0, 0, 0]
         max_x = [0, 0, 0]
         for k in range(0, len(self.x[0])):
@@ -474,8 +467,8 @@ class TGLWidget(QWidget):
         radius = ((max_x[0] - min_x[0]) ** 2 + (max_x[1] - min_x[1]) ** 2 + (max_x[2] - min_x[2]) ** 2) ** 0.5
         return min_x, max_x, x_c, radius
 
-    def __init_color_table__(self):
-        self.__color_table__.clear()
+    def __init_color_table(self):
+        self.__color_table.clear()
         step = self.num_color / 6
         h = 1.0 / step
         if self.min_u == self.max_u:
@@ -489,31 +482,31 @@ class TGLWidget(QWidget):
         for i in range(0, self.num_color):
             if i < step:
                 # фиолетовый-синий
-                self.__color_table__.append([red, 0, 1, u])
+                self.__color_table.append([red, 0, 1, u])
                 red -= h
                 if red < 0:
                     red = 0
             elif step <= i < 2 * step:
                 # синий-голубой
-                self.__color_table__.append([0, green, 1, u])
+                self.__color_table.append([0, green, 1, u])
                 green += h
                 if green > 1:
                     green = 1
             elif 2 * step <= i < 3 * step:
                 # голубой-зеленый
-                self.__color_table__.append([0, 1, blue, u])
+                self.__color_table.append([0, 1, blue, u])
                 blue -= h
                 if blue < 0:
                     blue = 0
             elif 3 * step <= i < 4 * step:
                 # зеленый-желтый
-                self.__color_table__.append([red, 1, 0, u])
+                self.__color_table.append([red, 1, 0, u])
                 red += h
                 if red > 1:
                     red = 1
             elif i > 4 * step:
                 # желтый-оранжевый-красный
-                self.__color_table__.append([1, green, 0, u])
+                self.__color_table.append([1, green, 0, u])
                 green -= 0.5 * h
                 if green < 0:
                     green = 0
@@ -521,11 +514,11 @@ class TGLWidget(QWidget):
 
     def color(self, i):
         if self.is_light:
-            self.__make_material__(self.__color_table__[i][0], self.__color_table__[i][1], self.__color_table__[i][2])
+            self.__make_material(self.__color_table[i][0], self.__color_table[i][1], self.__color_table[i][2])
         else:
-            glColor3f(self.__color_table__[i][0], self.__color_table__[i][1], self.__color_table__[i][2])
+            glColor3f(self.__color_table[i][0], self.__color_table[i][1], self.__color_table[i][2])
 
-    def __resize__(self, w, h):
+    def __resize(self, w, h):
         aspect = w / h
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
@@ -534,10 +527,10 @@ class TGLWidget(QWidget):
         glViewport(0, 0, w, h)
         glMatrixMode(GL_MODELVIEW)
         if self.is_light:
-            self.__setup_light__()
+            self.__setup_light()
 
     @staticmethod
-    def __make_material__(r, g, b, a=1.0):
+    def __make_material(r, g, b, a=1.0):
         diffuse = 0.5
         ambient = 0.4
         specular = 0.7
@@ -547,7 +540,7 @@ class TGLWidget(QWidget):
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [specular, specular, specular, a])
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess)
 
-    def __get_color_index__(self, u):
+    def __get_color_index(self, u):
         ret = int(floor((u - self.min_u) / ((self.max_u - self.min_u) / self.num_color))) - 1
         return ret - 1 if ret > 0 else 0
 
@@ -566,17 +559,17 @@ class TGLWidget(QWidget):
         for k in range(0, n):
             if k == n - 1:
                 v = stop
-            i = self.__get_color_index__(v)
-            glColor3f(self.__color_table__[i][0], self.__color_table__[i][1], self.__color_table__[i][2])
+            i = self.__get_color_index(v)
+            glColor3f(self.__color_table[i][0], self.__color_table[i][1], self.__color_table[i][2])
             font.setStyleStrategy(QFont.OpenGLCompatible)
-            self.__gl__.renderText(self.rect().width() - font_w1 - font_w2 - 50, cy, '█', font)
+            self.__gl.renderText(self.rect().width() - font_w1 - font_w2 - 50, cy, '█', font)
             glColor3f(1, 1, 1)
-            self.__gl__.renderText(self.rect().width() - font_w2 - 50, cy, '{:+0.5E}'.format(v), font)
+            self.__gl.renderText(self.rect().width() - font_w2 - 50, cy, '{:+0.5E}'.format(v), font)
             cy += font_h
             v -= step
 
     @staticmethod
-    def __sort__(tri):
+    def __sort(tri):
         inverse = 1.0
         min_i = 0
         min_u = tri[0][3]
@@ -593,7 +586,7 @@ class TGLWidget(QWidget):
 
     def draw_triangle_3d(self, tri):
         # tri = sorted(tri, key=lambda item: item[3])
-        inv = self.__sort__(tri)
+        inv = self.__sort(tri)
         glFrontFace(GL_CCW if inv == 1 else GL_CW)
         if self.is_light:
             # Задание нормали
@@ -605,7 +598,7 @@ class TGLWidget(QWidget):
             glNormal3f(inv * a, inv * b, inv * c)
         color_index = []
         for i in range(0, 3):
-            color_index.append(self.__get_color_index__(tri[i][3]))
+            color_index.append(self.__get_color_index(tri[i][3]))
         if color_index[0] == color_index[1] == color_index[2]:
             # Треугольник одного цвета
             self.color(color_index[0])
@@ -660,7 +653,7 @@ class TGLWidget(QWidget):
                                    self.x_c[2])
                         glEnd()
 
-    def __setup_light__(self):
+    def __setup_light(self):
         diffuse = 0.8
         ambient = 0.8
         specular = 0.6
@@ -680,14 +673,15 @@ class TGLWidget(QWidget):
         glEnable(GL_COLOR_MATERIAL)
         glColor3f(0, 0, 0)
         glBegin(GL_LINE_LOOP)
-        for i in range(0, len(tri)):
+        n = len(tri) if len(tri) <= 4 else 3
+        for i in range(0, n):
             glVertex3f(tri[i][0] - self.x_c[0], tri[i][1] - self.x_c[1], tri[i][2] - self.x_c[2])
         glEnd()
         if self.is_light:
             glDisable(GL_COLOR_MATERIAL)
             glEnable(GL_LIGHTING)
 
-    def __paint__(self):
+    def __paint(self):
         glClearColor(0.39, 0.39, 0.6, 0.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         if self.fe_type == '':
@@ -710,43 +704,43 @@ class TGLWidget(QWidget):
 
         glScalef(self.scale, self.scale, self.scale)
 
-        if self.__is_idle__:
-            self.__display_object__()
+        if self.__is_idle:
+            self.__display_object()
         else:
-            self.__display_skeleton__()
+            self.__display_skeleton()
 
         glPopMatrix()
         # Изображение цветовой шкалы
-        if self.is_legend and self.__is_idle__:
+        if self.is_legend and self.__is_idle:
             self.show_legend()
 
     # Визуализация результата
-    def __display_object__(self):
-        if self.__xlist_object__ == 0:
-            self.__xlist_object__ = glGenLists(1)
-            glNewList(self.__xlist_object__, GL_COMPILE)
+    def __display_object(self):
+        if self.__xlist_object == 0:
+            self.__xlist_object = glGenLists(1)
+            glNewList(self.__xlist_object, GL_COMPILE)
             if self.fe_type == 'fe_1d_2':
-                self.__paint_1d__()
+                self.__paint_1d()
             elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_3_p' or \
-                    self.fe_type == 'fe_2d_4_p':
-                self.__paint_2d__()
+                    self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_2d_6':
+                self.__paint_2d()
             else:
-                self.__paint_3d__()
+                self.__paint_3d()
             glEndList()
         else:
-            glCallList(self.__xlist_object__)
+            glCallList(self.__xlist_object)
 
     # Изображение каркаса объекта
-    def __display_skeleton__(self):
-        if self.__xlist_skeleton__ == 0:
-            self.__xlist_skeleton__ = glGenLists(2)
-            glNewList(self.__xlist_skeleton__, GL_COMPILE)
+    def __display_skeleton(self):
+        if self.__xlist_skeleton == 0:
+            self.__xlist_skeleton = glGenLists(2)
+            glNewList(self.__xlist_skeleton, GL_COMPILE)
             if self.fe_type == 'fe_1d_2':
                 glBegin(GL_LINES)
                 glVertex2f(self.min_x[0] - self.x_c[0], 0)
                 glVertex2f(self.max_x[0] - self.x_c[0], 0)
                 glEnd()
-            elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4':
+            elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_6' or self.fe_type == 'fe_2d_4':
                 for i in range(0, len(self.be)):
                     glBegin(GL_LINES)
                     for j in range(0, len(self.be[0])):
@@ -767,18 +761,18 @@ class TGLWidget(QWidget):
                     glEnd()
             glEndList()
         else:
-            glCallList(self.__xlist_skeleton__)
+            glCallList(self.__xlist_skeleton)
 
     # Визуализация одномерной задачи
-    def __paint_1d__(self):
+    def __paint_1d(self):
         # Изображение КЭ
         for i in range(0, len(self.fe)):
             data = []
             for j in range(0, len(self.fe[0])):
                 data.append([self.x[self.fe[i][j]][0] + self.transform_coeff * self.results[0].results[self.fe[i][j]],
                             self.results[self.fun_index].results[self.fe[i][j]]])
-            color1 = self.__get_color_index__(data[0][1])
-            color2 = self.__get_color_index__(data[1][1])
+            color1 = self.__get_color_index(data[0][1])
+            color2 = self.__get_color_index(data[1][1])
             delta_color = 1 if color1 < color2 else -1
             step = abs(color1 - color2)
             h = (data[1][0] - data[0][0]) / step if step > 0 else 0
@@ -797,7 +791,7 @@ class TGLWidget(QWidget):
             glEnd()
 
     # Визуализация плоской задачи
-    def __paint_2d__(self):
+    def __paint_2d(self):
         # Изображение КЭ
         for i in range(0, len(self.fe)):
             # for i in range(212, 214):
@@ -807,15 +801,23 @@ class TGLWidget(QWidget):
                             self.x[self.fe[i][j]][1] + self.transform_coeff * self.results[1].results[self.fe[i][j]], 0,
                             self.results[self.fun_index].results[self.fe[i][j]]])
             if len(tri) == 3:
+                # Линейный треугольник
                 self.draw_triangle_3d(tri)
-            else:
+            elif len(tri) == 4:
+                # Четырехугольник
                 self.draw_triangle_3d([tri[0], tri[1], tri[2]])
                 self.draw_triangle_3d([tri[0], tri[2], tri[3]])
+            else:
+                # Квадратичный треугольник
+                self.draw_triangle_3d([tri[0], tri[3], tri[5]])
+                self.draw_triangle_3d([tri[3], tri[1], tri[4]])
+                self.draw_triangle_3d([tri[3], tri[4], tri[5]])
+                self.draw_triangle_3d([tri[5], tri[4], tri[2]])
             if self.is_fe_border:
                 self.draw_fe_border(tri)
 
     # Визуализация пространственной задачи
-    def __paint_3d__(self):
+    def __paint_3d(self):
         # Изображение поверхности
         # self.transform_coeff = 1.0E+3
         for i in range(0, len(self.be)):

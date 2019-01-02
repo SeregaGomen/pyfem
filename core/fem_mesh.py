@@ -11,6 +11,7 @@ from core.fem_error import TFEMException
 FEType = [
     'fe_1d_2',
     'fe_2d_3',
+    'fe_2d_6',
     'fe_2d_3_p',
     'fe_2d_3_s',
     'fe_2d_4',
@@ -36,6 +37,8 @@ class TMesh:
             return 'fe_2d_3', 2, 3, 2, 2
         elif t == 4:
             return 'fe_3d_4', 3, 4, 3, 3
+        elif t == 6:
+            return 'fe_2d_6', 3, 6, 2, 2
         elif t == 8:
             return 'fe_3d_8', 4, 8, 3, 3
         elif t == 24:
@@ -106,6 +109,8 @@ class TMesh:
             return 'linear triangular element (3 nodes)'
         elif self.fe_type == 'fe_2d_4':
             return 'quadrilateral element (4 nodes)'
+        elif self.fe_type == 'fe_2d_6':
+            return 'quadratic triangular element (6 nodes)'
         elif self.fe_type == 'fe_2d_3_p':
             return 'plate element (3 nodes)'
         elif self.fe_type == 'fe_2d_3_s':
@@ -144,7 +149,7 @@ class TMesh:
     def square(self, index):
         x = self.get_be_coord(index)
         s = 0
-        if self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4':  # ГЭ - отрезок
+        if self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_6':  # ГЭ - отрезок
             s = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
         elif self.fe_type == 'fe_2d_3_p':  # ГЭ - "плоский" треугольник
             a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
@@ -188,7 +193,8 @@ class TMesh:
         x = self.get_fe_coord(index)
         if self.fe_type == 'fe_1d_2':
             v = math.fabs(x[0][0] - x[1][0])
-        elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_3_s':
+        elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_6' or self.fe_type == 'fe_2d_3_p' or \
+                self.fe_type == 'fe_2d_3_s':
             a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
             b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2)
             c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2)
