@@ -159,7 +159,8 @@ def console(res_name):
     #    obj.set_solve_method('iterative')
         obj.set_elasticity(e, m)
         obj.add_boundary_condition('0', 'x=0', DIR_1 | DIR_2)
-        obj.add_concentrated_load('-1.0E+6', 'x=10', DIR_2)
+        # obj.add_concentrated_load('-1.0E+6', 'x=10 and y=-0.25', DIR_2)
+        obj.add_surface_load('-1.0E+6', 'y=0.25', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -811,13 +812,13 @@ if __name__ == '__main__':
 
     # quad4('quad-4')
     # quad3('quad-3')
-    quad6('quad-6')
+    # quad6('quad-6')
 
 
 
     # rod4('rod4')
     # rod3('rod3')
-    # beam('beam')
+    beam('beam')
     # head3d('head3d')
     # cube('cube')
     # cube4('cube4')

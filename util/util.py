@@ -128,12 +128,12 @@ def convert_msh_2_trpa(file_msh, file_trpa):
                     se = line.split(' ')
                     if len(se) == 2:
                         continue
-                    if len(se) == 3: # ГЭ в форме отрезка
+                    if len(se) == 3:    # ГЭ в форме отрезка
                         cbe = []
                         for j in range(1, len(se)):
                             cbe.append(index[int(se[j]) - 1])
                         be.append(cbe)
-                    if len(se) == 4 or len(se) == 5: # КЭ в форме треугольника или четрыехугольника
+                    if len(se) == 4 or len(se) == 5:    # КЭ в форме треугольника или четрыехугольника
                         cfe = []
                         for j in range(1, len(se)):
                             cfe.append(index[int(se[j]) - 1])
@@ -251,4 +251,5 @@ def mesh_convert_2d_3_2_6(file_linear, file_quadric):
 # convert_msh_2_trpa('../mesh/quad-1.msh', '../mesh/quad-3.trpa')
 # create_shell_mesh_4()
 # create_plate_mesh_4()
-mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
+# mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
+mesh_convert_2d_3_2_6('../mesh/console.trpa', '../mesh/console-6.trpa')

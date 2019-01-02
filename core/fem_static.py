@@ -9,12 +9,9 @@ from scipy.sparse.linalg import spsolve, bicgstab, ArpackError
 from core.fem_fem import TFEM
 from core.fem_defs import DIR_1, DIR_2, DIR_3
 from core.fem_result import TResult
-
-
 from numpy import array
 from numpy import zeros
 from numpy.linalg import det
-from numpy.linalg import inv
 
 
 class TFEMStatic(TFEM):
@@ -469,8 +466,6 @@ class TFEMStatic(TFEM):
             ])
             # Якобиан
             jacobian = det(jacobi)
-            inverted_jacobi = inv(jacobi)
-
             # Изопараметрическвая матрица градиентов
             b = zeros([12, 3])
             for j in range(0, 4):
