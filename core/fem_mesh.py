@@ -17,7 +17,8 @@ FEType = [
     'fe_2d_4',
     'fe_2d_4_p',
     'fe_3d_4',
-    'fe_3d_8'
+    'fe_3d_8',
+    'fe_3d_10'
 ]
 
 
@@ -41,6 +42,8 @@ class TMesh:
             return 'fe_2d_6', 3, 6, 2, 2
         elif t == 8:
             return 'fe_3d_8', 4, 8, 3, 3
+        elif t == 10:
+            return 'fe_3d_10', 3, 10, 3, 3
         elif t == 24:
             return 'fe_2d_4', 2, 4, 2, 2
         elif t == 34:
@@ -123,6 +126,8 @@ class TMesh:
             return 'linear tetrahedron (4 nodes)'
         elif self.fe_type == 'fe_3d_8':
             return 'cube element (8 nodes)'
+        elif self.fe_type == 'fe_3d_10':
+            return 'quadratic tetrahedron (10 nodes)'
 
     def get_coord(self, index):
         return self.x[index]

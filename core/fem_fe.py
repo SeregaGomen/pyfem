@@ -207,9 +207,9 @@ class TFE2D3(TFE):
             ])
             # Якобиан
             jacobian = det(jacobi)
-            inverted_jacobi = inv(jacobi)
-            shape_dx = inverted_jacobi[0, 0] * shape_dxi + inverted_jacobi[0, 1] * shape_deta
-            shape_dy = inverted_jacobi[1, 0] * shape_dxi + inverted_jacobi[1, 1] * shape_deta
+            inv_jacobi = inv(jacobi)
+            shape_dx = inv_jacobi[0, 0] * shape_dxi + inv_jacobi[0, 1] * shape_deta
+            shape_dy = inv_jacobi[1, 0] * shape_dxi + inv_jacobi[1, 1] * shape_deta
             # Матрицы градиентов
             b = zeros([3, 2 * self.size])
             for j in range(0, self.size):
@@ -280,9 +280,9 @@ class TFE2D6(TFE2D3):
             ])
             # Якобиан
             jacobian = det(jacobi)
-            inverted_jacobi = inv(jacobi)
-            shape_dx = inverted_jacobi[0, 0] * shape_dxi + inverted_jacobi[0, 1] * shape_deta
-            shape_dy = inverted_jacobi[1, 0] * shape_dxi + inverted_jacobi[1, 1] * shape_deta
+            inv_jacobi = inv(jacobi)
+            shape_dx = inv_jacobi[0, 0] * shape_dxi + inv_jacobi[0, 1] * shape_deta
+            shape_dy = inv_jacobi[1, 0] * shape_dxi + inv_jacobi[1, 1] * shape_deta
             # Матрицы градиентов
             b = zeros([3, 2 * self.size])
             for j in range(0, self.size):
@@ -411,9 +411,9 @@ class TFE2D4(TFE):
             ])
             # Якобиан
             jacobian = det(jacobi)
-            inverted_jacobi = inv(jacobi)
-            shape_dx = inverted_jacobi[0, 0] * shape_dxi + inverted_jacobi[0, 1] * shape_deta
-            shape_dy = inverted_jacobi[1, 0] * shape_dxi + inverted_jacobi[1, 1] * shape_deta
+            inv_jacobi = inv(jacobi)
+            shape_dx = inv_jacobi[0, 0] * shape_dxi + inv_jacobi[0, 1] * shape_deta
+            shape_dy = inv_jacobi[1, 0] * shape_dxi + inv_jacobi[1, 1] * shape_deta
             # Изопараметрическвая матрица градиентов
             b = zeros([3, 2 * self.size])
             for j in range(0, self.size):
@@ -475,7 +475,7 @@ class TFE3D4(TFE):
         ]) * self.params.e[0] * (1.0 - self.params.m[0])/(1.0 + self.params.m[0])/(1.0 - 2.0 * self.params.m[0])
         return d
 
-    def __volume(self):
+    def _volume(self):
         a = (self.x[1][0] - self.x[0][0]) * (self.x[2][1] - self.x[0][1]) * (self.x[3][2] - self.x[0][2]) + \
             (self.x[3][0] - self.x[0][0]) * (self.x[1][1] - self.x[0][1]) * (self.x[2][2] - self.x[0][2]) + \
             (self.x[2][0] - self.x[0][0]) * (self.x[3][1] - self.x[0][1]) * (self.x[1][2] - self.x[0][2])
@@ -485,7 +485,7 @@ class TFE3D4(TFE):
         return math.fabs(a - b)/6.0
 
     def _create(self):
-        if self.__volume() == 0.0:
+        if self._volume() == 0.0:
             raise TFEMException('incorrect_fe_err')
         a, self.a = zeros((self.size, self.size)), zeros((self.size, self.size))
         for j in range(0, self.size):
@@ -541,13 +541,10 @@ class TFE3D4(TFE):
             ])
             # Якобиан
             jacobian = det(jacobi)
-            inverted_jacobi = inv(jacobi)
-            shape_dx = (inverted_jacobi[0, 0] * shape_dxi + inverted_jacobi[0, 1] * shape_deta) + \
-                       (inverted_jacobi[0, 2] * shape_dpsi)
-            shape_dy = (inverted_jacobi[1, 0] * shape_dxi + inverted_jacobi[1, 1] * shape_deta) + \
-                       (inverted_jacobi[1, 2] * shape_dpsi)
-            shape_dz = (inverted_jacobi[2, 0] * shape_dxi + inverted_jacobi[2, 1] * shape_deta) + \
-                       (inverted_jacobi[2, 2] * shape_dpsi)
+            inv_jacobi = inv(jacobi)
+            shape_dx = (inv_jacobi[0, 0] * shape_dxi + inv_jacobi[0, 1] * shape_deta) + (inv_jacobi[0, 2] * shape_dpsi)
+            shape_dy = (inv_jacobi[1, 0] * shape_dxi + inv_jacobi[1, 1] * shape_deta) + (inv_jacobi[1, 2] * shape_dpsi)
+            shape_dz = (inv_jacobi[2, 0] * shape_dxi + inv_jacobi[2, 1] * shape_deta) + (inv_jacobi[2, 2] * shape_dpsi)
             # Изопараметрическая матрица градиентов
             b = zeros([6, 3 * self.size])
             for j in range(0, self.size):
@@ -579,9 +576,108 @@ class TFE3D4(TFE):
             [0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 1.0]
         ]) * 0.1
-        m = a * self.params.density * self.__volume()
+        m = a * self.params.density * self._volume()
         c = m * self.params.damping[0] + self.K * self.params.damping[1]
         return m, c
+
+
+# Квадратичный (десятиузловой) тетраэдральный КЭ
+class TFE3D10(TFE3D4):
+    def __init__(self):
+        super().__init__()
+        self.size = 10
+
+    def _create(self):
+        if self._volume() == 0.0:
+            raise TFEMException('incorrect_fe_err')
+        a, self.a = zeros((self.size, self.size)), zeros((self.size, self.size))
+        for j in range(0, self.size):
+            b = array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+            for i in range(0, self.size):
+                a[i][0] = 1.0
+                a[i][1] = self.x[i][0]
+                a[i][2] = self.x[i][1]
+                a[i][3] = self.x[i][2]
+                a[i][4] = self.x[i][0] * self.x[i][1]
+                a[i][5] = self.x[i][0] * self.x[i][2]
+                a[i][6] = self.x[i][1] * self.x[i][2]
+                a[i][7] = self.x[i][0] ** 2
+                a[i][8] = self.x[i][1] ** 2
+                a[i][9] = self.x[i][2] ** 2
+            b[j] = 1.0
+            x = solve(a, b)
+            self.a[j] = list(x)
+
+    def calc(self, u):
+        res = zeros((12, self.size))
+        for i in range(0, self.size):
+            # Матрица градиентов
+            b = zeros([6, 3 * self.size])
+            for j in range(0, self.size):
+                dx = self.a[j][1] + 2 * self.a[j][7] * self.x[i][0] + self.a[j][4] * self.x[i][1] + \
+                     self.a[j][5] * self.x[i][2]
+                dy = self.a[j][2] + self.a[j][4] * self.x[i][0] + 2 * self.a[j][8] * self.x[i][1] + \
+                     self.a[j][6] * self.x[i][2]
+                dz = self.a[j][3] + self.a[j][5] * self.x[i][0] + self.a[j][6] * self.x[i][1] + \
+                     2 * self.a[j][9] * self.x[i][2]
+                b[0][j * 3 + 0] = dx
+                b[1][j * 3 + 1] = dy
+                b[2][j * 3 + 2] = dz
+                b[3][j * 3 + 0] = dy
+                b[3][j * 3 + 1] = dx
+                b[4][j * 3 + 1] = dz
+                b[4][j * 3 + 2] = dy
+                b[5][j * 3 + 0] = dz
+                b[5][j * 3 + 2] = dx
+            e = b.dot(u)
+            s = self._elastic_matrix().dot(e)
+            for j in range(0, 6):
+                res[j][i] += e[j]
+                res[j + 6][i] += s[j]
+        return res
+
+    # Формирование локальной ыматрицы жесткости
+    def _generate_stiffness_matrix(self):
+        local_k = zeros((3 * self.size, 3 * self.size))
+        # Интегрирование по тетраэдру [0; 0; 0] - [1; 0; 0] - [0; 1; 0] - [0; 0; 1] (по формуле Гаусса)
+        for i in range(len(self._w)):
+            # Изопараметрические функции формы и их производные
+            xi = self._xi[i]
+            eta = self._eta[i]
+            psi = self._psi[i]
+
+            shape_dxi = array([-3 + 4 * xi + 4 * eta + 4 * psi, 4 * xi - 1, 0, 0, 4 * (-2 * xi + 1 - eta - psi),
+                               4 * eta, -4 * eta, -4 * psi, 4 * psi, 0])
+            shape_deta = array([-3 + 4 * xi + 4 * eta + 4 * psi, 0, 4 * eta - 1, 0, -4 * xi, 4 * xi,
+                                4 * (-2 * eta + 1 - xi - psi), -4 * psi, 0, 4 * psi])
+            shape_dpsi = array([-3 + 4 * xi + 4 * eta + 4 * psi, 0, 0, 4 * psi - 1, -4 * xi, 0, -4 * eta,
+                                4 * (-2 * psi + 1 - xi - eta), 4 * xi, 4 * eta])
+            # Матрица Якоби
+            jacobi = array([
+                [sum(shape_dxi * self.x[:, 0]), sum(shape_dxi * self.x[:, 1]), sum(shape_dxi * self.x[:, 2])],
+                [sum(shape_deta * self.x[:, 0]), sum(shape_deta * self.x[:, 1]), sum(shape_deta * self.x[:, 2])],
+                [sum(shape_dpsi * self.x[:, 0]), sum(shape_dpsi * self.x[:, 1]), sum(shape_dpsi * self.x[:, 2])]
+            ])
+            # Якобиан
+            jacobian = det(jacobi)
+            inv_jacobi = inv(jacobi)
+            shape_dx = (inv_jacobi[0, 0] * shape_dxi + inv_jacobi[0, 1] * shape_deta) + (inv_jacobi[0, 2] * shape_dpsi)
+            shape_dy = (inv_jacobi[1, 0] * shape_dxi + inv_jacobi[1, 1] * shape_deta) + (inv_jacobi[1, 2] * shape_dpsi)
+            shape_dz = (inv_jacobi[2, 0] * shape_dxi + inv_jacobi[2, 1] * shape_deta) + (inv_jacobi[2, 2] * shape_dpsi)
+            # Изопараметрическая матрица градиентов
+            b = zeros([6, 3 * self.size])
+            for j in range(0, self.size):
+                b[0][j * 3 + 0] = shape_dx[j]
+                b[1][j * 3 + 1] = shape_dy[j]
+                b[2][j * 3 + 2] = shape_dz[j]
+                b[3][j * 3 + 0] = shape_dy[j]
+                b[3][j * 3 + 1] = shape_dx[j]
+                b[4][j * 3 + 1] = shape_dz[j]
+                b[4][j * 3 + 2] = shape_dy[j]
+                b[5][j * 3 + 0] = shape_dz[j]
+                b[5][j * 3 + 2] = shape_dx[j]
+            local_k += b.conj().transpose().dot(self._elastic_matrix()).dot(b) * abs(jacobian) * self._w[i]
+        return local_k
 
 
 # Восьмиузловой призматический КЭ
@@ -720,13 +816,10 @@ class TFE3D8(TFE):
             ])
             # Якобиан
             jacobian = det(jacobi)
-            inverted_jacobi = inv(jacobi)
-            shape_dx = (inverted_jacobi[0, 0] * shape_dxi + inverted_jacobi[0, 1] * shape_deta) + \
-                       (inverted_jacobi[0, 2] * shape_dpsi)
-            shape_dy = (inverted_jacobi[1, 0] * shape_dxi + inverted_jacobi[1, 1] * shape_deta) + \
-                       (inverted_jacobi[1, 2] * shape_dpsi)
-            shape_dz = (inverted_jacobi[2, 0] * shape_dxi + inverted_jacobi[2, 1] * shape_deta) + \
-                       (inverted_jacobi[2, 2] * shape_dpsi)
+            inv_jacobi = inv(jacobi)
+            shape_dx = (inv_jacobi[0, 0] * shape_dxi + inv_jacobi[0, 1] * shape_deta) + (inv_jacobi[0, 2] * shape_dpsi)
+            shape_dy = (inv_jacobi[1, 0] * shape_dxi + inv_jacobi[1, 1] * shape_deta) + (inv_jacobi[1, 2] * shape_dpsi)
+            shape_dz = (inv_jacobi[2, 0] * shape_dxi + inv_jacobi[2, 1] * shape_deta) + (inv_jacobi[2, 2] * shape_dpsi)
             # Изопараметрическая матрица градиентов
             b = zeros([6, 3 * self.size])
             for j in range(0, self.size):
@@ -837,9 +930,9 @@ class TFE2D4P(TFE2D4):
             ])
             # Якобиан
             jacobian = det(jacobi)
-            inverted_jacobi = inv(jacobi)
-            shape_dx = inverted_jacobi[0, 0] * shape_dxi + inverted_jacobi[0, 1] * shape_deta
-            shape_dy = inverted_jacobi[1, 0] * shape_dxi + inverted_jacobi[1, 1] * shape_deta
+            inv_jacobi = inv(jacobi)
+            shape_dx = inv_jacobi[0, 0] * shape_dxi + inv_jacobi[0, 1] * shape_deta
+            shape_dy = inv_jacobi[1, 0] * shape_dxi + inv_jacobi[1, 1] * shape_deta
             # Изопараметрические матрицы градиентов
             b1 = zeros([3, 3 * self.size])
             for j in range(0, self.size):
@@ -954,9 +1047,9 @@ class TFE2D3P(TFE2D3):
             ])
             # Якобиан
             jacobian = det(jacobi)
-            inverted_jacobi = inv(jacobi)
-            shape_dx = inverted_jacobi[0, 0] * shape_dxi + inverted_jacobi[0, 1] * shape_deta
-            shape_dy = inverted_jacobi[1, 0] * shape_dxi + inverted_jacobi[1, 1] * shape_deta
+            inv_jacobi = inv(jacobi)
+            shape_dx = inv_jacobi[0, 0] * shape_dxi + inv_jacobi[0, 1] * shape_deta
+            shape_dy = inv_jacobi[1, 0] * shape_dxi + inv_jacobi[1, 1] * shape_deta
             # Матрицы градиентов
             b1 = zeros([3, 3 * self.size])
             for j in range(0, self.size):

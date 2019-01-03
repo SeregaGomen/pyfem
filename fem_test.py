@@ -808,7 +808,26 @@ def tri6(res_name):
         return False
 
 
+def tet10(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/tet-10.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'z = 0', DIR_1 | DIR_2 | DIR_3)
+        obj.add_concentrated_load('-0.05', 'z = 1', DIR_3)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
 if __name__ == '__main__':
+    tet10('tet-10')
     # tri6('tri-6')
 
     # quad4('quad-4')
@@ -817,7 +836,7 @@ if __name__ == '__main__':
 
     # rod4('rod4')
     # rod3('rod3')
-    beam('beam')
+    # beam('beam')
     # head3d('head3d')
     # cube('cube')
     # cube4('cube4')

@@ -247,6 +247,85 @@ def mesh_convert_2d_3_2_6(file_linear, file_quadric):
     return True
 
 
+# Конвертация линейного тетраэдра в квадратичный
+def mesh_convert_3d_4_2_10(file_linear, file_quadric):
+    x = []
+    be = []
+    fe = []
+    # Считываем исходную сетку
+    with open(file_linear, 'r') as file:
+        line = file.readline()
+        if int(line) != 3:
+            print('Mesh error: incorrect FE type')
+            return False
+        # Считываем узлы
+        n = int(file.readline())
+        for i in range(0, n):
+            line = file.readline().replace('\n', '').strip()
+            s = line.split(' ')
+            x.append([float(s[0]), float(s[1])])
+        # Считываем КЭ
+        n = int(file.readline())
+        for i in range(0, n):
+            line = file.readline().replace('\n', '').strip()
+            s = line.split(' ')
+            fe.append([int(s[0]), int(s[1]), int(s[2])])
+        # Считываем ГЭ
+        n = int(file.readline())
+        for i in range(0, n):
+            line = file.readline().replace('\n', '').strip()
+            s = line.split(' ')
+            be.append([int(s[0]), int(s[1])])
+    # Конвертируем...
+    n_fe = []
+    n_be = []
+    edge = []
+    # Преобразуем границу
+    num = len(x)
+    for i in range(0, len(be)):
+        xp = [(x[be[i][0]][0] + x[be[i][1]][0]) / 2, (x[be[i][0]][1] + x[be[i][1]][1]) / 2]
+        x.append(xp)
+        n_be.append([be[i][0], be[i][1], num])
+        e = sorted(be[i])
+        edge.append([e[0], e[1], num])
+        num += 1
+    # Преобразуем КЭ
+    for i in range(0, len(fe)):
+        index = [[fe[i][0], fe[i][1]], [fe[i][1], fe[i][2]], [fe[i][2], fe[i][0]]]
+        add_fe = []
+        for j in range(0, 3):
+            ret, c_index = is_find(edge, sorted(index[j]))
+            if ret is not True:
+                xp = [(x[index[j][0]][0] + x[index[j][1]][0]) / 2, (x[index[j][0]][1] + x[index[j][1]][1]) / 2]
+                x.append(xp)
+                add_fe.append(num)
+                e = sorted(index[j])
+                edge.append([e[0], e[1], num])
+                num += 1
+            else:
+                add_fe.append(c_index)
+        n_fe.append([fe[i][0], fe[i][1], fe[i][2], add_fe[0], add_fe[1], add_fe[2]])
+    # Выводим результат
+    with open(file_quadric, 'w') as file:
+        file.write('6\n')
+        file.write('%d\n' % len(x))
+        for i in range(0, len(x)):
+            for j in range(0, len(x[i])):
+                file.write(str(x[i][j]) + ' ')
+            file.write('\n')
+        file.write('%d\n' % len(n_fe))
+        for i in range(0, len(n_fe)):
+            for j in range(0, len(n_fe[i])):
+                file.write(str(n_fe[i][j]) + ' ')
+            file.write('\n')
+        file.write('%d\n' % len(n_be))
+        for i in range(0, len(n_be)):
+            for j in range(0, len(n_be[i])):
+                file.write(str(n_be[i][j]) + ' ')
+            file.write('\n')
+    return True
+
+
 # convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', 'mesh/quad-4.trpa')
 # convert_msh_2_trpa('../mesh/quad-1.msh', '../mesh/quad-3.trpa')
 # create_shell_mesh_4()
