@@ -530,10 +530,6 @@ class TFE3D4(TFE):
         # Интегрирование по тетраэдру [0; 0; 0] - [1; 0; 0] - [0; 1; 0] - [0; 0; 1] (по формуле Гаусса)
         for i in range(len(self._w)):
             # Изопараметрические функции формы и их производные
-            xi = self._xi[i]
-            eta = self._eta[i]
-            psi = self._psi[i]
-
             shape_dxi = array([-1, 1, 0, 0])
             shape_deta = array([-1, 0, 1, 0])
             shape_dpsi = array([-1, 0, 0, 1])
@@ -566,7 +562,6 @@ class TFE3D4(TFE):
                 b[5][j * 3 + 2] = shape_dx[j]
             local_k += b.conj().transpose().dot(self._elastic_matrix()).dot(b) * abs(jacobian) * self._w[i]
         return local_k
-
 
     # Формирование локальных матриц масс и демпфирования
     def _generate_mass_damping_matrix(self):

@@ -6,6 +6,7 @@ from core.fem_defs import DIR_1, DIR_2, DIR_3, INIT_U, INIT_V, INIT_W, INIT_U_T,
 from core.fem_object import TObject
 from plot.plot3d import TPlot
 
+
 def body1d(res_name):
     obj = TObject()
     e = [6.5E+10]
@@ -813,8 +814,6 @@ if __name__ == '__main__':
     # quad4('quad-4')
     # quad3('quad-3')
     # quad6('quad-6')
-
-
 
     # rod4('rod4')
     # rod3('rod3')
