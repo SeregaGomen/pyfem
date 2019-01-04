@@ -646,12 +646,12 @@ class TFE3D10(TFE3D4):
             eta = self._eta[i]
             psi = self._psi[i]
 
-            shape_dxi = array([-3 + 4 * xi + 4 * eta + 4 * psi, 4 * xi - 1, 0, 0, 4 * (-2 * xi + 1 - eta - psi),
-                               4 * eta, -4 * eta, -4 * psi, 4 * psi, 0])
+            shape_dxi = array([-3 + 4 * xi + 4 * eta + 4 * psi, 4 * xi - 1, 0, 0, -8 * xi + 4 - 4 * eta - 4 * psi,
+                                4 * eta, -4 * eta, -4 * psi, 4 * psi, 0])
             shape_deta = array([-3 + 4 * xi + 4 * eta + 4 * psi, 0, 4 * eta - 1, 0, -4 * xi, 4 * xi,
-                                4 * (-2 * eta + 1 - xi - psi), -4 * psi, 0, 4 * psi])
+                                -8 * eta + 4 - 4 * xi - 4 * psi, -4 * psi, 0, 4 * psi])
             shape_dpsi = array([-3 + 4 * xi + 4 * eta + 4 * psi, 0, 0, 4 * psi - 1, -4 * xi, 0, -4 * eta,
-                                4 * (-2 * psi + 1 - xi - eta), 4 * xi, 4 * eta])
+                                -8 * psi + 4 - 4 * xi - 4 * eta, 4 * xi, 4 * eta])
             # Матрица Якоби
             jacobi = array([
                 [sum(shape_dxi * self.x[:, 0]), sum(shape_dxi * self.x[:, 1]), sum(shape_dxi * self.x[:, 2])],
@@ -660,8 +660,8 @@ class TFE3D10(TFE3D4):
             ])
             # Якобиан
             jacobian = det(jacobi)
-            if jacobian <= 0:
-                print('Jacobian: %' % str(jacobian))
+            if jacobian >= 0:
+                print('Wrong jacobian: %f' % jacobian)
             inv_jacobi = inv(jacobi)
             shape_dx = (inv_jacobi[0, 0] * shape_dxi + inv_jacobi[0, 1] * shape_deta) + (inv_jacobi[0, 2] * shape_dpsi)
             shape_dy = (inv_jacobi[1, 0] * shape_dxi + inv_jacobi[1, 1] * shape_deta) + (inv_jacobi[1, 2] * shape_dpsi)
