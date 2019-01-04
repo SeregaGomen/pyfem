@@ -829,9 +829,15 @@ class TGLWidget(QWidget):
                             self.results[self.fun_index].results[self.be[i][j]]])
             if len(tri) == 3:
                 self.draw_triangle_3d(tri)
-            else:
+            elif len(tri) == 4:
                 self.draw_triangle_3d([tri[0], tri[1], tri[2]])
                 self.draw_triangle_3d([tri[0], tri[2], tri[3]])
+            elif len(tri) == 6:
+                self.draw_triangle_3d([tri[0], tri[3], tri[5]])
+                self.draw_triangle_3d([tri[3], tri[4], tri[5]])
+                self.draw_triangle_3d([tri[3], tri[1], tri[4]])
+                self.draw_triangle_3d([tri[5], tri[4], tri[2]])
+
             # Изображение границы ГЭ
             if self.is_fe_border:
                 self.draw_fe_border(tri)

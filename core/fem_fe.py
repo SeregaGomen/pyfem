@@ -660,6 +660,8 @@ class TFE3D10(TFE3D4):
             ])
             # Якобиан
             jacobian = det(jacobi)
+            if jacobian <= 0:
+                print('Jacobian: %' % str(jacobian))
             inv_jacobi = inv(jacobi)
             shape_dx = (inv_jacobi[0, 0] * shape_dxi + inv_jacobi[0, 1] * shape_deta) + (inv_jacobi[0, 2] * shape_dpsi)
             shape_dy = (inv_jacobi[1, 0] * shape_dxi + inv_jacobi[1, 1] * shape_deta) + (inv_jacobi[1, 2] * shape_dpsi)

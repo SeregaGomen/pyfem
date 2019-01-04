@@ -63,7 +63,7 @@ def create_shell_mesh_4():
         file.write(str(n_xy*n_z) + '\n')
         for i in range(0, len(index) - 1):
             for j in range(0, len(index[0]) - 1):
-                file.write(str(index[i][j]) + ' ' +str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' +
+                file.write(str(index[i][j]) + ' ' + str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' +
                            str(index[i + 1][j]) + '\n')
             file.write(str(index[i][j + 1]) + ' ' + str(index[i][0]) + ' ' + str(index[i + 1][0]) + ' ' +
                        str(index[i + 1][j + 1]) + '\n')
@@ -255,7 +255,7 @@ def mesh_convert_3d_4_2_10(file_linear, file_quadric):
     # Считываем исходную сетку
     with open(file_linear, 'r') as file:
         line = file.readline()
-        if int(line) != 3:
+        if int(line) != 4:
             print('Mesh error: incorrect FE type')
             return False
         # Считываем узлы
@@ -263,19 +263,19 @@ def mesh_convert_3d_4_2_10(file_linear, file_quadric):
         for i in range(0, n):
             line = file.readline().replace('\n', '').strip()
             s = line.split(' ')
-            x.append([float(s[0]), float(s[1])])
+            x.append([float(s[0]), float(s[1]), float(s[2])])
         # Считываем КЭ
         n = int(file.readline())
         for i in range(0, n):
             line = file.readline().replace('\n', '').strip()
             s = line.split(' ')
-            fe.append([int(s[0]), int(s[1]), int(s[2])])
+            fe.append([int(s[0]), int(s[1]), int(s[2]), int(s[3])])
         # Считываем ГЭ
         n = int(file.readline())
         for i in range(0, n):
             line = file.readline().replace('\n', '').strip()
             s = line.split(' ')
-            be.append([int(s[0]), int(s[1])])
+            be.append([int(s[0]), int(s[1]), int(s[2])])
     # Конвертируем...
     n_fe = []
     n_be = []
@@ -283,31 +283,43 @@ def mesh_convert_3d_4_2_10(file_linear, file_quadric):
     # Преобразуем границу
     num = len(x)
     for i in range(0, len(be)):
-        xp = [(x[be[i][0]][0] + x[be[i][1]][0]) / 2, (x[be[i][0]][1] + x[be[i][1]][1]) / 2]
-        x.append(xp)
-        n_be.append([be[i][0], be[i][1], num])
-        e = sorted(be[i])
-        edge.append([e[0], e[1], num])
-        num += 1
-    # Преобразуем КЭ
-    for i in range(0, len(fe)):
-        index = [[fe[i][0], fe[i][1]], [fe[i][1], fe[i][2]], [fe[i][2], fe[i][0]]]
-        add_fe = []
+        index = [[be[i][0], be[i][1]], [be[i][1], be[i][2]], [be[i][0], be[i][2]]]
+        a_be = []
         for j in range(0, 3):
             ret, c_index = is_find(edge, sorted(index[j]))
             if ret is not True:
-                xp = [(x[index[j][0]][0] + x[index[j][1]][0]) / 2, (x[index[j][0]][1] + x[index[j][1]][1]) / 2]
+                xp = [(x[index[j][0]][0] + x[index[j][1]][0]) / 2, (x[index[j][0]][1] + x[index[j][1]][1]) / 2,
+                      (x[index[j][0]][2] + x[index[j][1]][2]) / 2]
                 x.append(xp)
-                add_fe.append(num)
+                a_be.append(num)
                 e = sorted(index[j])
                 edge.append([e[0], e[1], num])
                 num += 1
             else:
-                add_fe.append(c_index)
-        n_fe.append([fe[i][0], fe[i][1], fe[i][2], add_fe[0], add_fe[1], add_fe[2]])
+                a_be.append(c_index)
+        n_be.append([be[i][0], be[i][1], be[i][2], a_be[0], a_be[1], a_be[2]])
+
+    # Преобразуем КЭ
+    for i in range(0, len(fe)):
+        index = [[fe[i][0], fe[i][1]], [fe[i][1], fe[i][2]], [fe[i][0], fe[i][2]], [fe[i][2], fe[i][3]],
+                 [fe[i][1], fe[i][3]], [fe[i][0], fe[i][3]]]
+        a_fe = []
+        for j in range(0, 6):
+            ret, c_index = is_find(edge, sorted(index[j]))
+            if ret is not True:
+                xp = [(x[index[j][0]][0] + x[index[j][1]][0]) / 2, (x[index[j][0]][1] + x[index[j][1]][1]) / 2,
+                      (x[index[j][0]][2] + x[index[j][1]][2]) / 2]
+                x.append(xp)
+                a_fe.append(num)
+                e = sorted(index[j])
+                edge.append([e[0], e[1], num])
+                num += 1
+            else:
+                a_fe.append(c_index)
+        n_fe.append([fe[i][0], fe[i][1], fe[i][2], fe[i][3], a_fe[0], a_fe[1], a_fe[2], a_fe[3], a_fe[4], a_fe[5]])
     # Выводим результат
     with open(file_quadric, 'w') as file:
-        file.write('6\n')
+        file.write('10\n')
         file.write('%d\n' % len(x))
         for i in range(0, len(x)):
             for j in range(0, len(x[i])):
@@ -331,4 +343,6 @@ def mesh_convert_3d_4_2_10(file_linear, file_quadric):
 # create_shell_mesh_4()
 # create_plate_mesh_4()
 # mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
-mesh_convert_2d_3_2_6('../mesh/console.trpa', '../mesh/console-6.trpa')
+
+#mesh_convert_2d_3_2_6('../mesh/console.trpa', '../mesh/console-6.trpa')
+mesh_convert_3d_4_2_10('../mesh/beam.trpa', '../mesh/beam-10.trpa')
