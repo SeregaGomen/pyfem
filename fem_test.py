@@ -109,8 +109,8 @@ def beam(res_name):
         obj.set_precision(5)
         obj.set_elasticity(e, m)
         obj.add_boundary_condition('0', 'y=0', DIR_1 | DIR_2 | DIR_3)
-        # obj.add_volume_load('-1.0E+5', '', DIR_2)
-        obj.add_surface_load('-1.0E+5', 'y=4', DIR_2)
+        obj.add_volume_load('-1.0E+5', '', DIR_2)
+        # obj.add_surface_load('-1.0E+5', 'y=4', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -742,7 +742,8 @@ def quad4(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'y = -0.5', DIR_1 | DIR_2)
-        obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
+        obj.add_volume_load('-0.05', '', DIR_2)
+        # obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
         # obj.add_concentrated_load('-0.05', 'y = 0.5 and (x = -0.5 or x = 0.5)', DIR_2)
         if obj.calc():
             obj.print_result()
@@ -761,7 +762,8 @@ def quad3(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'y = -0.5', DIR_1 | DIR_2)
-        obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
+        obj.add_volume_load('-0.05', '', DIR_2)
+        # obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
         # obj.add_concentrated_load('-0.05', 'y = 0.5 and (x = -0.5 or x = 0.5)', DIR_2)
         if obj.calc():
             obj.print_result()
@@ -780,7 +782,8 @@ def quad6(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'y = -0.5', DIR_1 | DIR_2)
-        obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
+        obj.add_volume_load('-0.05', '', DIR_2)
+        # obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
         # obj.add_concentrated_load('-0.05', 'y = 0.5 and (x = -0.5 or x = 0.5)', DIR_2)
         if obj.calc():
             obj.print_result()
@@ -832,11 +835,11 @@ if __name__ == '__main__':
 
     # quad4('quad-4')
     # quad3('quad-3')
-    quad6('quad-6')
+    # quad6('quad-6')
 
     # rod4('rod4')
     # rod3('rod3')
-    # beam('beam')
+    beam('beam')
     # head3d('head3d')
     # cube('cube')
     # cube4('cube4')

@@ -338,11 +338,11 @@ def mesh_convert_3d_4_2_10(file_linear, file_quadric):
     return True
 
 
-# convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', 'mesh/quad-4.trpa')
-# convert_msh_2_trpa('../mesh/quad-1.msh', '../mesh/quad-3.trpa')
+# convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', 'mesh/quad-4-1.trpa')
+convert_msh_2_trpa('../mesh/quad-1.msh', '../mesh/quad-4.trpa')
 # create_shell_mesh_4()
 # create_plate_mesh_4()
-mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
+# mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
 
 # mesh_convert_2d_3_2_6('../mesh/console.trpa', '../mesh/console-6.trpa')
 # mesh_convert_3d_4_2_10('../mesh/beam.trpa', '../mesh/beam-10.trpa')

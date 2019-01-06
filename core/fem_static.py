@@ -10,8 +10,6 @@ from core.fem_fem import TFEM
 from core.fem_defs import DIR_1, DIR_2, DIR_3
 from core.fem_result import TResult
 from numpy import array
-from numpy import zeros
-from numpy.linalg import det
 
 
 class TFEMStatic(TFEM):
@@ -153,11 +151,11 @@ class TFEMStatic(TFEM):
                     parser.set_code(self.params.bc_list[i].expression)
                     load = parser.run()
                     if self.params.bc_list[i].direct & DIR_1:
-                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 0] += load * share[0]
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 0] += load * share[k]
                     if self.params.bc_list[i].direct & DIR_2:
-                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 1] += load * share[1]
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 1] += load * share[k]
                     if self.params.bc_list[i].direct & DIR_3:
-                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 2] += load * share[2]
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 2] += load * share[k]
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...)
     def _calc_results(self, t=0):
@@ -319,175 +317,37 @@ class TFEMStatic(TFEM):
 
     # Определение компонент поверхностной нагрузки в зависимости от типа КЭ
     def __surface_load_share(self, index):
-        share = []
+        share = array([])
         if self.mesh.fe_type == 'fe_1d_2':
-            share.append(1 * self.params.thickness)
+            share = array([1 * self.params.thickness])
         elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_4':
-            share.append(self.mesh.square(index) / 2)
-            share.append(self.mesh.square(index) / 2)
+            share = array([1 / 2, 1 / 2]) * self.mesh.square(index)
         elif self.mesh.fe_type == 'fe_2d_6':
-            share.append(1 / 6 * self.mesh.square(index))
-            share.append(1 / 6 * self.mesh.square(index))
-            share.append(2 / 3 * self.mesh.square(index))
+            share = array([1 / 6, 1 / 6, 2 / 3]) * self.mesh.square(index)
         elif self.mesh.fe_type == 'fe_3d_4' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
-            share.append(1 / 3 * self.mesh.square(index))
-            share.append(1 / 3 * self.mesh.square(index))
-            share.append(1 / 3 * self.mesh.square(index))
+            share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
         elif self.mesh.fe_type == 'fe_3d_8' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
-            share.append(1 * self.mesh.square(index))
-            share.append(1 * self.mesh.square(index))
-            share.append(1 * self.mesh.square(index))
-            share.append(1 * self.mesh.square(index))
-            # share = self.surface_load_4(index)
+            share = array([1, 1, 1, 1]) * self.mesh.square(index)
         elif self.mesh.fe_type == 'fe_3d_10':
-            share.append(0 * self.mesh.square(index))
-            share.append(0 * self.mesh.square(index))
-            share.append(0 * self.mesh.square(index))
-            share.append(1 / 6 * self.mesh.square(index))
-            share.append(1 / 6 * self.mesh.square(index))
-            share.append(1 / 6 * self.mesh.square(index))
-            # share = self.surface_load_4(index)
+            share = array([0, 0, 0, 1 / 6, 1 / 6, 1/ 6]) * self.mesh.square(index)
         return share
 
-        # Определение компонент объемной нагрузки в зависимости от типа КЭ
+    # Определение компонент объемной нагрузки в зависимости от типа КЭ
     def __volume_load_share(self, index):
-        share = [0, 0, 0]
+        share = array([])
         if self.mesh.fe_type == 'fe_1d_2':
-            share[0] = self.mesh.volume(index) * self.params.thickness * 0.5
-        elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_4':
-            share[0] = share[1] = self.mesh.volume(index) / 3.0
-        elif self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
-            share[0] = share[1] = share[2] = self.mesh.square(index) * self.params.thickness / 3.0
+            share = array([1 / 2]) * self.mesh.volume(index) * self.params.thickness
+        elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
+            share = array([1 / 6, 1 / 6, 1 / 6]) * self.mesh.volume(index) * self.params.thickness
+        elif self.mesh.fe_type == 'fe_2d_4' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
+            share = array([1, 1, 1, 1]) * self.mesh.volume(index) * self.params.thickness
+        elif self.mesh.fe_type == 'fe_2d_6':
+            share = array([0, 0, 0, 1 / 6, 1 / 6, 1 / 6]) * self.mesh.volume(index) * self.params.thickness
         elif self.mesh.fe_type == 'fe_3d_4':
-            share[0] = share[1] = share[2] = self.mesh.volume(index) * 0.25
-        elif self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
-            share[0] = share[1] = share[2] = self.mesh.square(index) * self.params.thickness
+            share = array([1 / 24, 1 / 24, 1 / 24, 1 / 24]) * self.mesh.volume(index)
         elif self.mesh.fe_type == 'fe_3d_8':
-            share[0] = share[1] = share[2] = self.mesh.volume(index)
-            # share = self.volume_load_4(index)
+            share = array([1, 1, 1, 1, 1, 1, 1, 1]) * self.mesh.volume(index)
+        elif self.mesh.fe_type == 'fe_3d_10':
+            share = array([-1 / 120, -1 / 120, -1 / 120, -1 / 120, 1 / 30, 1 / 30, 1 / 30, 1 / 30, 1 / 30, 1 / 30]) * \
+                    self.mesh.volume(index)
         return share
-
-    def volume_load_4(self, index):
-        # Координаты КЭ
-        x = array(self.mesh.get_fe_coord(index))
-
-        # Параметры квадратур Гаусса
-        xi = [-0.57735027, -0.57735027, -0.57735027, -0.57735027, 0.57735027, 0.57735027, 0.57735027, 0.57735027]
-        eta = [-0.57735027, -0.57735027, 0.57735027, 0.57735027, -0.57735027, -0.57735027, 0.57735027, 0.57735027]
-        psi = [-0.57735027, 0.57735027, -0.57735027, 0.57735027, -0.57735027, 0.57735027, -0.57735027, 0.57735027]
-        w = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-
-        # Интегрирование по кубу [-1; 1] x [-1; 1] x [-1; 1] (по формуле Гаусса)
-        res = zeros([3, 1])
-        load = zeros([24, 1])
-        for i in range(len(w)):
-            # Изопараметрические функции формы и их производные
-            shape = array([
-                0.125 * (1.0 - xi[i]) * (1.0 - eta[i]) * (1.0 - psi[i]),
-                0.125 * (1.0 + xi[i]) * (1.0 - eta[i]) * (1.0 - psi[i]),
-                0.125 * (1.0 + xi[i]) * (1.0 + eta[i]) * (1.0 - psi[i]),
-                0.125 * (1.0 - xi[i]) * (1.0 + eta[i]) * (1.0 - psi[i]),
-                0.125 * (1.0 - xi[i]) * (1.0 - eta[i]) * (1.0 + psi[i]),
-                0.125 * (1.0 + xi[i]) * (1.0 - eta[i]) * (1.0 + psi[i]),
-                0.125 * (1.0 + xi[i]) * (1.0 + eta[i]) * (1.0 + psi[i]),
-                0.125 * (1.0 - xi[i]) * (1.0 + eta[i]) * (1.0 + psi[i])
-            ])
-            shape_dxi = array([
-                -0.125 * (1.0 - eta[i]) * (1.0 - psi[i]),
-                0.125 * (1.0 - eta[i]) * (1.0 - psi[i]),
-                0.125 * (1.0 + eta[i]) * (1.0 - psi[i]),
-                -0.125 * (1.0 + eta[i]) * (1.0 - psi[i]),
-                -0.125 * (1.0 - eta[i]) * (1.0 + psi[i]),
-                0.125 * (1.0 - eta[i]) * (1.0 + psi[i]),
-                0.125 * (1.0 + eta[i]) * (1.0 + psi[i]),
-                -0.125 * (1.0 + eta[i]) * (1.0 + psi[i])
-            ])
-            shape_deta = array([
-                -0.125 * (1.0 - xi[i]) * (1.0 - psi[i]),
-                -0.125 * (1.0 + xi[i]) * (1.0 - psi[i]),
-                0.125 * (1.0 + xi[i]) * (1.0 - psi[i]),
-                0.125 * (1.0 - xi[i]) * (1.0 - psi[i]),
-                -0.125 * (1.0 - xi[i]) * (1.0 + psi[i]),
-                -0.125 * (1.0 + xi[i]) * (1.0 + psi[i]),
-                0.125 * (1.0 + xi[i]) * (1.0 + psi[i]),
-                0.125 * (1.0 - xi[i]) * (1.0 + psi[i])
-            ])
-            shape_dpsi = array([
-                -0.125 * (1.0 - xi[i]) * (1.0 - eta[i]),
-                -0.125 * (1.0 + xi[i]) * (1.0 - eta[i]),
-                -0.125 * (1.0 + xi[i]) * (1.0 + eta[i]),
-                -0.125 * (1.0 - xi[i]) * (1.0 + eta[i]),
-                0.125 * (1.0 - xi[i]) * (1.0 - eta[i]),
-                0.125 * (1.0 + xi[i]) * (1.0 - eta[i]),
-                0.125 * (1.0 + xi[i]) * (1.0 + eta[i]),
-                0.125 * (1.0 - xi[i]) * (1.0 + eta[i])
-            ])
-            # Матрица Якоби
-            jacobi = array([
-                [sum(shape_dxi * x[:, 0]), sum(shape_dxi * x[:, 1]), sum(shape_dxi * x[:, 2])],
-                [sum(shape_deta * x[:, 0]), sum(shape_deta * x[:, 1]), sum(shape_deta * x[:, 2])],
-                [sum(shape_dpsi * x[:, 0]), sum(shape_dpsi * x[:, 1]), sum(shape_dpsi * x[:, 2])]
-            ])
-            # Якобиан
-            jacobian = det(jacobi)
-
-            # Изопараметрическая матрица градиентов
-            b = zeros([24, 3])
-            for j in range(0, 8):
-                b[j * 3 + 0][0] = shape[j]
-                b[j * 3 + 1][1] = shape[j]
-                b[j * 3 + 2][2] = shape[j]
-                load[j * 3 + 0][0] = load[j * 3 + 1][0] = load[j * 3 + 2][0] = 1
-
-            res += b.conj().transpose().dot(load) * abs(jacobian) * w[i]
-        return res
-
-    def surface_load_4(self, index):
-        # Координаты ГЭ
-        x = array(self.mesh.get_be_coord(index))
-
-        # Параметры квадратур Гаусса
-        xi = [-0.57735027, -0.57735027, 0.57735027, 0.57735027]
-        eta = [-0.57735027, 0.57735027, -0.57735027, 0.57735027]
-        w = [1.0, 1.0, 1.0, 1.0]
-
-        # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
-        res = zeros([3, 1])
-        load = zeros([12, 1])
-        for i in range(len(w)):
-            # Изопараметрические функции формы и их производные
-            shape = array([
-                0.25 * (1.0 - xi[i]) * (1.0 - eta[i]),
-                0.25 * (1.0 + xi[i]) * (1.0 - eta[i]),
-                0.25 * (1.0 + xi[i]) * (1.0 + eta[i]),
-                0.25 * (1.0 - xi[i]) * (1.0 + eta[i])
-            ])
-            shape_dxi = array([
-                -0.25 * (1.0 - eta[i]),
-                0.25 * (1.0 - eta[i]),
-                0.25 * (1.0 + eta[i]),
-                -0.25 * (1.0 + eta[i])
-            ])
-            shape_deta = array([
-                -0.25 * (1.0 - xi[i]),
-                -0.25 * (1.0 + xi[i]),
-                0.25 * (1.0 + xi[i]),
-                0.25 * (1.0 - xi[i])
-            ])
-            # Матрица Якоби
-            jacobi = array([
-                [sum(shape_dxi * x[:, 0]), sum(shape_dxi * x[:, 1])],
-                [sum(shape_deta * x[:, 0]), sum(shape_deta * x[:, 1])]
-            ])
-            # Якобиан
-            jacobian = det(jacobi)
-            # Изопараметрическвая матрица градиентов
-            b = zeros([12, 3])
-            for j in range(0, 4):
-                b[j * 3 + 0][0] = shape[j]
-                b[j * 3 + 1][1] = shape[j]
-                b[j * 3 + 2][2] = shape[j]
-                load[j * 3 + 0][0] = load[j * 3 + 1][0] = load[j * 3 + 2][0] = 1
-
-            res += b.conj().transpose().dot(load) * abs(jacobian) * w[i]
-        return res
