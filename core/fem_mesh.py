@@ -156,19 +156,22 @@ class TMesh:
         s = 0
         if self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_6':  # ГЭ - отрезок
             s = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
-        elif self.fe_type == 'fe_2d_3_p':  # ГЭ - "плоский" треугольник
+        elif self.fe_type == 'fe_2d_3_p':
+            # ГЭ - "плоский" треугольник
             a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
             b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2)
             c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2)
             p = 0.5 * (a + b + c)
             s = math.sqrt(p * (p - a) * (p - b) * (p - c))
-        elif self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_3d_4':  # ГЭ - "пространственный" треугольник
+        elif self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_10':
+            # ГЭ - "пространственный" треугольник
             a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2 + (x[0][2] - x[1][2]) ** 2)
             b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2 + (x[0][2] - x[2][2]) ** 2)
             c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2 + (x[2][2] - x[1][2]) ** 2)
             p = 0.5 * (a + b + c)
             s = math.sqrt(p * (p - a) * (p - b) * (p - c))
-        elif self.fe_type == 'fe_2d_4_p':  # ГЭ - "плоский" четырехугольник
+        elif self.fe_type == 'fe_2d_4_p':
+            # ГЭ - "плоский" четырехугольник
             a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
             b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2)
             c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2)
@@ -179,7 +182,8 @@ class TMesh:
             c = math.sqrt((x[2][0] - x[3][0]) ** 2 + (x[2][1] - x[3][1]) ** 2)
             p = 0.5 * (a + b + c)
             s += math.sqrt(p * (p - a) * (p - b) * (p - c))
-        elif self.fe_type == 'fe_3d_8' or self.fe_type == 'fe_2d_4_s':   # ГЭ - четырехугольник
+        elif self.fe_type == 'fe_3d_8' or self.fe_type == 'fe_2d_4_s':
+            # ГЭ - четырехугольник
             a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2 + (x[0][2] - x[1][2]) ** 2)
             b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2 + (x[0][2] - x[2][2]) ** 2)
             c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2 + (x[2][2] - x[1][2]) ** 2)

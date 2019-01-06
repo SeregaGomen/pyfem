@@ -119,11 +119,11 @@ class TFEMStatic(TFEM):
                     parser.set_code(self.params.bc_list[i].expression)
                     load = parser.run()
                     if self.params.bc_list[i].direct & DIR_1:
-                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += load * share[0]
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += load * share[k]
                     if self.params.bc_list[i].direct & DIR_2:
-                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 1] += load * share[1]
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 1] += load * share[k]
                     if self.params.bc_list[i].direct & DIR_3:
-                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 2] += load * share[2]
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 2] += load * share[k]
 
     # Вычисление объемных нагрузок
     def _prepare_volume_load(self, t=0):
@@ -319,18 +319,33 @@ class TFEMStatic(TFEM):
 
     # Определение компонент поверхностной нагрузки в зависимости от типа КЭ
     def __surface_load_share(self, index):
-        share = [0, 0, 0]
+        share = []
         if self.mesh.fe_type == 'fe_1d_2':
-            share[0] = 1.0 * self.params.thickness
+            share.append(1 * self.params.thickness)
         elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_4':
-            share[0] = share[1] = self.mesh.square(index) * 0.5
+            share.append(self.mesh.square(index) / 2)
+            share.append(self.mesh.square(index) / 2)
         elif self.mesh.fe_type == 'fe_2d_6':
-            share[0] = share[1] = self.mesh.square(index) / 6.0
-            share[2] = 2 * self.mesh.square(index) / 3.0
+            share.append(1 / 6 * self.mesh.square(index))
+            share.append(1 / 6 * self.mesh.square(index))
+            share.append(2 / 3 * self.mesh.square(index))
         elif self.mesh.fe_type == 'fe_3d_4' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
-            share[0] = share[1] = share[2] = self.mesh.square(index) / 3.0
+            share.append(1 / 3 * self.mesh.square(index))
+            share.append(1 / 3 * self.mesh.square(index))
+            share.append(1 / 3 * self.mesh.square(index))
         elif self.mesh.fe_type == 'fe_3d_8' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
-            share[0] = share[1] = share[2] = self.mesh.square(index)
+            share.append(1 * self.mesh.square(index))
+            share.append(1 * self.mesh.square(index))
+            share.append(1 * self.mesh.square(index))
+            share.append(1 * self.mesh.square(index))
+            # share = self.surface_load_4(index)
+        elif self.mesh.fe_type == 'fe_3d_10':
+            share.append(0 * self.mesh.square(index))
+            share.append(0 * self.mesh.square(index))
+            share.append(0 * self.mesh.square(index))
+            share.append(1 / 6 * self.mesh.square(index))
+            share.append(1 / 6 * self.mesh.square(index))
+            share.append(1 / 6 * self.mesh.square(index))
             # share = self.surface_load_4(index)
         return share
 
