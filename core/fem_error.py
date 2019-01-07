@@ -22,7 +22,7 @@ class TFEMException(Exception):
         elif self.error == 'incorrect_fe_err':
             err_msg += 'incorrect finite element'
         elif self.error == 'read_file_err':
-            err_msg += 'read file print_error'
+            err_msg += 'unable to read file'
         elif self.error == 'unknown_fe_err':
             err_msg += 'unknown finite element type'
         elif self.error == 'solve_method_err':

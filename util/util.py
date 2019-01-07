@@ -5,6 +5,8 @@
 #######################################################################
 
 import math
+from numpy import array
+from numpy.linalg import det
 
 
 # Создание сетки для квадратной пластины
@@ -338,11 +340,139 @@ def mesh_convert_3d_4_2_10(file_linear, file_quadric):
     return True
 
 
+# Преобразование линейной сетки в одноориентированную (с одинаковым направлением обхода узлов)
+def mesh_restructure(file_src, file_dst):
+    x = []
+    be = []
+    fe = []
+    # Считываем исходную сетку
+    with open(file_src, 'r') as file:
+        fe_type = int(file.readline())
+        if not (fe_type == 3 or fe_type == 4 or fe_type == 8 or fe_type == 24 or fe_type == 123 or fe_type == 124 or
+                fe_type == 223 or fe_type == 224):
+            print('Mesh error: incorrect FE type for restructure')
+            return False
+        # Считываем узлы
+        n = int(file.readline())
+        for i in range(0, n):
+            line = file.readline().replace('\n', '').strip()
+            s = line.split(' ')
+            x.append([float(s[0]), float(s[1]), float(s[2])])
+        # Считываем КЭ
+        n = int(file.readline())
+        for i in range(0, n):
+            line = file.readline().replace('\n', '').strip()
+            s = line.split(' ')
+            fe.append([int(s[0]), int(s[1]), int(s[2]), int(s[3])])
+        # Считываем ГЭ
+        n = int(file.readline())
+        for i in range(0, n):
+            line = file.readline().replace('\n', '').strip()
+            s = line.split(' ')
+            be.append([int(s[0]), int(s[1]), int(s[2])])
+    # Преобразуем границу
+    for i in range(0, len(be)):
+        # Получаем координаты текущего ГЭ
+        lx = []
+        for j in range(0, len(be[i])):
+            a = []
+            for k in range(0, len(x[0])):
+                a.append(x[be[i][j]][k])
+            lx.append(a)
+        lx = array(lx)
+        jacobi = 0
+        # Вычисляем Якобиан
+        if fe_type == 3:    # Треугольник
+            shape_dxi = array([-1, 1])
+            # Матрица Якоби
+            jacobi = array([[sum(shape_dxi * lx[:, 0]), sum(shape_dxi * lx[:, 1])]])
+        elif fe_type == 4:  # Тетраэдр
+            shape_dxi = array([-1, 1, 0])
+            shape_deta = array([-1, 0, 1])
+            # Матрица Якоби
+            jacobi = array([
+                [sum(shape_dxi * lx[:, 0]), sum(shape_dxi * lx[:, 1])],
+                [sum(shape_deta * lx[:, 0]), sum(shape_deta * lx[:, 1])]
+            ])
+        jacobian = det(jacobi)
+        if jacobian == 0:
+            print('Mesh error - wrong BE: %d' % i)
+            return False
+        if jacobian < 0:
+            if fe_type == 3:
+                be[i] = [be[i][1], be[i][0]]
+            elif fe_type == 4:
+                be[i] = [be[i][0], be[i][2], be[i][1]]
+    # Преобразуем КЭ
+    for i in range(0, len(fe)):
+        # Получаем координаты текущего КЭ
+        lx = []
+        for j in range(0, len(fe[i])):
+            a = []
+            for k in range(0, len(x[0])):
+                a.append(x[fe[i][j]][k])
+            lx.append(a)
+        lx = array(lx)
+        jacobi = 0
+        # Вычисляем Якобиан
+        if fe_type == 3:    # Треугольник
+            shape_dxi = array([-1, 1, 0])
+            shape_deta = array([-1, 0, 1])
+            # Матрица Якоби
+            jacobi = array([
+                [sum(shape_dxi * lx[:, 0]), sum(shape_dxi * lx[:, 1])],
+                [sum(shape_deta * lx[:, 0]), sum(shape_deta * lx[:, 1])]
+            ])
+        elif fe_type == 4:  # Тетраэдр
+            shape_dxi = array([-1, 1, 0, 0])
+            shape_deta = array([-1, 0, 1, 0])
+            shape_dpsi = array([-1, 0, 0, 1])
+            # Матрица Якоби
+            jacobi = array([
+                [sum(shape_dxi * lx[:, 0]), sum(shape_dxi * lx[:, 1]), sum(shape_dxi * lx[:, 2])],
+                [sum(shape_deta * lx[:, 0]), sum(shape_deta * lx[:, 1]), sum(shape_deta * lx[:, 2])],
+                [sum(shape_dpsi * lx[:, 0]), sum(shape_dpsi * lx[:, 1]), sum(shape_dpsi * lx[:, 2])]
+            ])
+        jacobian = det(jacobi)
+        if jacobian == 0:
+            print('Mesh error: wrong FE')
+            return False
+        if jacobian < 0:
+            if fe_type == 3:
+                fe[i] = [fe[i][0], fe[i][2], fe[i][1]]
+            elif fe_type == 4:
+                fe[i] = [fe[i][0], fe[i][2], fe[i][1], fe[i][3]]
+    # Выводим результат
+    with open(file_dst, 'w') as file:
+        file.write('%d\n' % fe_type)
+        file.write('%d\n' % len(x))
+        for i in range(0, len(x)):
+            for j in range(0, len(x[i])):
+                file.write(str(x[i][j]) + ' ')
+            file.write('\n')
+        file.write('%d\n' % len(fe))
+        for i in range(0, len(fe)):
+            for j in range(0, len(fe[i])):
+                file.write(str(fe[i][j]) + ' ')
+            file.write('\n')
+        file.write('%d\n' % len(be))
+        for i in range(0, len(be)):
+            for j in range(0, len(be[i])):
+                file.write(str(be[i][j]) + ' ')
+            file.write('\n')
+    return True
+
+
+
+
 # convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', 'mesh/quad-4-1.trpa')
-convert_msh_2_trpa('../mesh/quad-1.msh', '../mesh/quad-4.trpa')
+# convert_msh_2_trpa('../mesh/quad-1.msh', '../mesh/quad-4.trpa')
 # create_shell_mesh_4()
 # create_plate_mesh_4()
 # mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
 
 # mesh_convert_2d_3_2_6('../mesh/console.trpa', '../mesh/console-6.trpa')
-# mesh_convert_3d_4_2_10('../mesh/beam.trpa', '../mesh/beam-10.trpa')
+mesh_convert_3d_4_2_10('../mesh/cube-4.trpa', '../mesh/cube-10.trpa')
+# mesh_convert_3d_4_2_10('../mesh/tet.trpa', '../mesh/tet-10.trpa')
+
+# mesh_restructure('../mesh/beam.trpa', '../mesh/beam-r.trpa')

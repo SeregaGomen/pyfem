@@ -153,36 +153,21 @@ class TMesh:
     # Вычисление длины (площади) заданного граничного элемента
     def square(self, index):
         x = self.get_be_coord(index)
+        if self.dimension == 2:     # Добавление z = 0 для плоского случая
+            for i in range(0, len(x)):
+                x[i].append(0)
         s = 0
         if self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_6':  # ГЭ - отрезок
             s = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
-        elif self.fe_type == 'fe_2d_3_p':
-            # ГЭ - "плоский" треугольник
-            a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
-            b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2)
-            c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2)
-            p = 0.5 * (a + b + c)
-            s = math.sqrt(p * (p - a) * (p - b) * (p - c))
-        elif self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_10':
-            # ГЭ - "пространственный" треугольник
+        elif self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_3d_4' or \
+                self.fe_type == 'fe_3d_10':
+            # ГЭ - треугольник
             a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2 + (x[0][2] - x[1][2]) ** 2)
             b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2 + (x[0][2] - x[2][2]) ** 2)
             c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2 + (x[2][2] - x[1][2]) ** 2)
             p = 0.5 * (a + b + c)
             s = math.sqrt(p * (p - a) * (p - b) * (p - c))
-        elif self.fe_type == 'fe_2d_4_p':
-            # ГЭ - "плоский" четырехугольник
-            a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
-            b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2)
-            c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2)
-            p = 0.5 * (a + b + c)
-            s = math.sqrt(p * (p - a) * (p - b) * (p - c))
-            a = math.sqrt((x[0][0] - x[3][0]) ** 2 + (x[0][1] - x[3][1]) ** 2)
-            b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2)
-            c = math.sqrt((x[2][0] - x[3][0]) ** 2 + (x[2][1] - x[3][1]) ** 2)
-            p = 0.5 * (a + b + c)
-            s += math.sqrt(p * (p - a) * (p - b) * (p - c))
-        elif self.fe_type == 'fe_3d_8' or self.fe_type == 'fe_2d_4_s':
+        elif self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_3d_8' or self.fe_type == 'fe_2d_4_s':
             # ГЭ - четырехугольник
             a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2 + (x[0][2] - x[1][2]) ** 2)
             b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2 + (x[0][2] - x[2][2]) ** 2)
@@ -241,7 +226,7 @@ class TMesh:
                     (x[ref[i][1]][1] - x[ref[i][0]][1]) * (x[ref[i][3]][2] - x[ref[i][0]][2]) + \
                     (x[ref[i][1]][0] - x[ref[i][0]][0]) * (x[ref[i][3]][1] - x[ref[i][0]][1]) * \
                     (x[ref[i][2]][2] - x[ref[i][0]][2])
-                v += math.fabs(a - b)/6.0
+                v = math.fabs(a - b)/6.0
         return v
 
     def is_plate(self):

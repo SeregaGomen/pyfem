@@ -338,11 +338,14 @@ class TFEMStatic(TFEM):
         if self.mesh.fe_type == 'fe_1d_2':
             share = array([1 / 2]) * self.mesh.volume(index) * self.params.thickness
         elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
-            share = array([1 / 6, 1 / 6, 1 / 6]) * self.mesh.volume(index) * self.params.thickness
+            # share = array([1 / 6, 1 / 6, 1 / 6]) * self.mesh.volume(index) * self.params.thickness
+            share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * self.params.thickness
         elif self.mesh.fe_type == 'fe_2d_4' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
-            share = array([1, 1, 1, 1]) * self.mesh.volume(index) * self.params.thickness
+            # share = array([1, 1, 1, 1]) * self.mesh.volume(index) * self.params.thickness
+            share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.volume(index) * self.params.thickness
         elif self.mesh.fe_type == 'fe_2d_6':
-            share = array([0, 0, 0, 1 / 6, 1 / 6, 1 / 6]) * self.mesh.volume(index) * self.params.thickness
+            # share = array([0, 0, 0, 1 / 6, 1 / 6, 1 / 6]) * self.mesh.volume(index) * self.params.thickness
+            share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * self.params.thickness
         elif self.mesh.fe_type == 'fe_3d_4':
             share = array([1 / 24, 1 / 24, 1 / 24, 1 / 24]) * self.mesh.volume(index)
         elif self.mesh.fe_type == 'fe_3d_8':

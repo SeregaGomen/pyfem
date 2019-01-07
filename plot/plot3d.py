@@ -755,7 +755,8 @@ class TGLWidget(QWidget):
             else:
                 for i in range(0, len(self.be)):
                     glBegin(GL_LINE_LOOP)
-                    for j in range(0, len(self.be[0])):
+                    num = 3 if self.fe_type == 'fe_3d_10' else len(self.be[0])
+                    for j in range(0, num):
                         glVertex3f(self.x[self.be[i][j]][0] - self.x_c[0], self.x[self.be[i][j]][1] - self.x_c[1],
                                    self.x[self.be[i][j]][2] - self.x_c[2])
                     glEnd()
