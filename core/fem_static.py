@@ -327,9 +327,9 @@ class TFEMStatic(TFEM):
         elif self.mesh.fe_type == 'fe_3d_4' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
             share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
         elif self.mesh.fe_type == 'fe_3d_8' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
-            share = array([1, 1, 1, 1]) * self.mesh.square(index)
+            share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.square(index)
         elif self.mesh.fe_type == 'fe_3d_10':
-            share = array([0, 0, 0, 1 / 6, 1 / 6, 1/ 6]) * self.mesh.square(index)
+            share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
         return share
 
     # Определение компонент объемной нагрузки в зависимости от типа КЭ
