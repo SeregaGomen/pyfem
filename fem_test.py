@@ -851,9 +851,9 @@ def tet10(res_name):
 if __name__ == '__main__':
     # tet10('tet10')
 
-    cube('cube')
+    # cube('cube')
     # cube10('cube-10')
-    # cube4('cube-4')
+    cube4('cube-4')
 
     # quad4('quad-4')
     # quad3('quad-3')

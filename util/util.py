@@ -73,8 +73,8 @@ def create_shell_mesh_4():
     return
 
 
-# Конвертация файла данных gmsh в формат trpa
-def convert_msh_2_trpa(file_msh, file_trpa):
+# Конвертация файла данных gmsh в формат trpa (для плоской задачи)
+def convert_msh_2_2d_trpa(file_msh, file_trpa):
     with open(file_msh, 'r') as file:
         line = file.readline()
         if line != '$MeshFormat\n':
@@ -144,7 +144,123 @@ def convert_msh_2_trpa(file_msh, file_trpa):
         file.write('24\n')
         file.write('%d\n' % len(x))
         for i in range(0, len(x)):
-            for j in range(0, len(x[i]) - 1):
+            for j in range(0, len(x[i])):
+                file.write(str(x[i][j]) + ' ')
+            file.write('\n')
+        file.write('%d\n' % len(fe))
+        for i in range(0, len(fe)):
+            for j in range(0, len(fe[i])):
+                file.write(str(fe[i][j]) + ' ')
+            file.write('\n')
+        file.write('%d\n' % len(be))
+        for i in range(0, len(be)):
+            for j in range(0, len(be[i])):
+                file.write(str(be[i][j]) + ' ')
+            file.write('\n')
+    return True
+
+
+# Удаление из сетки повторяющихся и висячих узлов
+def restructure_msh(x, be, fe):
+    eps = 1.0E-10
+    # Поиск повторяющихся узлов
+    nx = []
+    overlap = []
+    for i in range(0, len(x) - 1):
+        cx = x[i]
+        is_overlap = False
+        for j in range(i + 1, len(x)):
+            if abs(cx[0] - x[j][0]) < eps and abs(cx[1] - x[j][1]) < eps and abs(cx[2] - x[j][2]) < eps:
+                overlap.append([i, j])
+                is_overlap = True
+                break
+        if is_overlap is not True:
+            nx.append(cx)
+    # Удаление ссылок на повторяющиеся узлы
+    for i in range(0, len(overlap)):
+        for j in range(0, len(be)):
+                if be[j] == overlap[i][1]:
+                    be[j] = overlap[i][0]
+        for j in range(0, len(fe)):
+                if fe[j] == overlap[i][1]:
+                    fe[j] = overlap[i][0]
+
+    # Поиск висячих узлов
+
+
+# Конвертация файла данных gmsh в формат trpa (для плоской задачи)
+def convert_msh_2_3d_trpa(file_msh, file_trpa):
+    with open(file_msh, 'r') as file:
+        line = file.readline()
+        if line != '$MeshFormat\n':
+            print('Error file format %s' % file_msh)
+            return False
+        while line != '':
+            line = file.readline()
+            if line == '$EndMeshFormat\n':
+                break
+        line = file.readline()
+        if line == '$Entities\n':
+            while line != '':
+                line = file.readline()
+                if line == '$EndEntities\n':
+                    break
+        x = []
+        t_index = []
+        line = file.readline()
+        if line == '$Nodes\n':
+            line = file.readline()
+            while line != '':
+                line = file.readline()
+                if line == '$EndNodes\n':
+                    break
+                sx = line.split(' ')
+                n = int(sx[3])  # Количество координат в текущем блоке
+                for i in range(0, n):
+                    line = file.readline()
+                    sx = line.split(' ')
+                    cx = []
+                    t_index.append(int(sx[0]))
+                    for j in range(1, len(sx)):
+                        cx.append(float(sx[j]))
+                    x.append(cx)
+        # Переиндексируем номера узлов
+        max_index = t_index[len(t_index) - 1]
+        index = [0]*max_index
+        for i in range(len(t_index)):
+            index[t_index[i] - 1] = i
+        fe = []
+        be = []
+        line = file.readline()
+        if line == '$Elements\n':
+            line = file.readline()
+            while line != '':
+                line = file.readline()
+                if line == '$EndElements\n':
+                    break
+                sl = line.split(' ')
+                n = int(sl[3])  # Количество элементов в текущем блоке
+                for i in range(0, n):
+                    line = file.readline().replace('\n', '').strip()
+                    se = line.split(' ')
+                    if len(se) == 2 or len(se) == 3:
+                        continue
+                    if len(se) == 4:    # ГЭ в форме треугольника
+                        cbe = []
+                        for j in range(1, len(se)):
+                            cbe.append(index[int(se[j]) - 1])
+                        be.append(cbe)
+                    if len(se) == 5:  # КЭ в форме тетраэдра
+                        cfe = []
+                        for j in range(1, len(se)):
+                            cfe.append(index[int(se[j]) - 1])
+                        fe.append(cfe)
+    restructure_msh(x, fe, be)
+    with open(file_trpa, 'w') as file:
+        file.write('24\n')
+        file.write('%d\n' % len(x))
+        for i in range(0, len(x)):
+            for j in range(0, len(x[i])):
                 file.write(str(x[i][j]) + ' ')
             file.write('\n')
         file.write('%d\n' % len(fe))
@@ -465,8 +581,8 @@ def mesh_restructure(file_src, file_dst):
 
 
 
-# convert_msh_2_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', 'mesh/quad-4-1.trpa')
-# convert_msh_2_trpa('../mesh/quad-1.msh', '../mesh/quad-4.trpa')
+# convert_msh_2_2d_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', '../mesh/quad-4.trpa')
+# convert_msh_2_3d_trpa('d:/cube.msh', '../mesh/cube-4.trpa')
 # create_shell_mesh_4()
 # create_plate_mesh_4()
 # mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
