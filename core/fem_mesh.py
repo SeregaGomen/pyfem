@@ -218,7 +218,7 @@ class TMesh:
             for i in range(0, 6):
                 a = (x[ref[i][1]][0] - x[ref[i][0]][0]) * (x[ref[i][2]][1] - x[ref[i][0]][1]) * \
                     (x[ref[i][3]][2] - x[ref[i][0]][2]) + (x[ref[i][3]][0] - x[ref[i][0]][0]) * \
-                    (x[ref[i][1]][1] - x[ref[i][0]][1])*(x[ref[i][2]][2] - x[ref[i][0]][2]) + \
+                    (x[ref[i][1]][1] - x[ref[i][0]][1]) * (x[ref[i][2]][2] - x[ref[i][0]][2]) + \
                     (x[ref[i][2]][0] - x[ref[i][0]][0]) * (x[ref[i][3]][1] - x[ref[i][0]][1]) * \
                     (x[ref[i][1]][2] - x[ref[i][0]][2])
                 b = (x[ref[i][3]][0] - x[ref[i][0]][0]) * (x[ref[i][2]][1] - x[ref[i][0]][1]) * \
