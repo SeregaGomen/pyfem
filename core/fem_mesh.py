@@ -5,7 +5,10 @@
 ###################################################################
 
 import math
+from numpy import array
 from core.fem_error import TFEMException
+from numpy.linalg import det
+
 
 # Типы конечных элементов
 FEType = [
@@ -216,17 +219,12 @@ class TMesh:
         elif self.fe_type == 'fe_3d_8':
             ref = [[0, 1, 4, 7], [4, 1, 5, 7], [1, 2, 6, 7], [1, 5, 6, 7], [1, 2, 3, 7], [0, 3, 1, 7]]
             for i in range(0, 6):
-                a = (x[ref[i][1]][0] - x[ref[i][0]][0]) * (x[ref[i][2]][1] - x[ref[i][0]][1]) * \
-                    (x[ref[i][3]][2] - x[ref[i][0]][2]) + (x[ref[i][3]][0] - x[ref[i][0]][0]) * \
-                    (x[ref[i][1]][1] - x[ref[i][0]][1]) * (x[ref[i][2]][2] - x[ref[i][0]][2]) + \
-                    (x[ref[i][2]][0] - x[ref[i][0]][0]) * (x[ref[i][3]][1] - x[ref[i][0]][1]) * \
-                    (x[ref[i][1]][2] - x[ref[i][0]][2])
-                b = (x[ref[i][3]][0] - x[ref[i][0]][0]) * (x[ref[i][2]][1] - x[ref[i][0]][1]) * \
-                    (x[ref[i][1]][2] - x[ref[i][0]][2]) + (x[ref[i][2]][0] - x[ref[i][0]][0]) * \
-                    (x[ref[i][1]][1] - x[ref[i][0]][1]) * (x[ref[i][3]][2] - x[ref[i][0]][2]) + \
-                    (x[ref[i][1]][0] - x[ref[i][0]][0]) * (x[ref[i][3]][1] - x[ref[i][0]][1]) * \
-                    (x[ref[i][2]][2] - x[ref[i][0]][2])
-                v = math.fabs(a - b)/6.0
+                m = array([
+                    [x[ref[i][1]][0] - x[ref[i][0]][0], x[ref[i][1]][1] - x[ref[i][0]][1], x[ref[i][1]][2] - x[ref[i][0]][2]],
+                    [x[ref[i][2]][0] - x[ref[i][0]][0], x[ref[i][2]][1] - x[ref[i][0]][1], x[ref[i][2]][2] - x[ref[i][0]][2]],
+                    [x[ref[i][3]][0] - x[ref[i][0]][0], x[ref[i][3]][1] - x[ref[i][0]][1], x[ref[i][3]][2] - x[ref[i][0]][2]],
+                ])
+                v += abs(det(m)) / 6
         return v
 
     def is_plate(self):

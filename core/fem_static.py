@@ -9,7 +9,8 @@ from scipy.sparse.linalg import spsolve, bicgstab, ArpackError
 from core.fem_fem import TFEM
 from core.fem_defs import DIR_1, DIR_2, DIR_3
 from core.fem_result import TResult
-from numpy import array
+from numpy import array, zeros
+from numpy.linalg import det
 
 
 class TFEMStatic(TFEM):
@@ -349,8 +350,74 @@ class TFEMStatic(TFEM):
         elif self.mesh.fe_type == 'fe_3d_4':
             share = array([1 / 24, 1 / 24, 1 / 24, 1 / 24]) * self.mesh.volume(index)
         elif self.mesh.fe_type == 'fe_3d_8':
-            share = array([1, 1, 1, 1, 1, 1, 1, 1]) * self.mesh.volume(index)
+            # share = array([1, 1, 1, 1, 1, 1, 1, 1]) * self.mesh.volume(index)
+            share = self.volume_load_8(index)
         elif self.mesh.fe_type == 'fe_3d_10':
             share = array([-1 / 120, -1 / 120, -1 / 120, -1 / 120, 1 / 30, 1 / 30, 1 / 30, 1 / 30, 1 / 30, 1 / 30]) * \
                     self.mesh.volume(index)
         return share
+
+    def volume_load_8(self, index):
+        # Координаты КЭ
+        x = array(self.mesh.get_fe_coord(index))
+
+        # Параметры квадратур Гаусса
+        xi = [-0.57735027, -0.57735027, -0.57735027, -0.57735027, 0.57735027, 0.57735027, 0.57735027, 0.57735027]
+        eta = [-0.57735027, -0.57735027, 0.57735027, 0.57735027, -0.57735027, -0.57735027, 0.57735027, 0.57735027]
+        psi = [-0.57735027, 0.57735027, -0.57735027, 0.57735027, -0.57735027, 0.57735027, -0.57735027, 0.57735027]
+        w = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+        # Интегрирование по кубу [-1; 1] x [-1; 1] x [-1; 1] (по формуле Гаусса)
+        res = zeros([8])
+        for i in range(len(w)):
+            # Изопараметрические функции формы и их производные
+            shape = array([
+                0.125 * (1.0 - xi[i]) * (1.0 - eta[i]) * (1.0 - psi[i]),
+                0.125 * (1.0 + xi[i]) * (1.0 - eta[i]) * (1.0 - psi[i]),
+                0.125 * (1.0 + xi[i]) * (1.0 + eta[i]) * (1.0 - psi[i]),
+                0.125 * (1.0 - xi[i]) * (1.0 + eta[i]) * (1.0 - psi[i]),
+                0.125 * (1.0 - xi[i]) * (1.0 - eta[i]) * (1.0 + psi[i]),
+                0.125 * (1.0 + xi[i]) * (1.0 - eta[i]) * (1.0 + psi[i]),
+                0.125 * (1.0 + xi[i]) * (1.0 + eta[i]) * (1.0 + psi[i]),
+                0.125 * (1.0 - xi[i]) * (1.0 + eta[i]) * (1.0 + psi[i])
+            ])
+            shape_dxi = array([
+                -0.125 * (1.0 - eta[i]) * (1.0 - psi[i]),
+                0.125 * (1.0 - eta[i]) * (1.0 - psi[i]),
+                0.125 * (1.0 + eta[i]) * (1.0 - psi[i]),
+                -0.125 * (1.0 + eta[i]) * (1.0 - psi[i]),
+                -0.125 * (1.0 - eta[i]) * (1.0 + psi[i]),
+                0.125 * (1.0 - eta[i]) * (1.0 + psi[i]),
+                0.125 * (1.0 + eta[i]) * (1.0 + psi[i]),
+                -0.125 * (1.0 + eta[i]) * (1.0 + psi[i])
+            ])
+            shape_deta = array([
+                -0.125 * (1.0 - xi[i]) * (1.0 - psi[i]),
+                -0.125 * (1.0 + xi[i]) * (1.0 - psi[i]),
+                0.125 * (1.0 + xi[i]) * (1.0 - psi[i]),
+                0.125 * (1.0 - xi[i]) * (1.0 - psi[i]),
+                -0.125 * (1.0 - xi[i]) * (1.0 + psi[i]),
+                -0.125 * (1.0 + xi[i]) * (1.0 + psi[i]),
+                0.125 * (1.0 + xi[i]) * (1.0 + psi[i]),
+                0.125 * (1.0 - xi[i]) * (1.0 + psi[i])
+            ])
+            shape_dpsi = array([
+                -0.125 * (1.0 - xi[i]) * (1.0 - eta[i]),
+                -0.125 * (1.0 + xi[i]) * (1.0 - eta[i]),
+                -0.125 * (1.0 + xi[i]) * (1.0 + eta[i]),
+                -0.125 * (1.0 - xi[i]) * (1.0 + eta[i]),
+                0.125 * (1.0 - xi[i]) * (1.0 - eta[i]),
+                0.125 * (1.0 + xi[i]) * (1.0 - eta[i]),
+                0.125 * (1.0 + xi[i]) * (1.0 + eta[i]),
+                0.125 * (1.0 - xi[i]) * (1.0 + eta[i])
+            ])
+            # Матрица Якоби
+            jacobi = array([
+                [sum(shape_dxi * x[:, 0]), sum(shape_dxi * x[:, 1]), sum(shape_dxi * x[:, 2])],
+                [sum(shape_deta * x[:, 0]), sum(shape_deta * x[:, 1]), sum(shape_deta * x[:, 2])],
+                [sum(shape_dpsi * x[:, 0]), sum(shape_dpsi * x[:, 1]), sum(shape_dpsi * x[:, 2])]
+            ])
+            # Якобиан
+            jacobian = det(jacobi)
+            res += shape * abs(jacobian) * w[i]
+        return res

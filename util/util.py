@@ -583,12 +583,14 @@ def mesh_restructure(file_src, file_dst):
 
 # convert_msh_2_2d_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', '../mesh/quad-4.trpa')
 # convert_msh_2_3d_trpa('d:/cube.msh', '../mesh/cube-4.trpa')
+convert_msh_2_3d_trpa('D:/Work/Qt/QFEM/QFEM/mesh/10/rod.msh', '../mesh/rod-4.trpa')
 # create_shell_mesh_4()
 # create_plate_mesh_4()
 # mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
 
 # mesh_convert_2d_3_2_6('../mesh/console.trpa', '../mesh/console-6.trpa')
-mesh_convert_3d_4_2_10('../mesh/cube-4.trpa', '../mesh/cube-10.trpa')
+# mesh_convert_3d_4_2_10('../mesh/cube-4.trpa', '../mesh/cube-10.trpa')
 # mesh_convert_3d_4_2_10('../mesh/tet.trpa', '../mesh/tet-10.trpa')
+# mesh_convert_3d_4_2_10('../mesh/rod-4.trpa', '../mesh/rod-10.trpa')
 
 # mesh_restructure('../mesh/beam.trpa', '../mesh/beam-r.trpa')
