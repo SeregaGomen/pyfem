@@ -186,7 +186,51 @@ def restructure_msh(x, be, fe):
                     fe[j] = overlap[i][0]
 
     # Поиск висячих узлов
-
+    i_map = []
+    for i in range(0, len(x)):
+        i_map.append([i, 0])
+    for i in range(0, len(fe)):
+        for j in range(0, len(fe[i])):
+            i_map[fe[i][j]][1] = 1
+    for i in range(0, len(be)):
+        for j in range(0, len(be[i])):
+            i_map[be[i][j]][1] = 1
+    num = 0
+    new_ind = []
+    counter = 0
+    for i in range(0, len(x)):
+        if i_map[i][1] == 0:
+            new_ind.append([i, -1])
+            num += 1
+            continue
+        new_ind.append([i, counter])
+        counter += 1
+    # Реструктуризация сетки
+    n_x = []
+    n_fe = []
+    n_be = []
+    for i in range(0, len(fe)):
+        e = []
+        for j in range(0, len(fe[i])):
+            e.append(new_ind[fe[i][j]][1])
+        n_fe.append(e)
+    for i in range(0, len(be)):
+        e = []
+        for j in range(0, len(be[i])):
+            e.append(new_ind[be[i][j]][1])
+        n_be.append(e)
+    for i in range(0, len(x)):
+        if i_map[i][1] != 0:
+            n_x.append(x[i])
+    x.clear()
+    for i in range(0, len(n_x)):
+        x.append(n_x[i])
+    fe.clear()
+    for i in range(0, len(n_fe)):
+        fe.append(n_fe[i])
+    be.clear()
+    for i in range(0, len(n_be)):
+        be.append(n_be[i])
 
 # Конвертация файла данных gmsh в формат trpa (для плоской задачи)
 def convert_msh_2_3d_trpa(file_msh, file_trpa):
@@ -579,11 +623,9 @@ def mesh_restructure(file_src, file_dst):
     return True
 
 
-
-
 # convert_msh_2_2d_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', '../mesh/quad-4.trpa')
 # convert_msh_2_3d_trpa('d:/cube.msh', '../mesh/cube-4.trpa')
-convert_msh_2_3d_trpa('D:/Work/Qt/QFEM/QFEM/mesh/10/rod.msh', '../mesh/rod-4.trpa')
+convert_msh_2_3d_trpa('/home/serg/work/mesh/10/rod.msh', '../mesh/rod-4.trpa')
 # create_shell_mesh_4()
 # create_plate_mesh_4()
 # mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
