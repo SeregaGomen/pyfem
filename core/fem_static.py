@@ -326,11 +326,14 @@ class TFEMStatic(TFEM):
         elif self.mesh.fe_type == 'fe_2d_6':
             share = array([1 / 6, 1 / 6, 2 / 3]) * self.mesh.square(index)
         elif self.mesh.fe_type == 'fe_3d_4' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
-            share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
+            # share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
+            share = self._tri_3_load(index, 'surface')
         elif self.mesh.fe_type == 'fe_3d_8' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
-            share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.square(index)
+            # share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.square(index)
+            share = self._quad_4_load(index, 'surface')
         elif self.mesh.fe_type == 'fe_3d_10':
-            share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
+            # share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
+            share = self._tri_6_load(index, 'surface')
         return share
 
     # Определение компонент объемной нагрузки в зависимости от типа КЭ
@@ -339,36 +342,129 @@ class TFEMStatic(TFEM):
         if self.mesh.fe_type == 'fe_1d_2':
             share = array([1 / 2]) * self.mesh.volume(index) * self.params.thickness
         elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
-            # share = array([1 / 6, 1 / 6, 1 / 6]) * self.mesh.volume(index) * self.params.thickness
-            share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * self.params.thickness
+            # share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * self.params.thickness
+            share = self._tri_3_load(index) * self.params.thickness
         elif self.mesh.fe_type == 'fe_2d_4' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
             # share = array([1, 1, 1, 1]) * self.mesh.volume(index) * self.params.thickness
-            share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.volume(index) * self.params.thickness
+            # share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.volume(index) * self.params.thickness
+            share = self._quad_4_load(index) * self.params.thickness
         elif self.mesh.fe_type == 'fe_2d_6':
             # share = array([0, 0, 0, 1 / 6, 1 / 6, 1 / 6]) * self.mesh.volume(index) * self.params.thickness
-            share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * self.params.thickness
+            # share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * self.params.thickness
+            share = self._tri_6_load(index) * self.params.thickness
         elif self.mesh.fe_type == 'fe_3d_4':
             # share = array([1 / 24, 1 / 24, 1 / 24, 1 / 24]) * self.mesh.volume(index)
-            share = self.volume_load_4(index)
+            share = self._tet_4_load(index)
         elif self.mesh.fe_type == 'fe_3d_8':
             # share = array([1, 1, 1, 1, 1, 1, 1, 1]) * self.mesh.volume(index)
-            share = self.volume_load_8(index)
+            share = self._cube_8_load(index)
         elif self.mesh.fe_type == 'fe_3d_10':
-            # share = array([-1 / 120, -1 / 120, -1 / 120, -1 / 120, 1 / 30, 1 / 30, 1 / 30, 1 / 30, 1 / 30, 1 / 30]) * \
+            # share = array([-1 / 120, -1 / 120, -1 / 120, -1 / 120, 1 / 30, 1 / 30, 1 / 30, 1 / 30, 1 / 30, 1 / 30]) *\
             #         self.mesh.volume(index)
-            share = self.volume_load_10(index)
+            share = self._tet_10_load(index)
         return share
 
-    def volume_load_8(self, index):
-        # Координаты КЭ
-        x = array(self.mesh.get_fe_coord(index))
+    def _tri_3_load(self, index, load_type='volume'):
+        # Координаты КЭ или ГЭ
+        x = array(self.mesh.get_fe_coord(index)) if load_type == 'volume' else array(self.mesh.get_be_coord(index))
+        # Параметры квадратур Гаусса
+        xi = [0, 1 / 2, 1 / 2]
+        eta = [1 / 2, 0, 1 / 2]
+        w = [1 / 6, 1 / 6, 1 / 6]
+        # Интегрирование по треугольнику [0,0]-[1,0]-[0,1] (по формуле Гаусса)
+        res = zeros([3])
+        for i in range(len(w)):
+            # Изопараметрические функции формы и их производные
+            shape = array([1 - xi[i] - eta[i], xi[i], eta[i]])
+            shape_dxi = array([-1, 1, 0])
+            shape_deta = array([-1, 0, 1])
+            # Матрица Якоби
+            jacobi = array([
+                [sum(shape_dxi * x[:, 0]), sum(shape_dxi * x[:, 1])],
+                [sum(shape_deta * x[:, 0]), sum(shape_deta * x[:, 1])]
+            ])
+            # Якобиан
+            jacobian = det(jacobi)
+            res += shape * abs(jacobian) * w[i]
+        return res
 
+    def _tri_6_load(self, index, load_type='volume'):
+        # Координаты КЭ или ГЭ
+        x = array(self.mesh.get_fe_coord(index)) if load_type == 'volume' else array(self.mesh.get_be_coord(index))
+        # Параметры квадратур Гаусса
+        xi = [1 / 3, 0, 1 / 2, 1 / 2, 1, 0, 0]
+        eta = [1 / 3, 1 / 2, 0, 1 / 2, 0, 1, 0]
+        w = [27 / 120, 8 / 120, 8 / 120, 8 / 120, 3 / 120, 3 / 120, 3 / 120]
+        # Интегрирование по треугольнику [0,0]-[1,0]-[0,1] (по формуле Гаусса)
+        res = zeros([6])
+        for i in range(len(w)):
+            # Изопараметрические функции формы и их производные
+            sl = array([1 - xi[i] - eta[i], xi[i], eta[i]])
+            shape = array([sl[0] * (2 * sl[0] - 1), sl[1] * (2 * sl[1] - 1), sl[2] * (2 * sl[2] - 1),
+                           4 * sl[0] * sl[1], 4 * sl[1] * sl[2], 4 * sl[0] * sl[2]])
+            shape_dxi = array([-3 + 4 * xi[i] + 4 * eta[i], 4 * xi[i] - 1, 0, -8 * xi[i] + 4 - 4 * eta[i],
+                               4 * eta[i], -4 * eta[i]])
+            shape_deta = array([-3 + 4 * xi[i] + 4 * eta[i], 0, 4 * eta[i] - 1, -4 * xi[i], 4 * xi[i], -8 * eta[i] +
+                                4 - 4 * xi[i]])
+            # Матрица Якоби
+            jacobi = array([
+                [sum(shape_dxi * x[:, 0]), sum(shape_dxi * x[:, 1])],
+                [sum(shape_deta * x[:, 0]), sum(shape_deta * x[:, 1])]
+            ])
+            # Якобиан
+            jacobian = det(jacobi)
+            res += shape * abs(jacobian) * w[i]
+        return res
+
+    def _quad_4_load(self, index, load_type='volume'):
+        # Координаты КЭ или ГЭ
+        x = array(self.mesh.get_fe_coord(index)) if load_type == 'volume' else array(self.mesh.get_be_coord(index))
+        # Параметры квадратур Гаусса
+        xi = [-0.57735027, -0.57735027, 0.57735027, 0.57735027]
+        eta = [-0.57735027, 0.57735027, -0.57735027, 0.57735027]
+        w = [1.0, 1.0, 1.0, 1.0]
+        # Интегрирование по прямоугольнику [-1; 1] x [-1; 1] (по формуле Гаусса)
+        res = zeros([4])
+        for i in range(len(w)):
+            # Изопараметрические функции формы и их производные
+            shape = array([
+                0.25 * (1.0 - xi[i]) * (1.0 - eta[i]),
+                0.25 * (1.0 + xi[i]) * (1.0 - eta[i]),
+                0.25 * (1.0 + xi[i]) * (1.0 + eta[i]),
+                0.25 * (1.0 - xi[i]) * (1.0 + eta[i])
+            ])
+            shape_dxi = array([
+                -0.25 * (1.0 - eta[i]),
+                0.25 * (1.0 - eta[i]),
+                0.25 * (1.0 + eta[i]),
+                -0.25 * (1.0 + eta[i])
+            ])
+            shape_deta = array([
+                -0.25 * (1.0 - xi[i]),
+                -0.25 * (1.0 + xi[i]),
+                0.25 * (1.0 + xi[i]),
+                0.25 * (1.0 - xi[i])
+            ])
+            # Матрица Якоби
+            jacobi = array([
+                [sum(shape_dxi * x[:, 0]), sum(shape_dxi * x[:, 1])],
+                [sum(shape_deta * x[:, 0]), sum(shape_deta * x[:, 1])]
+            ])
+            # Якобиан
+            jacobian = det(jacobi)
+            if jacobian <= 0:
+                print('Jacobian error %f' % jacobian)
+            res += shape * abs(jacobian) * w[i]
+        return res
+
+    def _cube_8_load(self, index, load_type='volume'):
+        # Координаты КЭ или ГЭ
+        x = array(self.mesh.get_fe_coord(index)) if load_type == 'volume' else array(self.mesh.get_be_coord(index))
         # Параметры квадратур Гаусса
         xi = [-0.57735027, -0.57735027, -0.57735027, -0.57735027, 0.57735027, 0.57735027, 0.57735027, 0.57735027]
         eta = [-0.57735027, -0.57735027, 0.57735027, 0.57735027, -0.57735027, -0.57735027, 0.57735027, 0.57735027]
         psi = [-0.57735027, 0.57735027, -0.57735027, 0.57735027, -0.57735027, 0.57735027, -0.57735027, 0.57735027]
         w = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-
         # Интегрирование по кубу [-1; 1] x [-1; 1] x [-1; 1] (по формуле Гаусса)
         res = zeros([8])
         for i in range(len(w)):
@@ -424,16 +520,14 @@ class TFEMStatic(TFEM):
             res += shape * abs(jacobian) * w[i]
         return res
 
-    def volume_load_4(self, index):
-        # Координаты КЭ
-        x = array(self.mesh.get_fe_coord(index))
-
+    def _tet_4_load(self, index, load_type='volume'):
+        # Координаты КЭ или ГЭ
+        x = array(self.mesh.get_fe_coord(index)) if load_type == 'volume' else array(self.mesh.get_be_coord(index))
         # Параметры квадратур Гаусса
         xi = [1 / 4, 1 / 2, 1 / 6, 1 / 6, 1 / 6]
         eta = [1 / 4, 1 / 6, 1 / 2, 1 / 6, 1 / 6]
         psi = [1 / 4, 1 / 6, 1 / 6, 1 / 2, 1 / 6]
         w = [-4 / 30, 9 / 120, 9 / 120, 9 / 120, 9 / 120]
-
         # Интегрирование по тетраэдру [0; 0; 0] - [1; 0; 0] - [0; 1; 0] - [0; 0; 1] (по формуле Гаусса)
         res = zeros([4])
         for i in range(len(w)):
@@ -453,17 +547,14 @@ class TFEMStatic(TFEM):
             res += shape * abs(jacobian) * w[i]
         return res
 
-
-    def volume_load_10(self, index):
-        # Координаты КЭ
-        x = array(self.mesh.get_fe_coord(index))
-
+    def _tet_10_load(self, index, load_type='volume'):
+        # Координаты КЭ или ГЭ
+        x = array(self.mesh.get_fe_coord(index)) if load_type == 'volume' else array(self.mesh.get_be_coord(index))
         # Параметры квадратур Гаусса
         xi = [1 / 4, 1 / 2, 1 / 6, 1 / 6, 1 / 6]
         eta = [1 / 4, 1 / 6, 1 / 2, 1 / 6, 1 / 6]
         psi = [1 / 4, 1 / 6, 1 / 6, 1 / 2, 1 / 6]
         w = [-4 / 30, 9 / 120, 9 / 120, 9 / 120, 9 / 120]
-
         # Интегрирование по тетраэдру [0; 0; 0] - [1; 0; 0] - [0; 1; 0] - [0; 0; 1] (по формуле Гаусса)
         res = zeros([10])
         for i in range(len(w)):

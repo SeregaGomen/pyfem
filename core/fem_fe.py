@@ -616,12 +616,12 @@ class TFE3D10(TFE3D4):
             # Матрица градиентов
             b = zeros([6, 3 * self.size])
             for j in range(0, self.size):
-                dx = self.a[j][1] + 2 * self.a[j][7] * self.x[i][0] + self.a[j][4] * self.x[i][1] + \
-                     self.a[j][5] * self.x[i][2]
-                dy = self.a[j][2] + self.a[j][4] * self.x[i][0] + 2 * self.a[j][8] * self.x[i][1] + \
-                     self.a[j][6] * self.x[i][2]
-                dz = self.a[j][3] + self.a[j][5] * self.x[i][0] + self.a[j][6] * self.x[i][1] + \
-                     2 * self.a[j][9] * self.x[i][2]
+                dx = (self.a[j][1] + 2 * self.a[j][7] * self.x[i][0] + self.a[j][4] * self.x[i][1] +
+                      self.a[j][5] * self.x[i][2])
+                dy = (self.a[j][2] + self.a[j][4] * self.x[i][0] + 2 * self.a[j][8] * self.x[i][1] +
+                      self.a[j][6] * self.x[i][2])
+                dz = (self.a[j][3] + self.a[j][5] * self.x[i][0] + self.a[j][6] * self.x[i][1] +
+                      2 * self.a[j][9] * self.x[i][2])
                 b[0][j * 3 + 0] = dx
                 b[1][j * 3 + 1] = dy
                 b[2][j * 3 + 2] = dz
