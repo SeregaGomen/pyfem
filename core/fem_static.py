@@ -322,18 +322,18 @@ class TFEMStatic(TFEM):
         if self.mesh.fe_type == 'fe_1d_2':
             share = array([1 * self.params.thickness])
         elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_4':
-            share = array([1 / 2, 1 / 2]) * self.mesh.square(index)
+            share = array([1 / 2, 1 / 2]) * self.mesh.square(index) * self.params.thickness
         elif self.mesh.fe_type == 'fe_2d_6':
-            share = array([1 / 6, 1 / 6, 2 / 3]) * self.mesh.square(index)
+            share = array([1 / 6, 1 / 6, 2 / 3]) * self.mesh.square(index) * self.params.thickness
         elif self.mesh.fe_type == 'fe_3d_4' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
             # share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
             share = self._tri_3_load(index, 'surface')
         elif self.mesh.fe_type == 'fe_3d_8' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
-            # share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.square(index)
-            share = self._quad_4_load(index, 'surface')
+            share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.square(index)
+            # share = self._quad_4_load(index, 'surface')
         elif self.mesh.fe_type == 'fe_3d_10':
-            # share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
-            share = self._tri_6_load(index, 'surface')
+            share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
+            # share = self._tri_6_load(index, 'surface')
         return share
 
     # Определение компонент объемной нагрузки в зависимости от типа КЭ

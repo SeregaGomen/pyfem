@@ -37,8 +37,8 @@ def cube(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z=0', DIR_1 | DIR_2 | DIR_3)
-        # obj.add_volume_load('-0.5', '', DIR_3)
-        obj.add_surface_load('-0.5', 'z = 1', DIR_3)
+        obj.add_volume_load('-0.5', '', DIR_3)
+        # obj.add_surface_load('-0.5', 'z = 1', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 1 and y = 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 1', DIR_3)
@@ -828,16 +828,38 @@ def tri6(res_name):
         return False
 
 
-def tet10(res_name):
+def beam2d3(res_name):
     obj = TObject()
-    if obj.set_mesh('mesh/tet-10.trpa'):
+    if obj.set_mesh('mesh/beam2d-3.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
-        obj.add_boundary_condition('0', 'z = 0', DIR_1 | DIR_2 | DIR_3)
-        obj.add_concentrated_load('-0.05', 'z = 10', DIR_3)
+        obj.set_thickness(0.01)
+        obj.add_boundary_condition('0', '(x = -5 and y = -0.25) or (x = 5 and y = -0.25)', DIR_2)
+        # obj.add_boundary_condition('0', '(x = -5) or (x = 5)', DIR_1 | DIR_2)
+        obj.add_surface_load('-1', 'y = 0.25', DIR_2)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
+def beam3d4(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/beam3d-10.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.set_thickness(0.01)
+        obj.add_boundary_condition('0', '(x = -5 and y = -0.25) or (x = 5 and y = -0.25)', DIR_2)
+        # obj.add_boundary_condition('0', '(x = -5) or (x = 5)', DIR_1 | DIR_2)
+        obj.add_surface_load('-1', 'y = 0.25', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -847,7 +869,9 @@ def tet10(res_name):
 
 
 if __name__ == '__main__':
-    # tet10('tet10')
+
+    # beam3d4('beam3d-4')
+    # beam2d3('beam2d-3')
 
     cube('cube')
     # cube10('cube-10')
