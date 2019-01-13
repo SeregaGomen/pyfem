@@ -37,8 +37,8 @@ def cube(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z=0', DIR_1 | DIR_2 | DIR_3)
-        obj.add_volume_load('-0.5', '', DIR_3)
-        # obj.add_surface_load('-0.5', 'z = 1', DIR_3)
+        # obj.add_volume_load('-0.5', '', DIR_3)
+        obj.add_surface_load('-0.5', 'z = 1', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 1 and y = 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 1', DIR_3)
@@ -873,12 +873,12 @@ if __name__ == '__main__':
     # beam3d4('beam3d-4')
     # beam2d3('beam2d-3')
 
-    cube('cube')
+    # cube('cube')
     # cube10('cube-10')
     # cube4('cube-4')
 
     # quad4('quad-4')
-    # quad3('quad-3')
+    quad3('quad-3')
     # quad6('quad-6')
 
     # rod4('rod4')
