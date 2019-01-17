@@ -868,7 +868,57 @@ def beam3d4(res_name):
         return False
 
 
+def tank3ds(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/tank3ds.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+#        obj.set_solve_method('iterative')
+        obj.set_elasticity([6.5E+10], [0.3])
+        obj.set_thickness(0.0028)
+        obj.add_variable('p', 10000)    # Давление
+        obj.add_variable('eps', 1.0E-3)
+        obj.add_variable('l', 16.691)   # Высота обечайки
+        obj.add_variable('h', 17.626)   # Высота бака
+        obj.add_variable('r', 2.5)      # Радиус днищ
+        obj.add_variable('d', 3.9)      # Диаметр бака
+        obj.add_variable('c0', -1.565)  # Координата z центра верхнего днища
+        obj.add_variable('c1', -15.126) # ... нижнего днища
+
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.add_boundary_condition('0', 'abs(z + h) <= eps', DIR_1 | DIR_2 | DIR_3)
+        obj.add_boundary_condition('0', 'abs(x) <= eps', DIR_1)
+        obj.add_boundary_condition('0', 'abs(y) <= eps', DIR_2)
+
+        obj.add_surface_load('p*cos(atan2(y,x))', '(z <= 0 and z >= -l)', DIR_1)
+        obj.add_surface_load('p*sin(atan2(y,x))', '(z <= 0 and z >= -l)', DIR_2)
+
+        obj.add_surface_load('p*cos(atan2(y,x))*sin(atan2((x^2+y^2)^0.5,(z -c0)))',
+                             'abs(x^2 + y^2 + (z - c0)^2 - r^2) <= eps', DIR_1)
+        obj.add_surface_load('p*sin(atan2(y,x))*sin(atan2((x^2+y^2)^0.5,(z - c0)))',
+                             'abs(x^2 + y^2 + (z - c0)^2 - r^2) <= eps', DIR_2)
+        obj.add_surface_load('p*cos(atan2((x^2+y^2)^0.5,(z - c0)))',
+                             'abs(x^2 + y^2 + (z - c0)^2 - r^2) <= eps', DIR_3)
+
+        obj.add_surface_load('p*cos(atan2(y,x))*sin(atan2((x^2+y^2)^0.5,(z -c1)))',
+                             'abs(x^2 + y^2 + (z - c1)^2 - r^2) <= eps', DIR_1)
+        obj.add_surface_load('p*sin(atan2(y,x))*sin(atan2((x^2+y^2)^0.5,(z - c1)))',
+                             'abs(x^2 + y^2 + (z - c1)^2 - r^2) <= eps', DIR_2)
+        obj.add_surface_load('p*cos(atan2((x^2+y^2)^0.5,(z - c1)))',
+                             'abs(x^2 + y^2 + (z - c1)^2 - r^2) <= eps', DIR_3)
+
+        if obj.calc():
+            obj.print_result('mesh/' + obj.object_name() + '.res')
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
 if __name__ == '__main__':
+
+    tank3ds('tank3ds')
 
     # beam3d4('beam3d-4')
     # beam2d3('beam2d-3')
@@ -904,7 +954,7 @@ if __name__ == '__main__':
     # plate3_test('plate3_test')
     # plate4_test('plate4_test')
     # shell4_test('shell4_test')
-    shell3_test('shell3_test')
+    # shell3_test('shell3_test')
     # tube_test('tube_test')
     # plate3d('plate3d')
     # tank3s('tank3s')

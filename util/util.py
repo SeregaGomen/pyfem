@@ -624,4 +624,6 @@ def mesh_restructure(file_src, file_dst):
 # mesh_restructure('../mesh/beam.trpa', '../mesh/beam-r.trpa')
 
 # convert_msh_2_3d_trpa('D:/Work/Qt/QFEM/QFEM/mesh/10/beam3d.msh', '../mesh/beam3d-4.trpa')
-mesh_convert_3d_4_2_10('../mesh/beam3d-4.trpa', '../mesh/beam3d-10.trpa')
+# mesh_convert_3d_4_2_10('../mesh/beam3d-4.trpa', '../mesh/beam3d-10.trpa')
+
+convert_msh_2_3d_trpa('D:/Work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/shell/tank3ds.msh', '../mesh/tank3ds.trpa')
