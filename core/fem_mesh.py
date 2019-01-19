@@ -50,7 +50,7 @@ class TMesh:
         elif t == 24:
             return 'fe_2d_4', 2, 4, 2, 2
         elif t == 34:
-            return 'fe_1d_2', 0, 2, 1, 1
+            return 'fe_1d_2', 1, 2, 1, 1
         elif t == 123:
             return 'fe_2d_3_p', 0, 3, 3, 2
         elif t == 124:

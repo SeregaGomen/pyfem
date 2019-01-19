@@ -128,7 +128,7 @@ class TFE1D2(TFE):
             [2.0, 1.0],
             [1.0, 2.0]
         ])
-        m = a * self.__length()/6.0 * self.params.density
+        m = a * self.__length() / 6.0 * self.params.density
         c = m * self.params.damping[0] + self.K * self.params.damping[1]
         return m, c
 
