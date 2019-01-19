@@ -1,6 +1,6 @@
 {
     "Header": {
-        "DateTime": "2018-10-07T19:12:14.568",
+        "DateTime": "2019-01-19T16:32:02.784",
         "Object": "body1d",
         "Title": "QFEM problem file"
     },
@@ -8,7 +8,7 @@
         "File": "D:/Work/python/pyfem/mesh/body1d.trpa"
     },
     "Parameters": {
-        "Accuracy": "1e-6",
+        "Accuracy": "1e-10",
         "BoundaryConditions": [
             {
                 "Direct": "1",
@@ -30,9 +30,9 @@
             },
             {
                 "Direct": "1",
-                "Expression": "-1.0E+5",
-                "Predicate": "x=1",
-                "Type": "5"
+                "Expression": "0.5",
+                "Predicate": "",
+                "Type": "3"
             },
             {
                 "Direct": "1",
@@ -91,7 +91,7 @@
             "Damping": "0",
             "Density": "0",
             "PoissonsRatio": "0",
-            "YoungsModulus": "6.5e+10"
+            "YoungsModulus": "203200"
         },
         "ProblemType": "Static",
         "ThermalParameters": {

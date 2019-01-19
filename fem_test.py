@@ -9,17 +9,15 @@ from plot.plot3d import TPlot
 
 def body1d(res_name):
     obj = TObject()
-    e = [6.5E+10]
-    m = [0.3]
     if obj.set_mesh('mesh/body1d.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
         obj.set_precision(5)
-        obj.set_elasticity(e, m)
+        obj.set_elasticity([203200], [])
         obj.add_boundary_condition('0', 'x=0', DIR_1)
-    #    obj.add_volume_load('-1.0E+5', '', DIR_X)
-        obj.add_concentrated_load('-1.0E+5', 'x=1', DIR_1)
+        obj.add_volume_load('0.5', '', DIR_1)
+        # obj.add_concentrated_load('0.5', 'x=1', DIR_1)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -60,8 +58,8 @@ def cube4(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z=0', DIR_1 | DIR_2 | DIR_3)
-        # obj.add_volume_load('-0.5', '', DIR_3)
-        obj.add_surface_load('-0.5', 'z = 1', DIR_3)
+        obj.add_volume_load('-0.5', '', DIR_3)
+        # obj.add_surface_load('-0.5', 'z = 1', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 1 and y = 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 1', DIR_3)
@@ -779,8 +777,8 @@ def quad3(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'y = -0.5', DIR_1 | DIR_2)
-        # obj.add_volume_load('-0.05', '', DIR_2)
-        obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
+        obj.add_volume_load('-0.05', '', DIR_2)
+        # obj.add_surface_load('-0.05', 'y = 0.5', DIR_2)
         # obj.add_concentrated_load('-0.05', 'y = 0.5 and (x = -0.5 or x = 0.5)', DIR_2)
         if obj.calc():
             obj.print_result()
@@ -918,7 +916,7 @@ def tank3ds(res_name):
 
 if __name__ == '__main__':
 
-    tank3ds('tank3ds')
+    # tank3ds('tank3ds')
 
     # beam3d4('beam3d-4')
     # beam2d3('beam2d-3')
@@ -943,7 +941,7 @@ if __name__ == '__main__':
     # console_dynamic('console_dynamic')
     # console('console')
     # console4('console4')
-    # body1d('body1d')
+    body1d('body1d')
     # plate4('plate4')
     # body1d('body1d')
     # beam_dynamic('beam_dynamic')

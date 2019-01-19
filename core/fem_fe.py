@@ -116,7 +116,7 @@ class TFE1D2(TFE):
     def _elastic_matrix(self):
         return array([
             [1.0, -1.0],
-            [-1.0, .0]
+            [-1.0, 1.0]
         ]) * self.params.e[0]
 
     def _generate_stiffness_matrix(self):

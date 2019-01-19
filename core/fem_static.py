@@ -340,7 +340,7 @@ class TFEMStatic(TFEM):
     def __volume_load_share(self, index):
         share = array([])
         if self.mesh.fe_type == 'fe_1d_2':
-            share = array([1 / 2]) * self.mesh.volume(index) * self.params.thickness
+            share = array([1 / 2, 1 / 2]) * self.mesh.volume(index) * self.params.thickness
         elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
             share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * self.params.thickness
             # share = self._tri_3_load(index) * self.params.thickness

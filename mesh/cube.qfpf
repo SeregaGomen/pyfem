@@ -1,14 +1,14 @@
 {
     "Header": {
-        "DateTime": "2018-10-07T19:24:52.237",
+        "DateTime": "2019-01-18T13:57:35.855",
         "Object": "cube",
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "D:/Work/python/pyfem/mesh/cube.trpa"
+        "File": "cube.trpa"
     },
     "Parameters": {
-        "Accuracy": "1e-6",
+        "Accuracy": "1e-10",
         "BoundaryConditions": [
             {
                 "Direct": "1",
@@ -66,7 +66,7 @@
             },
             {
                 "Direct": "4",
-                "Expression": "-1000",
+                "Expression": "-0.5",
                 "Predicate": "z=1",
                 "Type": "4"
             },
@@ -135,7 +135,7 @@
             "dT": "0"
         },
         "Variables": [
-            "eps 1e-6"
+            "eps 1e-06"
         ]
     }
 }
