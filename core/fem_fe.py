@@ -215,13 +215,13 @@ class TFE2D3(TFE):
                 b[2][2 * j + 0] = shape_dy[j]
                 b[2][2 * j + 1] = shape_dx[j]
             # Вычисление компонент локальной матрицы жесткости
-            self.K += b.conj().transpose().dot(self._elastic_matrix()).dot(b) * self.params.thickness * \
-                       abs(jacobian) * self._w[i]
+            self.K += (b.conj().transpose().dot(self._elastic_matrix()).dot(b) * self.params.thickness *
+                       abs(jacobian) * self._w[i])
             if not is_static:
-                self.M += self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness * \
-                          abs(jacobian) * self._w[i] * self.params.density
-                self.C += self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness * \
-                          abs(jacobian) * self._w[i] * self.params.damping
+                self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness *
+                           abs(jacobian) * self._w[i] * self.params.density)
+                self.C += (self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness *
+                           abs(jacobian) * self._w[i] * self.params.damping)
 
 
 # Квадратичный (шестиузловой) треугольный КЭ
@@ -290,13 +290,13 @@ class TFE2D6(TFE2D3):
                 b[2][2 * j + 0] = shape_dy[j]
                 b[2][2 * j + 1] = shape_dx[j]
             # Вычисление компонент локальной матрицы жесткости
-            self.K += b.conj().transpose().dot(self._elastic_matrix()).dot(b) * self.params.thickness * \
-                       abs(jacobian) * self._w[i]
+            self.K += (b.conj().transpose().dot(self._elastic_matrix()).dot(b) * self.params.thickness *
+                       abs(jacobian) * self._w[i])
             if not is_static:
-                self.M += self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness * \
-                          abs(jacobian) * self._w[i] * self.params.density
-                self.C += self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness * \
-                          abs(jacobian) * self._w[i] * self.params.damping
+                self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness *
+                           abs(jacobian) * self._w[i] * self.params.density)
+                self.C += (self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness *
+                           abs(jacobian) * self._w[i] * self.params.damping)
 
     def calc(self, u):
         res = zeros((6, self.size))
@@ -427,12 +427,12 @@ class TFE2D4(TFE):
                 b[2][j * 2 + 0] = shape_dy[j]
                 b[2][j * 2 + 1] = shape_dx[j]
             self.K += b.conj().transpose().dot(self._elastic_matrix()).dot(b) * abs(jacobian) * self._w[i] *  \
-                       self.params.thickness
+                      self.params.thickness
             if not is_static:
-                self.M += self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness * \
-                          abs(jacobian) * self._w[i] * self.params.density
-                self.C += self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness * \
-                          abs(jacobian) * self._w[i] * self.params.damping
+                self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness *
+                           abs(jacobian) * self._w[i] * self.params.density)
+                self.C += (self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness *
+                           abs(jacobian) * self._w[i] * self.params.damping)
 
 
 # Линейный (четырехузловой) тетраэдральный КЭ
@@ -560,10 +560,10 @@ class TFE3D4(TFE):
                 b[5][j * 3 + 2] = shape_dx[j]
             self.K += b.conj().transpose().dot(self._elastic_matrix()).dot(b) * abs(jacobian) * self._w[i]
             if not is_static:
-                self.M += self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] * \
-                          self.params.density
-                self.C += self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] * \
-                          self.params.damping
+                self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] *
+                           self.params.density)
+                self.C += (self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] *
+                           self.params.damping)
 
 
 # Квадратичный (десятиузловой) тетраэдральный КЭ
@@ -685,10 +685,10 @@ class TFE3D10(TFE3D4):
                 b[5][j * 3 + 2] = shape_dx[j]
             self.K += b.conj().transpose().dot(self._elastic_matrix()).dot(b) * abs(jacobian) * self._w[i]
             if not is_static:
-                self.M += self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] * \
-                          self.params.density
-                self.C += self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] * \
-                          self.params.damping
+                self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] *
+                           self.params.density)
+                self.C += (self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] *
+                           self.params.damping)
 
 
 # Восьмиузловой призматический КЭ
@@ -850,10 +850,10 @@ class TFE3D8(TFE):
                 b[5][j * 3 + 2] = shape_dx[j]
             self.K += b.conj().transpose().dot(self._elastic_matrix()).dot(b) * abs(jacobian) * self._w[i]
             if not is_static:
-                self.M += self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] * \
-                          self.params.density
-                self.C += self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] * \
-                          self.params.damping
+                self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] *
+                           self.params.density)
+                self.C += (self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] *
+                           self.params.damping)
 
 
 # Четырехугольный КЭ пластины
@@ -938,13 +938,11 @@ class TFE2D4P(TFE2D4):
                 b2[1][3 * j + 0] = shape_dy[j]
                 b2[1][3 * j + 1] = -shape[j]
             self.K += (b1.conj().transpose().dot(self._elastic_matrix()).dot(b1) * self.params.thickness ** 3 / 12.0 +
-                        b2.conj().transpose().dot(self.__extra_elastic_matrix()).
-                        dot(b2) * self.params.thickness * 5.0 / 6.0) * abs(jacobian) * self._w[i]
+                       b2.conj().transpose().dot(self.__extra_elastic_matrix()).
+                       dot(b2) * self.params.thickness * 5.0 / 6.0) * abs(jacobian) * self._w[i]
             if not is_static:
-                self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * \
-                          self.params.density
-                self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * \
-                          self.params.damping
+                self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.density
+                self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.damping
 
 
 # Треугольный КЭ пластины
@@ -1031,13 +1029,11 @@ class TFE2D3P(TFE2D3):
                 b2[1][3 * j + 1] = -shape[j]
             # Вычисление компонент локальной матрицы жесткости
             self.K += (b1.conj().transpose().dot(self._elastic_matrix()).dot(b1) * self.params.thickness ** 3 / 12.0 +
-                        b2.conj().transpose().dot(self.__extra_elastic_matrix()).dot(b2) * self.params.thickness *
-                        5.0 / 6.0) * abs(jacobian) * self._w[i]
+                       b2.conj().transpose().dot(self.__extra_elastic_matrix()).dot(b2) * self.params.thickness *
+                       5.0 / 6.0) * abs(jacobian) * self._w[i]
             if not is_static:
-                self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * \
-                          self.params.density
-                self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * \
-                          self.params.damping
+                self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.density
+                self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.damping
 
 
 # Треугольный КЭ оболочки
