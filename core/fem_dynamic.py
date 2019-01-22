@@ -9,6 +9,7 @@ from scipy.sparse import lil_matrix, coo_matrix
 from numpy import zeros, savez, load
 from core.fem_defs import INIT_U, INIT_V, INIT_W, INIT_U_T, INIT_V_T, INIT_W_T, INIT_U_T_T, INIT_V_T_T, INIT_W_T_T
 from core.fem_static import TFEMStatic
+from core.fem_parser import TParser
 
 
 # Сохранение разреженной матрицы в файл
@@ -81,7 +82,7 @@ class TFEMDynamic(TFEMStatic):
         u0 = zeros(len(self.mesh.x) * self.mesh.freedom)
         ut0 = zeros(len(self.mesh.x) * self.mesh.freedom)
         utt0 = zeros(len(self.mesh.x) * self.mesh.freedom)
-        parser = self.create_parser([], 0)
+        parser = TParser()
         counter = 0
         for i in range(0, len(self.params.bc_list)):
             if self.params.bc_list[i].type == 'initial':
