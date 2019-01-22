@@ -180,7 +180,7 @@ class TFE2D3(TFE):
 
     # Изопараметрические функции формы и их производные
     def _shape(self, i):
-        return array([1 - self._xi[i] - self._eta[i], self._xi[i], self._eta[i]])[i]
+        return array([1 - self._xi[i] - self._eta[i], self._xi[i], self._eta[i]])
 
     def _shape_dxi(self, i):
         return array([-1, 1, 0])

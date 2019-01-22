@@ -81,7 +81,7 @@ class TFEMDynamic(TFEMStatic):
         u0 = zeros(len(self.mesh.x) * self.mesh.freedom)
         ut0 = zeros(len(self.mesh.x) * self.mesh.freedom)
         utt0 = zeros(len(self.mesh.x) * self.mesh.freedom)
-        parser = self.create_parser()
+        parser = self.create_parser([], 0)
         counter = 0
         for i in range(0, len(self.params.bc_list)):
             if self.params.bc_list[i].type == 'initial':
