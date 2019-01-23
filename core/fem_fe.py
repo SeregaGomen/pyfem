@@ -19,6 +19,26 @@ from core.fem_defs import eps
 from core.fem_params import TFEMParams
 
 
+# Векторное произведение a и b
+def cross_product(a, b):
+    v = cross(a, b)
+    return v / norm(v)
+
+
+# Построение вектора для заданных координат
+def vector(x0, x1):
+    v = array(x0) - array(x1)
+    return v / norm(v)
+
+
+# Матрица преобразования в локальную систему координат
+def create_transform_matrix(x):
+    v_x = vector(x[1], x[0])
+    v_z = cross_product(vector(x[1], x[0]), vector(x[2], x[0]))
+    v_y = cross_product(v_z, v_x)
+    return array([v_x, v_y, v_z])
+
+
 # Абстрактный базовый класс, описывающий конечный элемент (КЭ)
 class TFE:
     def __init__(self):
@@ -38,24 +58,6 @@ class TFE:
     def set_coord(self, x):
         self.x = array(x)
         self._create()
-
-    # Построение вектора для заданной стороны элемента
-    def __vector(self, i, j):
-        v = array(self.x[j]) - array(self.x[i])
-        return v/norm(v)
-
-    # Матрица преобразования в локальную систему координат
-    def _create_transform_matrix(self):
-        v_x = self.__vector(1, 0)
-        v_z = self.__cross_product(self.__vector(1, 0), self.__vector(2, 0))
-        v_y = self.__cross_product(v_z, v_x)
-        return array([v_x, v_y, v_z])
-
-    # Векторное произведение a и b
-    @staticmethod
-    def __cross_product(a, b):
-        v = cross(a, b)
-        return v/norm(v)
 
     # Вычисление функций форм КЭ
     @abstractmethod
@@ -1045,7 +1047,7 @@ class TFE2D3S(TFE2D3P):
         self.global_x = zeros((3, 3))
 
     def _create(self):
-        self.T = self._create_transform_matrix()
+        self.T = create_transform_matrix(self.x)
         self.global_x = self.x
         self.x = array([self.T.dot(self.x[0, :]), self.T.dot(self.x[1, :]), self.T.dot(self.x[2, :])])
         self.x -= self.x[0, :]
@@ -1272,7 +1274,7 @@ class TFE2D4S(TFE2D4P):
             self.C = m.conj().transpose().dot(local_c).dot(m)
 
     def _create(self):
-        self.T = self._create_transform_matrix()
+        self.T = create_transform_matrix(self.x)
         self.global_x = self.x
 
         x0 = self.T.dot(self.x[0, :].conj().transpose())
