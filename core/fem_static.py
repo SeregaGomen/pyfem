@@ -112,11 +112,12 @@ class TFEMStatic(TFEM):
                 counter += 1
                 if not self.__check_be(j, self.params.bc_list[i].predicate):
                     continue
+
                 share = self.__surface_load_share(j)
+                parser = self.create_parser(self.mesh.get_be_center(j), t)
+                parser.set_code(self.params.bc_list[i].expression)
+                load = parser.run()
                 for k in range(0, len(self.mesh.be[j])):
-                    parser = self.create_parser(self.mesh.get_coord(self.mesh.be[j][k]), t)
-                    parser.set_code(self.params.bc_list[i].expression)
-                    load = parser.run()
                     if self.params.bc_list[i].direct & DIR_1:
                         self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += load * share[k]
                     if self.params.bc_list[i].direct & DIR_2:
@@ -143,14 +144,10 @@ class TFEMStatic(TFEM):
                 if not self.__check_fe(j, self.params.bc_list[i].predicate):
                     continue
                 share = self.__volume_load_share(j)
+                parser = self.create_parser(self.mesh.get_fe_center(j), t)
+                parser.set_code(self.params.bc_list[i].expression)
+                load = parser.run()
                 for k in range(0, len(self.mesh.fe[j])):
-                    parser = self.create_parser(self.mesh.get_coord(self.mesh.fe[j][k]), t)
-                    if len(self.params.bc_list[i].predicate):
-                        parser.set_code(self.params.bc_list[i].predicate)
-                        if parser.run() == 0:
-                            continue
-                    parser.set_code(self.params.bc_list[i].expression)
-                    load = parser.run()
                     if self.params.bc_list[i].direct & DIR_1:
                         self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 0] += load * share[k]
                     if self.params.bc_list[i].direct & DIR_2:

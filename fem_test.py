@@ -36,8 +36,8 @@ def cube(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z=0', DIR_1 | DIR_2 | DIR_3)
-        # obj.add_volume_load('-0.5', '', DIR_3)
-        obj.add_surface_load('-0.5', 'z = 1', DIR_3)
+        obj.add_volume_load('-0.5', '', DIR_3)
+        # obj.add_surface_load('-0.5', 'z = 1', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 1 and y = 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 1', DIR_3)
@@ -59,8 +59,8 @@ def cube4(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z=0', DIR_1 | DIR_2 | DIR_3)
-        obj.add_volume_load('-0.5', '', DIR_3)
-        # obj.add_surface_load('-0.5', 'z = 1', DIR_3)
+        # obj.add_volume_load('-0.5', '', DIR_3)
+        obj.add_surface_load('-0.5', 'z = 1', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 1 and y = 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 1', DIR_3)
@@ -82,8 +82,8 @@ def cube10(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z=0', DIR_1 | DIR_2 | DIR_3)
-        # obj.add_volume_load('-0.5', '', DIR_3)
-        obj.add_surface_load('-0.5', 'z = 1', DIR_3)
+        obj.add_volume_load('-0.5', '', DIR_3)
+        # obj.add_surface_load('-0.5', 'z = 1', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 1 and y = 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z = 1 and x = 0 and y = 1', DIR_3)
@@ -629,10 +629,10 @@ def tube_test(res_name):
         obj.set_solve_method('direct')
         obj.set_width(10)
         obj.set_precision(5)
-        obj.set_elasticity([203200000000], [0.27])
+        obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z = 0 or z = 4.014', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('50000*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_1)
-        obj.add_surface_load('50000*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_2)
+        obj.add_surface_load('0.05*cos(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_1)
+        obj.add_surface_load('0.05*sin(atan2(y,x))', '(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -875,8 +875,8 @@ def tank3ds(res_name):
 #        obj.set_solve_method('iterative')
         obj.set_elasticity([6.5E+10], [0.3])
         obj.set_thickness(0.0028)
-        obj.add_variable('p', 10000)    # Давление
-        obj.add_variable('eps', 1.0E-3)
+        obj.add_variable('p', 1000)     # Давление
+        obj.add_variable('eps', 1.0E-2)
         obj.add_variable('l', 16.691)   # Высота обечайки
         obj.add_variable('h', 17.626)   # Высота бака
         obj.add_variable('r', 2.5)      # Радиус днищ
@@ -915,7 +915,27 @@ def tank3ds(res_name):
         return False
 
 
+def shell_plate3(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/shell-plate3.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'x = -0.5 or x = 0.5 or y = -0.5 or y = 0.5', DIR_1 | DIR_2 | DIR_3)
+        obj.add_surface_load('-0.05', 'z = 0', DIR_3)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
 if __name__ == '__main__':
+
+    # shell_plate3('shell-plate3')
 
     # tank3ds('tank3ds')
 
@@ -952,8 +972,8 @@ if __name__ == '__main__':
     # plate3('plate3')
     # plate3_test('plate3_test')
     # plate4_test('plate4_test')
-    # shell4_test('shell4_test')
-    shell3_test('shell3_test')
+    shell4_test('shell4_test')
+    # shell3_test('shell3_test')
     # tube_test('tube_test')
     # plate3d('plate3d')
     # tank3s('tank3s')

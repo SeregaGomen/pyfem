@@ -144,6 +144,15 @@ class TMesh:
             x.append(a)
         return x
 
+    def get_fe_center(self, index):
+        x = []
+        for j in range(self.dimension):
+            a = 0
+            for i in range(len(self.fe[index])):
+                a += self.x[self.fe[index][i]][j]
+            x.append(a / self.dimension)
+        return x
+
     def get_be_coord(self, index):
         x = []
         for i in range(0, len(self.be[index])):
@@ -151,6 +160,15 @@ class TMesh:
             for j in range(0, self.dimension):
                 a.append(self.x[self.be[index][i]][j])
             x.append(a)
+        return x
+
+    def get_be_center(self, index):
+        x = []
+        for j in range(self.dimension):
+            a = 0
+            for i in range(len(self.be[index])):
+                a += self.x[self.be[index][i]][j]
+            x.append(a / self.dimension)
         return x
 
     # Вычисление длины (площади) заданного граничного элемента
