@@ -99,6 +99,7 @@ class TObject:
         self.__params.add_variable(var, val)
 
     def calc(self):
+        ret = False
         start = timer()
         fem = TFEM()
         if self.__params.problem_type == 'static':
@@ -107,10 +108,13 @@ class TObject:
             fem = TFEMDynamic()
         fem.set_mesh(self.__mesh)
         fem.set_params(self.__params)
-        ret = fem.calc()
-        if ret:
-            self.__results = fem.get_result()
-            print('Lead time %f sec' % (timer() - start))
+        try:
+            ret = fem.calc()
+            if ret:
+                self.__results = fem.get_result()
+                print('Lead time %f sec' % (timer() - start))
+        except TFEMException as err:
+            err.print_error()
         return ret
 
     # Вывод результатов расчета

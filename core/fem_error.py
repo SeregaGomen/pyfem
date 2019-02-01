@@ -14,7 +14,7 @@ class TFEMException(Exception):
         if self.error == 'brackets_err':
             err_msg += 'unbalanced or unexpected bracket'
         elif self.error == 'syntax_err':
-            err_msg += 'syntax print_error'
+            err_msg += 'syntax error'
         elif self.error == 'undef_err':
             err_msg += 'undefined variable or function'
         elif self.error == 'redefinition_err':

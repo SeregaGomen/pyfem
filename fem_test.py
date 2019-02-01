@@ -875,14 +875,14 @@ def tank3ds(res_name):
 #        obj.set_solve_method('iterative')
         obj.set_elasticity([6.5E+10], [0.3])
         obj.set_thickness(0.0028)
-        obj.add_variable('p', 1000)     # Давление
+        obj.add_variable('p', 1000)         # Давление
         obj.add_variable('eps', 1.0E-2)
-        obj.add_variable('l', 16.691)   # Высота обечайки
-        obj.add_variable('h', 17.626)   # Высота бака
-        obj.add_variable('r', 2.5)      # Радиус днищ
-        obj.add_variable('d', 3.9)      # Диаметр бака
-        obj.add_variable('c0', -1.565)  # Координата z центра верхнего днища
-        obj.add_variable('c1', -15.126) # ... нижнего днища
+        obj.add_variable('l', 16.691)       # Высота обечайки
+        obj.add_variable('h', 17.626)       # Высота бака
+        obj.add_variable('r', 2.5)          # Радиус днищ
+        obj.add_variable('d', 3.9)          # Диаметр бака
+        obj.add_variable('c0', -1.565)      # Координата z центра верхнего днища
+        obj.add_variable('c1', -15.126)     # ... нижнего днища
 
         obj.set_width(10)
         obj.set_precision(5)
@@ -919,7 +919,7 @@ if __name__ == '__main__':
 
     # shell_plate3('shell-plate3')
 
-    tank3ds('tank3ds')
+    # tank3ds('tank3ds')
 
     # beam3d4('beam3d-4')
     # beam2d3('beam2d-3')
@@ -928,7 +928,7 @@ if __name__ == '__main__':
     # cube10('cube-10')
     # cube4('cube-4')
 
-    # quad4('quad-4')
+    quad4('quad-4')
     # quad3('quad-3')
     # quad6('quad-6')
 
