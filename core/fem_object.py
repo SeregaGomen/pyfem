@@ -7,6 +7,7 @@
 import os
 import sys
 import simplejson as json
+from timeit import default_timer as timer
 from datetime import *
 from math import fabs
 from core.fem_mesh import TMesh
@@ -98,6 +99,7 @@ class TObject:
         self.__params.add_variable(var, val)
 
     def calc(self):
+        start = timer()
         fem = TFEM()
         if self.__params.problem_type == 'static':
             fem = TFEMStatic()
@@ -108,6 +110,7 @@ class TObject:
         ret = fem.calc()
         if ret:
             self.__results = fem.get_result()
+            print('Lead time %f sec' % (timer() - start))
         return ret
 
     # Вывод результатов расчета
