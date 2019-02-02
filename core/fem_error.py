@@ -33,6 +33,8 @@ class TFEMException(Exception):
             err_msg += 'not specified the parameters of elasticity'
         elif self.error == 'time_err':
             err_msg += 'incorrectly specified time parameters'
+        elif self.error == 'calc_err':
+            err_msg += 'calculation expression error'
         else:
             err_msg += self.error
         print('\033[1;31m%s\033[1;m' % err_msg)
