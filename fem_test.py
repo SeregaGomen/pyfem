@@ -562,16 +562,36 @@ def shell3_test(res_name):
 
 def plate3_test(res_name):
     obj = TObject()
-    # if obj.set_mesh('mesh/plate3.trpa'):
-    if obj.set_mesh('mesh/plate3_1_0.trpa'):
+    # if obj.set_mesh('mesh/plate3_1_0.trpa'):
+    if obj.set_mesh('mesh/plate3-1.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_thickness(0.01)
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
-        obj.add_boundary_condition('0', 'x = -0.5 or x = 0.5 or y = -0.5 or y = 0.5', DIR_1 | DIR_2 | DIR_3)
+        obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
         obj.add_surface_load('0.05', '', DIR_1)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
+def shell_plate3_test(res_name):
+    obj = TObject()
+    # if obj.set_mesh('mesh/shell-plate3.trpa'):
+    if obj.set_mesh('mesh/shell-plate3-1.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_thickness(0.01)
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
+        obj.add_surface_load('0.05', '', DIR_3)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -582,16 +602,36 @@ def plate3_test(res_name):
 
 def plate4_test(res_name):
     obj = TObject()
-#    if obj.set_mesh('mesh/plate4-1.0.trpa'):
-    if obj.set_mesh('mesh/plate4.trpa'):
+    # if obj.set_mesh('mesh/plate4.trpa'):
+    if obj.set_mesh('mesh/plate4-1.0.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_thickness(0.01)
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
-        obj.add_boundary_condition('0', 'x = -0.5 or x = 0.5 or y = -0.5 or y = 0.5', DIR_1 | DIR_2 | DIR_3)
+        obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
         obj.add_surface_load('0.05', '', DIR_1)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
+def shell_plate4_test(res_name):
+    obj = TObject()
+    # if obj.set_mesh('mesh/plate4.trpa'):
+    if obj.set_mesh('mesh/shell_plate4-1.0.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_thickness(0.01)
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
+        obj.add_surface_load('0.05', '', DIR_3)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -656,7 +696,7 @@ def tank3s(res_name):
         obj.add_variable('R', 1.037)
         obj.set_width(10)
         obj.set_precision(5)
-        obj.add_boundary_condition('0', 'y = -0.643 and abs(x**2 + z**2 -1.641**2)<=eps', DIR_1 | DIR_2 | DIR_3)
+        obj.add_boundary_condition('0', 'y == -0.643 and abs(x**2 + z**2 -1.641**2) <= eps', DIR_1 | DIR_2 | DIR_3)
         obj.add_boundary_condition('0', 'abs(x) <= eps', DIR_1)
         obj.add_boundary_condition('0', 'abs(z) <= eps', DIR_3)
 
@@ -687,8 +727,8 @@ def tank3s(res_name):
         obj.add_surface_load('-p*sin(atan2(z,x))*sin(atan2((x**2 + z**2)**0.5,(y + L)))',
                              '(y < -L) and (abs(x**2 + z**2 + (y + L)**2 - R**2) <= eps)', DIR_3)
 
-        obj.add_surface_load('-p', '(y = -1.724) and (x**2+z**2 - 0.342**2 <= eps)', DIR_2)
-        obj.add_surface_load('-p', '(y = -1.944) and (x**2+z**2 - 0.660**2 <= eps)', DIR_2)
+        obj.add_surface_load('-p', '(y == -1.724) and (x**2+z**2 - 0.342**2 <= eps)', DIR_2)
+        obj.add_surface_load('-p', '(y == -1.944) and (x**2+z**2 - 0.660**2 <= eps)', DIR_2)
 
         obj.add_surface_load('p*cos(atan2(z,x))', 'abs(y + 0.641) <= eps and abs(x**2 + z**2 - 1.643**2) <= eps', DIR_1)
         obj.add_surface_load('p*sin(atan2(z,x))', 'abs(y + 0.641) <= eps and abs(x**2 + z**2 - 1.643**2) <= eps', DIR_2)
@@ -916,9 +956,6 @@ def tank3ds(res_name):
 
 
 if __name__ == '__main__':
-
-    # shell_plate3('shell-plate3')
-
     # tank3ds('tank3ds')
 
     # beam3d4('beam3d-4')
@@ -937,7 +974,7 @@ if __name__ == '__main__':
 
     # beam('beam')
     # head3d('head3d')
-    tank3('tank3')
+    # tank3('tank3')
     # cylinder('cylinder')
     # quad('quad')
     # cube_test('cube_test')
@@ -952,8 +989,14 @@ if __name__ == '__main__':
     # shell4('shell4')
     # shell_plate3('shell_plate3')
     # plate3('plate3')
+
     # plate3_test('plate3_test')
+
+    shell_plate3_test('shell-plate3')
+
     # plate4_test('plate4_test')
+    # shell_plate4_test('shell_plate4_test')
+
     # shell4_test('shell4_test')
     # shell3_test('shell3_test')
     # tube_test('tube_test')

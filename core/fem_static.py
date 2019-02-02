@@ -81,7 +81,7 @@ class TFEMStatic(TFEM):
                 parser = self.create_parser(self.mesh.get_coord(j), t)
                 if len(self.params.bc_list[i].predicate):
                     parser.set_code(self.params.bc_list[i].predicate)
-                    if parser.run() == 0:
+                    if not parser.run():
                         continue
                 parser.set_code(self.params.bc_list[i].expression)
                 load = parser.run()
@@ -228,7 +228,7 @@ class TFEMStatic(TFEM):
                     parser = self.create_parser(self.mesh.get_coord(j))
                     if len(self.params.bc_list[i].predicate):
                         parser.set_code(self.params.bc_list[i].predicate)
-                        if parser.run() == 0:
+                        if not parser.run():
                             continue
                     parser.set_code(self.params.bc_list[i].expression)
                     val = parser.run()
@@ -267,7 +267,7 @@ class TFEMStatic(TFEM):
         for k in range(0, len(self.mesh.be[0])):
             parser = self.create_parser(self.mesh.get_coord(self.mesh.be[i][k]))
             parser.set_code(predicate)
-            if parser.run() == 0:
+            if not parser.run():
                 return False
         return True
 
@@ -278,7 +278,7 @@ class TFEMStatic(TFEM):
         for k in range(0, len(self.mesh.fe[0])):
             parser = self.create_parser(self.mesh.get_coord(self.mesh.fe[i][k]))
             parser.set_code(predicate)
-            if parser.run() == 0:
+            if not parser.run():
                 return False
         return True
 

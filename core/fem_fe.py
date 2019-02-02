@@ -1049,10 +1049,8 @@ class TFE2D3S(TFE2D3P):
     def _create(self):
         self.T = create_transform_matrix(self.x)
         self.global_x = self.x
-        self.x = array([self.T.dot(self.x[0, :]), self.T.dot(self.x[1, :]), self.T.dot(self.x[2, :])])
-        self.x -= self.x[0, :]
+        self.x = array([self.T.dot(self.x[0, :]), self.T.dot(self.x[1, :]), self.T.dot(self.x[2, :])]) - self.x[0, :]
         TFE2D3._create(self)
-#        self.x = x
 
     def _prepare_transform_matrix_(self):
         m = zeros((6 * self.size, 6 * self.size))
@@ -1075,7 +1073,7 @@ class TFE2D3S(TFE2D3P):
         membrane_u = []
         for i in range(0, self.size):
             membrane_u.append(lu[6 * i])      # u
-            membrane_u.append(lu[6 * i + 1])  # w
+            membrane_u.append(lu[6 * i + 1])  # v
         membrane_res = TFE2D3.calc(self, membrane_u)
         # Вычисляем деформации и напряжения пластины
         plate_u = []
@@ -1149,6 +1147,7 @@ class TFE2D3S(TFE2D3P):
                 if not is_static:
                     local_m[p][q] = m2[i][j]
                     local_c[p][q] = c2[i][j]
+
         self.K = m.conj().transpose().dot(local_k).dot(m)
         if not is_static:
             self.M = m.conj().transpose().dot(local_m).dot(m)

@@ -25,11 +25,11 @@ def create_plate_mesh_4():
             counter += 1
             x.append([x_min[0] + i*h[0], x_min[1] + j*h[1]])
         index.append(c_index)
-    with open('mesh/plate4-1.0.trpa', 'w') as file:
+    with open('../mesh/plate4-1.0.trpa', 'w') as file:
         file.write('124\n')
         file.write(str(counter) + '\n')
         for i in range(0, len(x)):
-            file.write(str(x[i][0]) + ' ' + str(x[i][1]) + '\n')
+            file.write(str(x[i][0]) + ' ' + str(x[i][1]) + ' 0\n')
         file.write(str(n**2) + '\n')
         for i in range(0, len(index) - 1):
             for j in range(0, len(index) - 1):
@@ -67,9 +67,9 @@ def create_shell_mesh_4():
             for j in range(0, len(index[0]) - 1):
                 file.write(str(index[i][j]) + ' ' + str(index[i][j + 1]) + ' ' + str(index[i + 1][j + 1]) + ' ' +
                            str(index[i + 1][j]) + '\n')
-            file.write(str(index[i][j + 1]) + ' ' + str(index[i][0]) + ' ' + str(index[i + 1][0]) + ' ' +
-                       str(index[i + 1][j + 1]) + '\n')
-        file.write('0\n')
+                file.write(str(index[i][j + 1]) + ' ' + str(index[i][0]) + ' ' + str(index[i + 1][0]) + ' ' +
+                           str(index[i + 1][j + 1]) + '\n')
+            file.write('0\n')
     return
 
 
@@ -213,6 +213,7 @@ def restructure_msh(x, be, fe):
     for i in range(len(x) - 1, -1, -1):
         if i_map[i][1] == 0:
             x.pop(i)
+
 
 # Конвертация файла данных gmsh в формат trpa (для плоской задачи)
 def convert_msh_2_3d_trpa(file_msh, file_trpa):
@@ -608,7 +609,7 @@ def mesh_restructure(file_src, file_dst):
 # convert_msh_2_2d_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', '../mesh/quad-4.trpa')
 # convert_msh_2_3d_trpa('d:/cube.msh', '../mesh/cube-4.trpa')
 # create_shell_mesh_4()
-# create_plate_mesh_4()
+create_plate_mesh_4()
 # mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
 
 # mesh_convert_2d_3_2_6('../mesh/console.trpa', '../mesh/console-6.trpa')
@@ -628,4 +629,4 @@ def mesh_restructure(file_src, file_dst):
 
 # convert_msh_2_3d_trpa('D:/Work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/shell/tank3ds.msh', '../mesh/tank3ds.trpa')
 
-convert_msh_2_3d_trpa('/home/serg/work/mesh/shell-plate3.msh', '../mesh/shell-plate3.trpa')
+# convert_msh_2_3d_trpa('G:/Work/python/mesh/shell-plate3.msh', '../mesh/shell-plate3-1.trpa')
