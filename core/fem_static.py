@@ -158,8 +158,10 @@ class TFEMStatic(TFEM):
 
     # Вычисление объемных и поверхностных нагрузок, действующих на КЭ
     def _fe_load(self, index, t=0):
-        v_load = [0] * self.mesh.dimension
-        s_load = [0] * self.mesh.dimension
+        # v_load = [0] * self.mesh.dimension
+        # s_load = [0] * self.mesh.dimension
+        v_load = [0] * self.mesh.freedom
+        s_load = [0] * self.mesh.freedom
         parser = self.create_parser(self.mesh.get_fe_center(index), t)
         for i in range(0, len(self.params.bc_list)):
             if self.params.bc_list[i].type == 'volume' or self.params.bc_list[i].type == 'surface':

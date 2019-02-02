@@ -571,7 +571,8 @@ def plate3_test(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('0.05', '', DIR_1)
+        # obj.add_surface_load('0.05', '', DIR_1)
+        obj.add_volume_load('0.05', '', DIR_1)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -591,7 +592,8 @@ def shell_plate3_test(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('0.05', '', DIR_3)
+        # obj.add_surface_load('0.05', '', DIR_3)
+        obj.add_volume_load('0.05', '', DIR_3)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -611,7 +613,8 @@ def plate4_test(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('0.05', '', DIR_1)
+        # obj.add_surface_load('0.05', '', DIR_1)
+        obj.add_volume_load('0.05', '', DIR_1)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -631,7 +634,8 @@ def shell_plate4_test(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('0.05', '', DIR_3)
+        # obj.add_surface_load('0.05', '', DIR_3)
+        obj.add_volume_load('0.05', '', DIR_3)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -965,7 +969,7 @@ if __name__ == '__main__':
     # cube10('cube-10')
     # cube4('cube-4')
 
-    quad4('quad-4')
+    # quad4('quad-4')
     # quad3('quad-3')
     # quad6('quad-6')
 
@@ -992,7 +996,7 @@ if __name__ == '__main__':
 
     # plate3_test('plate3_test')
 
-    # shell_plate3_test('shell-plate3')
+    shell_plate3_test('shell-plate3')
 
     # plate4_test('plate4_test')
     # shell_plate4_test('shell_plate4_test')
