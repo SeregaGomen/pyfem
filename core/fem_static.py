@@ -27,8 +27,6 @@ class TFEMStatic(TFEM):
 
         fe = self.create_fe()
         fe.set_params(self.params)
-        # Вычисление компонент нагрузки
-        # self._prepare_concentrated_load()
         # self._prepare_surface_load()
         # self._prepare_volume_load()
         # Формирование глобальной матрицы жесткости
@@ -40,6 +38,8 @@ class TFEMStatic(TFEM):
             fe.generate(v_load, s_load)
             # Ансамблирование ЛМЖ к ГМЖ
             self.__assembly(fe, i)
+        # Учет состредоточенной нагрузки
+        self._use_concentrated_load()
         # Учет краевых условий
         self._use_boundary_condition()
         # Решение СЛАУ
@@ -64,7 +64,7 @@ class TFEMStatic(TFEM):
             self._global_load[k] += fe.load[i]
 
     # Вычисление сосредоточенных нагрузок
-    def _prepare_concentrated_load(self, t=0):
+    def _use_concentrated_load(self, t=0):
         counter = 0
         for i in range(0, len(self.params.bc_list)):
             if self.params.bc_list[i].type == 'concentrated':

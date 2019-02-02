@@ -1136,7 +1136,8 @@ class TFE2D3S(TFE2D3P):
             local_load[p] = l2[i]
 
         self.K = m.conj().transpose().dot(local_k).dot(m)
-        self.load = m.conj().transpose().dot(local_load).dot(m)
+        self.load = m.conj().transpose().dot(local_load)
+
         if not is_static:
             self.M = m.conj().transpose().dot(local_m).dot(m)
             self.C = m.conj().transpose().dot(local_c).dot(m)
@@ -1262,7 +1263,7 @@ class TFE2D4S(TFE2D4P):
         #     sys.stdout.write('\n')
         # print('******************************************')
         self.K = m.conj().transpose().dot(local_k).dot(m)
-        self.load = m.conj().transpose().dot(local_load).dot(m)
+        self.load = m.conj().transpose().dot(local_load)
         if not is_static:
             self.M = m.conj().transpose().dot(local_m).dot(m)
             self.C = m.conj().transpose().dot(local_c).dot(m)
