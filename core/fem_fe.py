@@ -922,6 +922,7 @@ class TFE2D4P(TFE2D4):
                        b2.conj().transpose().dot(self.__extra_elastic_matrix()).
                        dot(b2) * self.params.thickness * 5.0 / 6.0) * abs(jacobian) * self._w[i]
             self.load += n.conj().transpose().dot(v_load) * self.params.thickness * abs(jacobian) * self._w[i]
+            self.load += n.conj().transpose().dot(s_load) * abs(jacobian) * self._w[i]
             if not is_static:
                 self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.density
                 self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.damping
@@ -1015,6 +1016,7 @@ class TFE2D3P(TFE2D3):
                        b2.conj().transpose().dot(self.__extra_elastic_matrix()).dot(b2) * self.params.thickness *
                        5.0 / 6.0) * abs(jacobian) * self._w[i]
             self.load += n.conj().transpose().dot(v_load) * self.params.thickness * abs(jacobian) * self._w[i]
+            self.load += n.conj().transpose().dot(s_load) * abs(jacobian) * self._w[i]
             if not is_static:
                 self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.density
                 self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.damping

@@ -562,8 +562,8 @@ def shell3_test(res_name):
 
 def plate3_test(res_name):
     obj = TObject()
-    # if obj.set_mesh('mesh/plate3_1_0.trpa'):
-    if obj.set_mesh('mesh/plate3-1.trpa'):
+    # if obj.set_mesh('mesh/plate3-1.trpa'):
+    if obj.set_mesh('mesh/plate3_1_0.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_thickness(0.01)
@@ -571,8 +571,8 @@ def plate3_test(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
-        # obj.add_surface_load('0.05', '', DIR_1)
-        obj.add_volume_load('0.05', '', DIR_1)
+        obj.add_surface_load('0.05', '', DIR_1)
+        # obj.add_volume_load('0.05', '', DIR_1)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -583,8 +583,8 @@ def plate3_test(res_name):
 
 def shell_plate3_test(res_name):
     obj = TObject()
-    # if obj.set_mesh('mesh/shell-plate3.trpa'):
-    if obj.set_mesh('mesh/shell-plate3-1.trpa'):
+    # if obj.set_mesh('mesh/shell-plate3-1.trpa'):
+    if obj.set_mesh('mesh/shell-plate3.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_thickness(0.01)
@@ -592,8 +592,8 @@ def shell_plate3_test(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
-        # obj.add_surface_load('0.05', '', DIR_3)
-        obj.add_volume_load('0.05', '', DIR_3)
+        obj.add_surface_load('0.05', '', DIR_3)
+        # obj.add_volume_load('0.05', '', DIR_3)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -613,8 +613,8 @@ def plate4_test(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
-        # obj.add_surface_load('0.05', '', DIR_1)
-        obj.add_volume_load('0.05', '', DIR_1)
+        obj.add_surface_load('0.05', '', DIR_1)
+        # obj.add_volume_load('0.05', '', DIR_1)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -960,14 +960,14 @@ def tank3ds(res_name):
 
 
 if __name__ == '__main__':
-    # tank3ds('tank3ds')
+    tank3ds('tank3ds')
 
     # beam3d4('beam3d-4')
     # beam2d3('beam2d-3')
 
     # cube('cube')
     # cube10('cube-10')
-    cube4('cube-4')
+    # cube4('cube-4')
 
     # quad4('quad-4')
     # quad3('quad-3')

@@ -6,7 +6,7 @@
 
 import os
 import sys
-import simplejson as json
+import json
 from timeit import default_timer as timer
 from datetime import *
 from math import fabs
