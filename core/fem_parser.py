@@ -20,11 +20,11 @@ class TParser:
 
     def set_code(self, c):
         self.code = c
-        try:
-            compile(self.code, 'fem_parser.py', 'single')
-        except SyntaxError:
-            self.error = 'syntax_err'
-            raise TFEMException('syntax_err')
+#        try:
+#            compile(self.code, 'fem_parser.py', 'single')
+#        except Exception:
+#            self.error = 'syntax_err'
+#            raise TFEMException('syntax_err')
 
     def run(self):
         exec('from math import sin, cos, tan, exp, asin, acos, atan, atan2, sinh, cosh')

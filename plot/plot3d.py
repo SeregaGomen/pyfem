@@ -820,7 +820,7 @@ class TGLWidget(QWidget):
     # Визуализация пространственной задачи
     def __paint_3d(self):
         # Изображение поверхности
-        # self.transform_coeff = 1.0E+3
+        self.transform_coeff = 1.0E+4
         for i in range(0, len(self.be)):
             tri = []
             for j in range(0, len(self.be[0])):

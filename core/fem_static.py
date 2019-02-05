@@ -9,7 +9,7 @@ from scipy.sparse.linalg import spsolve, bicgstab, ArpackError
 from core.fem_fem import TFEM
 from core.fem_defs import DIR_1, DIR_2, DIR_3
 from core.fem_result import TResult
-from numpy import array
+from numpy import array, nan
 
 
 class TFEMStatic(TFEM):
@@ -276,7 +276,7 @@ class TFEMStatic(TFEM):
         self._global_matrix_stiffness = self._global_matrix_stiffness.tocsr()
         try:
             self._global_load = spsolve(self._global_matrix_stiffness, self._global_load)
-        except ArpackError:
+        except Exception:
             return False
         self._progress.set_progress(1)
         return True
