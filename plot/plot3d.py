@@ -471,8 +471,8 @@ class TGLWidget(QWidget):
         self.__color_table.clear()
         step = self.num_color / 6
         h = 1.0 / step
-        if self.min_u == self.max_u:
-            self.max_u += 1
+        # if self.min_u == self.max_u:
+            # self.max_u += 1
         green = 0
         blue = 1
         red = 0.24  # Темно-фиолетовый
@@ -541,7 +541,9 @@ class TGLWidget(QWidget):
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess)
 
     def __get_color_index(self, u):
-        ret = int(floor((u - self.min_u) / ((self.max_u - self.min_u) / self.num_color))) - 1
+        ret = 1
+        if self.min_u != self.max_u:
+            ret = int(floor((u - self.min_u) / ((self.max_u - self.min_u) / self.num_color))) - 1
         return ret - 1 if ret > 0 else 0
 
     def show_legend(self):
@@ -820,7 +822,7 @@ class TGLWidget(QWidget):
     # Визуализация пространственной задачи
     def __paint_3d(self):
         # Изображение поверхности
-        self.transform_coeff = 1.0E+4
+        self.transform_coeff = 1.0E+1
         for i in range(0, len(self.be)):
             tri = []
             for j in range(0, len(self.be[0])):

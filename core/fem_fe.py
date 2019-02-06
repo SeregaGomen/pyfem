@@ -1133,7 +1133,7 @@ class TFE2D3S(TFE2D3P):
                 bb[2][6 * j + 4] = shape_dx[j]
                 bc[0][6 * j + 2] = shape_dx[j]
                 bc[0][6 * j + 3] = shape[j]
-                bc[1][6 * j + 0] = shape_dy[j]
+                bc[1][6 * j + 2] = shape_dy[j]
                 bc[1][6 * j + 4] = shape[j]
 
                 n[0][6 * j + 0] = n[1][6 * j + 1] = n[2][6 * j + 2] = n[3][6 * j + 3] = n[4][6 * j + 4] = \

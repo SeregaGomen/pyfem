@@ -997,13 +997,13 @@ if __name__ == '__main__':
 
     # plate3_test('plate3_test')
 
-    shell_plate3_test('shell-plate3')
+    # shell_plate3_test('shell-plate3')
 
     # plate4_test('plate4_test')
     # shell_plate4_test('shell_plate4_test')
 
     # shell4_test('shell4_test')
-    # shell3_test('shell3_test')
+    shell3_test('shell3_test')
     # tube_test('tube_test')
     # plate3d('plate3d')
     # tank3s('tank3s')
