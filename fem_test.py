@@ -543,7 +543,7 @@ def shell_plate3(res_name):
 def shell3_test(res_name):
     obj = TObject()
     # if obj.set_mesh('mesh/shell-tube.trpa'):
-    if obj.set_mesh('mesh/shell-tube-1.trpa'):
+    if obj.set_mesh('mesh/shell-tube-2.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)

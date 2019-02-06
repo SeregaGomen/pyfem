@@ -609,7 +609,7 @@ def mesh_restructure(file_src, file_dst):
 # convert_msh_2_2d_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', '../mesh/quad-4.trpa')
 # convert_msh_2_3d_trpa('d:/cube.msh', '../mesh/cube-4.trpa')
 # create_shell_mesh_4()
-create_plate_mesh_4()
+# create_plate_mesh_4()
 # mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
 
 # mesh_convert_2d_3_2_6('../mesh/console.trpa', '../mesh/console-6.trpa')
@@ -629,4 +629,4 @@ create_plate_mesh_4()
 
 # convert_msh_2_3d_trpa('D:/Work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/shell/tank3ds.msh', '../mesh/tank3ds.trpa')
 
-# convert_msh_2_3d_trpa('G:/Work/python/mesh/shell-plate3.msh', '../mesh/shell-plate3-1.trpa')
+convert_msh_2_3d_trpa('/home/serg/work/mesh/shell-tube.msh', '../mesh/shell-tube-2.trpa')
