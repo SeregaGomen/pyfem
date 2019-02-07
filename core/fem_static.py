@@ -305,7 +305,7 @@ class TFEMStatic(TFEM):
     def __check_fe(self, i, predicate):
         if not len(predicate):
             return True
-        for k in range(0, len(self.mesh.fe[0])):
+        for k in range(self.mesh.base_fe_size()):
             parser = self.create_parser(self.mesh.get_coord(self.mesh.fe[i][k]))
             parser.set_code(predicate)
             if not parser.run():
@@ -358,7 +358,7 @@ class TFEMStatic(TFEM):
         elif self.mesh.fe_type == 'fe_3d_8' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
             share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.square(index)
             # share = self._quad_4_load(index, 'surface')
-        elif self.mesh.fe_type == 'fe_3d_10':
+        elif self.mesh.fe_type == 'fe_3d_10' or self.mesh.fe_type == 'fe_2d_6_p':
             share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
             # share = self._tri_6_load(index, 'surface')
         return share
@@ -374,7 +374,7 @@ class TFEMStatic(TFEM):
         elif self.mesh.fe_type == 'fe_2d_4' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
             share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.volume(index) * self.params.thickness
             # share = self._quad_4_load(index) * self.params.thickness
-        elif self.mesh.fe_type == 'fe_2d_6':
+        elif self.mesh.fe_type == 'fe_2d_6' or self.mesh.fe_type == 'fe_2d_6_p':
             # share = array([0, 0, 0, 1 / 6, 1 / 6, 1 / 6]) * self.mesh.volume(index) * self.params.thickness
             share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * self.params.thickness
             # share = self._tri_6_load(index) * self.params.thickness

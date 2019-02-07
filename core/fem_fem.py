@@ -8,7 +8,8 @@ from abc import abstractmethod
 from core.fem_mesh import TMesh
 from core.fem_params import TFEMParams
 from core.fem_progress import TProgress
-from core.fem_fe import TFE, TFE1D2, TFE2D3, TFE2D3P, TFE2D3S, TFE2D4, TFE2D6, TFE2D4P, TFE2D4S, TFE3D4, TFE3D8, TFE3D10
+from core.fem_fe import TFE, TFE1D2, TFE2D3, TFE2D3P, TFE2D3S, TFE2D4, TFE2D6, TFE2D6P, TFE2D6S, TFE2D4P, TFE2D4S, \
+    TFE3D4, TFE3D8, TFE3D10
 from core.fem_parser import TParser
 from core.fem_error import TFEMException
 
@@ -73,10 +74,14 @@ class TFEM:
             fe = TFE3D10()
         elif self.mesh.fe_type == 'fe_2d_3_p':
             fe = TFE2D3P()
+        elif self.mesh.fe_type == 'fe_2d_6_p':
+            fe = TFE2D6P()
         elif self.mesh.fe_type == 'fe_2d_4_p':
             fe = TFE2D4P()
         elif self.mesh.fe_type == 'fe_2d_3_s':
             fe = TFE2D3S()
+        elif self.mesh.fe_type == 'fe_2d_6_s':
+            fe = TFE2D6S()
         elif self.mesh.fe_type == 'fe_2d_4_s':
             fe = TFE2D4S()
         return fe

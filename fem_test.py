@@ -543,7 +543,27 @@ def shell_plate3(res_name):
 def shell3_test(res_name):
     obj = TObject()
     # if obj.set_mesh('mesh/shell-tube.trpa'):
-    if obj.set_mesh('mesh/shell-tube-2.trpa'):
+    if obj.set_mesh('mesh/shell-tube-3.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_thickness(0.0369)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'z == 0 or z == 4.014', DIR_1 | DIR_2 | DIR_3)
+        obj.add_surface_load('0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_1)
+        obj.add_surface_load('0.05*sin(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_2)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
+def shell6_test(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/shell-tube6-1.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
@@ -563,8 +583,29 @@ def shell3_test(res_name):
 
 def plate3_test(res_name):
     obj = TObject()
-    # if obj.set_mesh('mesh/plate3-1.trpa'):
-    if obj.set_mesh('mesh/plate3_1_0.trpa'):
+    if obj.set_mesh('mesh/plate3.trpa'):
+    # if obj.set_mesh('mesh/plate3_1_0.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_thickness(0.01)
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
+        obj.add_surface_load('0.05', '', DIR_1)
+        # obj.add_volume_load('0.05', '', DIR_1)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
+def plate6_test(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/plate6.trpa'):
+    # if obj.set_mesh('mesh/plate3_1_0.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_thickness(0.01)
@@ -996,6 +1037,7 @@ if __name__ == '__main__':
     # plate3('plate3')
 
     # plate3_test('plate3_test')
+    # plate6_test('plate6_test')
 
     # shell_plate3_test('shell-plate3')
 
@@ -1003,7 +1045,10 @@ if __name__ == '__main__':
     # shell_plate4_test('shell_plate4_test')
 
     # shell4_test('shell4_test')
-    shell3_test('shell3_test')
+
+    # shell3_test('shell3_test')
+    shell6_test('shell6_test')
+
     # tube_test('tube_test')
     # plate3d('plate3d')
     # tank3s('tank3s')

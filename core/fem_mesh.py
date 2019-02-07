@@ -16,7 +16,9 @@ FEType = [
     'fe_2d_3',
     'fe_2d_6',
     'fe_2d_3_p',
+    'fe_2d_6_p',
     'fe_2d_3_s',
+    'fe_2d_6_s',
     'fe_2d_4',
     'fe_2d_4_p',
     'fe_3d_4',
@@ -55,10 +57,14 @@ class TMesh:
             return 'fe_2d_3_p', 0, 3, 3, 2
         elif t == 124:
             return 'fe_2d_4_p', 0, 4, 3, 2
+        elif t == 125:
+            return 'fe_2d_6_p', 0, 6, 3, 2
         elif t == 223:
             return 'fe_2d_3_s', 0, 3, 6, 3
         elif t == 224:
             return 'fe_2d_4_s', 0, 4, 6, 3
+        elif t == 225:
+            return 'fe_2d_6_s', 0, 6, 6, 3
         else:
             raise TFEMException('unknown_fe_err')
 
@@ -104,8 +110,8 @@ class TMesh:
                 row.append(int(lines[index].split()[j]))
             self.be.append(row)
             index += 1
-        if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_2d_4_p' or \
-                self.fe_type == 'fe_2d_4_s':
+        if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_3_s' or \
+                self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_2d_6_s' or self.fe_type == 'fe_2d_4_s':
             self.be = self.fe
 
     def fe_name(self):
@@ -118,9 +124,13 @@ class TMesh:
         elif self.fe_type == 'fe_2d_6':
             return 'quadratic triangular element (6 nodes)'
         elif self.fe_type == 'fe_2d_3_p':
-            return 'plate element (3 nodes)'
+            return 'triangular plate element (3 nodes)'
+        elif self.fe_type == 'fe_2d_6_p':
+            return 'triangular plate element (6 nodes)'
         elif self.fe_type == 'fe_2d_3_s':
-            return 'shell element (3 nodes)'
+            return 'triangular shell element (3 nodes)'
+        elif self.fe_type == 'fe_2d_6_s':
+            return 'triangular shell element (6 nodes)'
         elif self.fe_type == 'fe_2d_4_p':
             return 'plate element (4 nodes)'
         elif self.fe_type == 'fe_2d_4_s':
@@ -181,7 +191,7 @@ class TMesh:
         if self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_6':  # ГЭ - отрезок
             s = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
         elif self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_3d_4' or \
-                self.fe_type == 'fe_3d_10':
+                self.fe_type == 'fe_3d_10' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_6_s':
             # ГЭ - треугольник
             a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2 + (x[0][2] - x[1][2]) ** 2)
             b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2 + (x[0][2] - x[2][2]) ** 2)
@@ -209,7 +219,7 @@ class TMesh:
         if self.fe_type == 'fe_1d_2':
             v = math.fabs(x[0][0] - x[1][0])
         elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_6' or self.fe_type == 'fe_2d_3_p' or \
-                self.fe_type == 'fe_2d_3_s':
+                self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_6_s':
             a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
             b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2)
             c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2)
@@ -246,7 +256,16 @@ class TMesh:
         return v
 
     def is_plate(self):
-        return True if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_4_p' else False
+        return True if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_4_p' \
+            else False
 
     def is_shell(self):
-        return True if self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_2d_4_s' else False
+        return True if self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_2d_4_s' or self.fe_type == 'fe_2d_6_s' \
+            else False
+
+    def base_fe_size(self):
+        if self.fe_type == 'fe_2d_6' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_6_s':
+            return 3
+        elif self.fe_type == 'fe_3d_10':
+            return 4
+        return len(self.fe[0])

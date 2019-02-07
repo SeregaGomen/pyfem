@@ -321,7 +321,7 @@ def mesh_convert_2d_3_2_6(file_linear, file_quadric):
     # Считываем исходную сетку
     with open(file_linear, 'r') as file:
         line = file.readline()
-        if int(line) != 3:
+        if int(line) != 3 and int(line) != 123 and int(line) != 223:
             print('Mesh error: incorrect FE type')
             return False
         # Считываем узлы
@@ -329,7 +329,10 @@ def mesh_convert_2d_3_2_6(file_linear, file_quadric):
         for i in range(0, n):
             line = file.readline().replace('\n', '').strip()
             s = line.split(' ')
-            x.append([float(s[0]), float(s[1])])
+            lx = []
+            for j in range(len(s)):
+                lx.append(float(s[j]))
+            x.append(lx)
         # Считываем КЭ
         n = int(file.readline())
         for i in range(0, n):
@@ -349,7 +352,9 @@ def mesh_convert_2d_3_2_6(file_linear, file_quadric):
     # Преобразуем границу
     num = len(x)
     for i in range(0, len(be)):
-        xp = [(x[be[i][0]][0] + x[be[i][1]][0]) / 2, (x[be[i][0]][1] + x[be[i][1]][1]) / 2]
+        xp = []
+        for j in range(len(x[i])):
+            xp.append((x[be[i][0]][j] + x[be[i][1]][j]) / 2)
         x.append(xp)
         n_be.append([be[i][0], be[i][1], num])
         e = sorted(be[i])
@@ -362,7 +367,9 @@ def mesh_convert_2d_3_2_6(file_linear, file_quadric):
         for j in range(0, 3):
             ret, c_index = is_find(edge, sorted(index[j]))
             if ret is not True:
-                xp = [(x[index[j][0]][0] + x[index[j][1]][0]) / 2, (x[index[j][0]][1] + x[index[j][1]][1]) / 2]
+                xp = []
+                for k in range(len(x[i])):
+                    xp.append((x[index[j][0]][k] + x[index[j][1]][k]) / 2)
                 x.append(xp)
                 add_fe.append(num)
                 e = sorted(index[j])
@@ -629,4 +636,12 @@ def mesh_restructure(file_src, file_dst):
 
 # convert_msh_2_3d_trpa('D:/Work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/shell/tank3ds.msh', '../mesh/tank3ds.trpa')
 
-convert_msh_2_3d_trpa('/home/serg/work/mesh/shell-tube.msh', '../mesh/shell-tube-2.trpa')
+
+# mesh_convert_2d_3_2_6('../mesh/plate3.trpa', '../mesh/plate6.trpa')
+
+
+# convert_msh_2_3d_trpa('/home/serg/work/mesh/shell-tube.msh', '../mesh/shell-tube-3.trpa')
+# mesh_convert_2d_3_2_6('../mesh/shell-tube-3.trpa', '../mesh/shell-tube6.trpa')
+
+
+mesh_convert_2d_3_2_6('../mesh/shell-tube-3.trpa', '../mesh/shell-tube6-1.trpa')
