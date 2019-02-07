@@ -724,7 +724,7 @@ class TGLWidget(QWidget):
             if self.fe_type == 'fe_1d_2':
                 self.__paint_1d()
             elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_3_p' or \
-                    self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_2d_6':
+                    self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_2d_6' or self.fe_type == 'fe_2d_6_p':
                 self.__paint_2d()
             else:
                 self.__paint_3d()
@@ -748,17 +748,18 @@ class TGLWidget(QWidget):
                     for j in range(0, len(self.be[0])):
                         glVertex2f(self.x[self.be[i][j]][0] - self.x_c[0], self.x[self.be[i][j]][1] - self.x_c[1])
                     glEnd()
-            elif self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_4_p':
-                for i in range(0, len(self.fe)):
+            elif self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_2d_6_p':
+                for i in range(len(self.fe)):
+                    size = len(self.fe[i]) if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_4_p' else 3
                     glBegin(GL_LINE_LOOP)
-                    for j in range(0, len(self.fe[0])):
+                    for j in range(size):
                         glVertex2f(self.x[self.fe[i][j]][0] - self.x_c[0], self.x[self.fe[i][j]][1] - self.x_c[1])
                     glEnd()
             else:
                 for i in range(0, len(self.be)):
                     glBegin(GL_LINE_LOOP)
-                    num = 3 if self.fe_type == 'fe_3d_10' else len(self.be[0])
-                    for j in range(0, num):
+                    size = 4 if self.fe_type == 'fe_3d_10' else 3 if self.fe_type == 'fe_2d_6_s' else len(self.be[0])
+                    for j in range(size):
                         glVertex3f(self.x[self.be[i][j]][0] - self.x_c[0], self.x[self.be[i][j]][1] - self.x_c[1],
                                    self.x[self.be[i][j]][2] - self.x_c[2])
                     glEnd()

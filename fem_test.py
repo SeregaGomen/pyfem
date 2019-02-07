@@ -643,6 +643,26 @@ def shell_plate3_test(res_name):
         return False
 
 
+def shell_plate6_test(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/shell-plate6.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_thickness(0.01)
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
+        obj.add_surface_load('0.05', '', DIR_3)
+        # obj.add_volume_load('0.05', '', DIR_3)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
 def plate4_test(res_name):
     obj = TObject()
     if obj.set_mesh('mesh/plate4.trpa'):
@@ -729,7 +749,8 @@ def tube_test(res_name):
 
 def tank3s(res_name):
     obj = TObject()
-    if obj.set_mesh('mesh/tank3s.trpa'):
+    # if obj.set_mesh('mesh/tank3s.trpa'):
+    if obj.set_mesh('mesh/tank6s.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
 #        obj.set_solve_method('iterative')
@@ -1040,6 +1061,7 @@ if __name__ == '__main__':
     # plate6_test('plate6_test')
 
     # shell_plate3_test('shell-plate3')
+    # shell_plate6_test('shell-plate3')
 
     # plate4_test('plate4_test')
     # shell_plate4_test('shell_plate4_test')
@@ -1047,11 +1069,11 @@ if __name__ == '__main__':
     # shell4_test('shell4_test')
 
     # shell3_test('shell3_test')
-    shell6_test('shell6_test')
+    # shell6_test('shell6_test')
 
     # tube_test('tube_test')
     # plate3d('plate3d')
-    # tank3s('tank3s')
+    tank3s('tank3s')
 
 '''
 2. Правильно отображать динамическую задачу в plot3d
