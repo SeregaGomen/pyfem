@@ -1058,7 +1058,7 @@ if __name__ == '__main__':
     # plate3('plate3')
 
     # plate3_test('plate3_test')
-    # plate6_test('plate6_test')
+    plate6_test('plate6_test')
 
     # shell_plate3_test('shell-plate3')
     # shell_plate6_test('shell-plate3')
@@ -1073,7 +1073,7 @@ if __name__ == '__main__':
 
     # tube_test('tube_test')
     # plate3d('plate3d')
-    tank3s('tank3s')
+    # tank3s('tank3s')
 
 '''
 2. Правильно отображать динамическую задачу в plot3d

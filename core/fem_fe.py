@@ -9,7 +9,6 @@ from abc import abstractmethod
 from numpy.linalg import solve, LinAlgError
 from numpy import array
 from numpy import zeros
-from numpy import identity
 from numpy.linalg import det
 from numpy.linalg import inv
 from numpy.linalg import norm
@@ -1051,9 +1050,9 @@ class TFE2D6P(TFE2D6):
             b1 = zeros([3, 3 * self.size])
             b2 = zeros([2, 3 * self.size])
             for j in range(0, self.size):
-                shape = self.a[j][0] + self.a[j][1] * self.x[i][0] + self.a[j][2] * self.x[i][1]
-                dx = self.a[j][1]
-                dy = self.a[j][2]
+                shape = 1 if i == j else 0
+                dx = self.a[j][1] + self.a[j][3] * self.x[i][1] + 2 * self.a[j][4] * self.x[i][0]
+                dy = self.a[j][2] + self.a[j][3] * self.x[i][0] + 2 * self.a[j][5] * self.x[i][1]
                 b1[0][3 * j + 2] = -dx
                 b1[1][3 * j + 1] = dy
                 b1[2][3 * j + 1] = dx
