@@ -128,7 +128,7 @@ class TMainWindow(QMainWindow):
         light_two_side_action.setStatusTip('Invert polygon normnal vector')
         light_two_side_action.triggered.connect(self.__light_two_side_action)
         light_two_side_action.setCheckable(True)
-        light_two_side_action.setChecked(False)
+        light_two_side_action.setChecked(True)
         options_menu.addAction(light_two_side_action)
 
         options_menu.addSeparator()
@@ -296,7 +296,7 @@ class TGLWidget(QWidget):
         self.is_legend = True
         self.is_fe_border = False
         self.is_invert_normal = False
-        self.is_light_two_side = False
+        self.is_light_two_side = True
         self.transform_coeff = 0
         self.angle_x = 0
         self.angle_y = 0
@@ -357,7 +357,7 @@ class TGLWidget(QWidget):
         self.is_light = True
         self.is_legend = True
         self.is_invert_normal = False
-        self.is_light_two_side = False
+        self.is_light_two_side = True
         self.is_fe_border = False
         self.transform_coeff = 0
         self.angle_x = 0
@@ -823,10 +823,10 @@ class TGLWidget(QWidget):
     # Визуализация пространственной задачи
     def __paint_3d(self):
         # Изображение поверхности
-        self.transform_coeff = 1.0E+1
+        # self.transform_coeff = 1.0E+1
         for i in range(0, len(self.be)):
             tri = []
-            for j in range(0, len(self.be[0])):
+            for j in range(len(self.be[0])):
                 tri.append([self.x[self.be[i][j]][0] + self.transform_coeff * self.results[0].results[self.be[i][j]],
                             self.x[self.be[i][j]][1] + self.transform_coeff * self.results[1].results[self.be[i][j]],
                             self.x[self.be[i][j]][2] + self.transform_coeff * self.results[2].results[self.be[i][j]],
