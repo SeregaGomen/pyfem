@@ -1053,14 +1053,14 @@ class TFE2D6P(TFE2D6):
                 shape = 1 if i == j else 0
                 dx = self.a[j][1] + self.a[j][3] * self.x[i][1] + 2 * self.a[j][4] * self.x[i][0]
                 dy = self.a[j][2] + self.a[j][3] * self.x[i][0] + 2 * self.a[j][5] * self.x[i][1]
-                b1[0][3 * j + 2] = -dx
+                b1[0][3 * j + 2] = dx
                 b1[1][3 * j + 1] = dy
                 b1[2][3 * j + 1] = dx
-                b1[2][3 * j + 2] = -dy
+                b1[2][3 * j + 2] = dy
                 b2[0][3 * j + 0] = dx
                 b2[0][3 * j + 2] = shape
                 b2[1][3 * j + 0] = dy
-                b2[1][3 * j + 1] = -shape
+                b2[1][3 * j + 1] = shape
             e1 = b1.dot(u)
             s1 = self._elastic_matrix().dot(e1)
             e2 = b2.dot(u)
@@ -1140,50 +1140,64 @@ class TFE2D3S(TFE2D3P):
         TFE2D3._create(self)
 
     def calc(self, u):
+        res = zeros((12, self.size))
         # Подготовка матрицы преобразования
         m = prepare_transform_matrix(self.size, 6, self.T)
         # Модифицируем перемещения
         lu = m.dot(u)
-        # Вычисляем деформации и напряжения "мембранной" составляющей
-        membrane_u = []
-        for i in range(0, self.size):
-            membrane_u.append(lu[6 * i])      # u
-            membrane_u.append(lu[6 * i + 1])  # v
-        membrane_res = TFE2D3.calc(self, membrane_u)
-        # Вычисляем деформации и напряжения пластины
-        plate_u = []
-        for i in range(0, self.size):
-            plate_u.append(lu[6 * i + 2])     # w
-            plate_u.append(lu[6 * i + 3])     # Tx
-            plate_u.append(lu[6 * i + 4])     # Ty
-        plate_res = TFE2D3P.calc(self, plate_u)
-        res = zeros((12, self.size))
-        for i in range(0, self.size):
-            ld = array([
-                [plate_res[0][i] + membrane_res[0][i], plate_res[3][i] + membrane_res[2][i], plate_res[4][i]],
-                [plate_res[3][i] + membrane_res[2][i], plate_res[1][i] + membrane_res[1][i], plate_res[5][i]],
-                [plate_res[4][i], plate_res[5][i], 0]
-            ])
-            ls = array([
-                [plate_res[6][i] + membrane_res[3][i], plate_res[9][i] + membrane_res[5][i], plate_res[10][i]],
-                [plate_res[9][i] + membrane_res[5][i], plate_res[7][i] + membrane_res[4][i], plate_res[11][i]],
-                [plate_res[10][i], plate_res[11][i], 0]
-            ])
-            gd = self.T.conj().transpose().dot(ld).dot(self.T)
-            gs = self.T.conj().transpose().dot(ls).dot(self.T)
+        for i in range(self.size):
+            bm = zeros([3, 6 * self.size])
+            bp = zeros([3, 6 * self.size])
+            bc = zeros([2, 6 * self.size])
+            for j in range(self.size):
+                shape = 1 if i == j else 0
+                shape_dx = self.a[j][1]
+                shape_dy = self.a[j][2]
 
-            res[0][i] = gd[0][0]    # Exx
-            res[1][i] = gd[1][1]    # Eyy
-            res[2][i] = gd[2][2]    # Ezz
-            res[3][i] = gd[0][1]    # Exy
-            res[4][i] = gd[0][2]    # Exz
-            res[5][i] = gd[1][2]    # Eyz
-            res[6][i] = gs[0][0]    # Sxx
-            res[7][i] = gs[1][1]    # Syy
-            res[8][i] = gs[2][2]    # Szz
-            res[9][i] = gs[0][1]    # Sxy
-            res[10][i] = gs[0][2]   # Sxz
-            res[11][i] = gs[1][2]   # Syz
+                bm[0][6 * j + 0] = shape_dx
+                bm[1][6 * j + 1] = shape_dy
+                bm[2][6 * j + 0] = shape_dy
+                bm[2][6 * j + 1] = shape_dx
+                bp[0][6 * j + 3] = shape_dx
+                bp[1][6 * j + 4] = shape_dy
+                bp[2][6 * j + 3] = shape_dy
+                bp[2][6 * j + 4] = shape_dx
+                bc[0][6 * j + 2] = shape_dx
+                bc[0][6 * j + 3] = shape
+                bc[1][6 * j + 2] = shape_dy
+                bc[1][6 * j + 4] = shape
+            dm = bm.dot(lu)
+            sm = self._elastic_matrix().dot(dm)
+            dp = bp.dot(lu)
+            sp = self._elastic_matrix().dot(dp)
+            dc = bc.dot(lu)
+            sc = self._extra_elastic_matrix().dot(dc)
+            local_d = array([
+                [dm[0] + dp[0], dm[2] + dp[2], dc[0]],
+                [dm[2] + dp[2], dm[1] + dp[1], dc[1]],
+                [dc[0], dc[1], 0]
+            ])
+            local_s = array([
+                [sm[0] + sp[0], sm[2] + sp[2], sc[0]],
+                [sm[2] + sp[2], sm[1] + sp[1], sc[1]],
+                [sc[0], sc[1], 0]
+            ])
+            global_d = self.T.conj().transpose().dot(local_d).dot(self.T)
+            global_s = self.T.conj().transpose().dot(local_s).dot(self.T)
+
+            res[0][i] = global_d[0][0]    # Exx
+            res[1][i] = global_d[1][1]    # Eyy
+            res[2][i] = global_d[2][2]    # Ezz
+            res[3][i] = global_d[0][1]    # Exy
+            res[4][i] = global_d[0][2]    # Exz
+            res[5][i] = global_d[1][2]    # Eyz
+            res[6][i] = global_s[0][0]    # Sxx
+            res[7][i] = global_s[1][1]    # Syy
+            res[8][i] = global_s[2][2]    # Szz
+            res[9][i] = global_s[0][1]    # Sxy
+            res[10][i] = global_s[0][2]   # Sxz
+            res[11][i] = global_s[1][2]   # Syz
+
         return res
 
     def generate(self, v_load, s_load, is_static=True):
@@ -1247,7 +1261,7 @@ class TFE2D3S(TFE2D3P):
             if self.K[i][i] == 0:
                 self.K[i][i] = 1.0E+10
                 if not is_static:
-                    self.M[i][i] = self.C[i][i] = 1.0E+10
+                    self.M[i][i] = self.C[i][i] = 1.0E-3
 
         # Подготовка матрицы преобразования
         m = prepare_transform_matrix(self.size, 6, self.T)
@@ -1280,50 +1294,63 @@ class TFE2D6S(TFE2D6P):
         TFE2D6._create(self)
 
     def calc(self, u):
+        res = zeros((12, self.size))
         # Подготовка матрицы преобразования
         m = prepare_transform_matrix(self.size, 6, self.T)
         # Модифицируем перемещения
         lu = m.dot(u)
-        # Вычисляем деформации и напряжения "мембранной" составляющей
-        membrane_u = []
-        for i in range(0, self.size):
-            membrane_u.append(lu[6 * i])      # u
-            membrane_u.append(lu[6 * i + 1])  # v
-        membrane_res = TFE2D3.calc(self, membrane_u)
-        # Вычисляем деформации и напряжения пластины
-        plate_u = []
-        for i in range(0, self.size):
-            plate_u.append(lu[6 * i + 2])     # w
-            plate_u.append(lu[6 * i + 3])     # Tx
-            plate_u.append(lu[6 * i + 4])     # Ty
-        plate_res = TFE2D6P.calc(self, plate_u)
-        res = zeros((12, self.size))
-        for i in range(0, self.size):
-            ld = array([
-                [plate_res[0][i] + membrane_res[0][i], plate_res[3][i] + membrane_res[2][i], plate_res[4][i]],
-                [plate_res[3][i] + membrane_res[2][i], plate_res[1][i] + membrane_res[1][i], plate_res[5][i]],
-                [plate_res[4][i], plate_res[5][i], 0]
-            ])
-            ls = array([
-                [plate_res[6][i] + membrane_res[3][i], plate_res[9][i] + membrane_res[5][i], plate_res[10][i]],
-                [plate_res[9][i] + membrane_res[5][i], plate_res[7][i] + membrane_res[4][i], plate_res[11][i]],
-                [plate_res[10][i], plate_res[11][i], 0]
-            ])
-            gd = self.T.conj().transpose().dot(ld).dot(self.T)
-            gs = self.T.conj().transpose().dot(ls).dot(self.T)
+        for i in range(self.size):
+            bm = zeros([3, 6 * self.size])
+            bp = zeros([3, 6 * self.size])
+            bc = zeros([2, 6 * self.size])
+            for j in range(self.size):
+                shape = 1 if i == j else 0
+                shape_dx = self.a[j][1] + self.a[j][3] * self.x[i][1] + 2 * self.a[j][4] * self.x[i][0]
+                shape_dy = self.a[j][2] + self.a[j][3] * self.x[i][0] + 2 * self.a[j][5] * self.x[i][1]
 
-            res[0][i] = gd[0][0]    # Exx
-            res[1][i] = gd[1][1]    # Eyy
-            res[2][i] = gd[2][2]    # Ezz
-            res[3][i] = gd[0][1]    # Exy
-            res[4][i] = gd[0][2]    # Exz
-            res[5][i] = gd[1][2]    # Eyz
-            res[6][i] = gs[0][0]    # Sxx
-            res[7][i] = gs[1][1]    # Syy
-            res[8][i] = gs[2][2]    # Szz
-            res[9][i] = gs[0][1]    # Sxy
-            res[10][i] = gs[0][2]   # Sxz
-            res[11][i] = gs[1][2]   # Syz
+                bm[0][6 * j + 0] = shape_dx
+                bm[1][6 * j + 1] = shape_dy
+                bm[2][6 * j + 0] = shape_dy
+                bm[2][6 * j + 1] = shape_dx
+                bp[0][6 * j + 3] = shape_dx
+                bp[1][6 * j + 4] = shape_dy
+                bp[2][6 * j + 3] = shape_dy
+                bp[2][6 * j + 4] = shape_dx
+                bc[0][6 * j + 2] = shape_dx
+                bc[0][6 * j + 3] = shape
+                bc[1][6 * j + 2] = shape_dy
+                bc[1][6 * j + 4] = shape
+            dm = bm.dot(lu)
+            sm = self._elastic_matrix().dot(dm)
+            dp = bp.dot(lu)
+            sp = self._elastic_matrix().dot(dp)
+            dc = bc.dot(lu)
+            sc = self._extra_elastic_matrix().dot(dc)
+            local_d = array([
+                [dm[0] + dp[0], dm[2] + dp[2], dc[0]],
+                [dm[2] + dp[2], dm[1] + dp[1], dc[1]],
+                [dc[0], dc[1], 0]
+            ])
+            local_s = array([
+                [sm[0] + sp[0], sm[2] + sp[2], sc[0]],
+                [sm[2] + sp[2], sm[1] + sp[1], sc[1]],
+                [sc[0], sc[1], 0]
+            ])
+            global_d = self.T.conj().transpose().dot(local_d).dot(self.T)
+            global_s = self.T.conj().transpose().dot(local_s).dot(self.T)
+
+            res[0][i] = global_d[0][0]    # Exx
+            res[1][i] = global_d[1][1]    # Eyy
+            res[2][i] = global_d[2][2]    # Ezz
+            res[3][i] = global_d[0][1]    # Exy
+            res[4][i] = global_d[0][2]    # Exz
+            res[5][i] = global_d[1][2]    # Eyz
+            res[6][i] = global_s[0][0]    # Sxx
+            res[7][i] = global_s[1][1]    # Syy
+            res[8][i] = global_s[2][2]    # Szz
+            res[9][i] = global_s[0][1]    # Sxy
+            res[10][i] = global_s[0][2]   # Sxz
+            res[11][i] = global_s[1][2]   # Syz
         return res
 
     def generate(self, v_load, s_load, is_static=True):
@@ -1385,9 +1412,9 @@ class TFE2D6S(TFE2D6P):
         # Устранение сингулярности
         for i in range(len(self.K)):
             if self.K[i][i] == 0:
-                self.K[i][i] = 1.0E+10
+                self.K[i][i] = 1.0E-1 * self.K[0][0]
                 if not is_static:
-                    self.M[i][i] = self.C[i][i] = 1.0E+10
+                    self.M[i][i] = self.C[i][i] = 1.0E-2
 
         # Подготовка матрицы преобразования
         m = prepare_transform_matrix(self.size, 6, self.T)
@@ -1517,7 +1544,6 @@ class TFE2D4S(TFE2D4P):
         # Создание матрицы преобразования
         m = prepare_transform_matrix(self.size, 6, self.T)
         self.K = m.conj().transpose().dot(self.K).dot(m)
-
 
     def _create(self):
         self.T = create_transform_matrix(self.x)
