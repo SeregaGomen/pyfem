@@ -1031,7 +1031,7 @@ if __name__ == '__main__':
     # cube10('cube-10')
     # cube4('cube-4')
 
-    # quad4('quad-4')
+    quad4('quad-4')
     # quad3('quad-3')
     # quad6('quad-6')
 
@@ -1058,7 +1058,7 @@ if __name__ == '__main__':
 
     # plate3_test('plate3_test')
     # plate6_test('plate6_test')
-    plate4_test('plate4_test')
+    # plate4_test('plate4_test')
 
     # shell_plate3_test('shell-plate3')
     # shell_plate6_test('shell-plate3')
