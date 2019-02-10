@@ -1058,9 +1058,9 @@ if __name__ == '__main__':
 
     # plate3_test('plate3_test')
     # plate6_test('plate6_test')
-    # plate4_test('plate4_test')
+    plate4_test('plate4_test')
 
-    shell_plate3_test('shell-plate3')
+    # shell_plate3_test('shell-plate3')
     # shell_plate6_test('shell-plate3')
     # shell_plate4_test('shell-plate4')
 
