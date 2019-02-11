@@ -114,11 +114,11 @@ class TFE1D2(TFE):
         self.size = 2
         self.freedom = 1
 
-    def _length(self):
+    def _lenght(self):
         return math.fabs(self.x[1][0] - self.x[0][0])
 
     def _create(self):
-        if self._length() == 0.0:
+        if self._lenght() == 0.0:
             raise TFEMException('incorrect_fe_err')
         self.a = zeros((self.size, self.size))
         self.a[0][0] = self.x[1][0]/(self.x[1][0] - self.x[0][0])
@@ -139,15 +139,15 @@ class TFE1D2(TFE):
         ]) * self.params.e[0]
 
     def generate(self, v_load, s_load, is_static=True):
-        self.K = self._elastic_matrix() / self._length() * self.params.thickness
-        self.load = array([1 / 2, 1 / 2]) * self._length * self.params.thickness + array([1, 1]) * self.params.thickness # Уточнить вычисление поверхностной нагрузки
+        self.K = self._elastic_matrix() / self._lenght() * self.params.thickness
+        self.load = array([1 / 2, 1 / 2]) * self._lenght() * self.params.thickness + array([1, 1]) * self.params.thickness # Уточнить вычисление поверхностной нагрузки
         if not is_static:
             m = array([
                 [1.0, -1.0],
                 [-1.0, 1.0]
             ])
-            self.M = 1.0/6.0 * m * self._length() * self.params.thickness * self.params.density
-            self.C = 1.0/6.0 * m * self._length() * self.params.thickness * self.params.damping
+            self.M = 1.0/6.0 * m * self._lenght() * self.params.thickness * self.params.density
+            self.C = 1.0/6.0 * m * self._lenght() * self.params.thickness * self.params.damping
 
 
 # Абстрактный двумерный КЭ
@@ -219,10 +219,6 @@ class TFE2D(TFE):
         return res
 
     @abstractmethod
-    def _square(self):
-        raise NotImplementedError('Method TFE2D._square() is pure virtual')
-
-    @abstractmethod
     def _create(self):
         raise NotImplementedError('Method TFE2D._create() is pure virtual')
 
@@ -244,13 +240,6 @@ class TFE2D3(TFE2D):
         self._xi = [0, 1 / 2, 1 / 2]
         self._eta = [1 / 2, 0, 1 / 2]
         self._w = [1 / 6, 1 / 6, 1 / 6]
-
-    def _square(self):
-        a = math.sqrt((self.x[0][0] - self.x[1][0])**2 + (self.x[0][1] - self.x[1][1])**2)
-        b = math.sqrt((self.x[0][0] - self.x[2][0])**2 + (self.x[0][1] - self.x[2][1])**2)
-        c = math.sqrt((self.x[2][0] - self.x[1][0])**2 + (self.x[2][1] - self.x[1][1])**2)
-        p = 0.5 * (a + b + c)
-        return math.sqrt(p * (p - a) * (p - b) * (p - c))
 
     def _create(self):
         det0 = self.x[2][1] * self.x[1][0] - self.x[2][1] * self.x[0][0] - self.x[0][1] * self.x[1][0] - \
@@ -296,8 +285,6 @@ class TFE2D6(TFE2D3, TFE2D):
         self._w = [27 / 120, 8 / 120, 8 / 120, 8 / 120, 3 / 120, 3 / 120, 3 / 120]
 
     def _create(self):
-        if self._square() == 0.0:
-            raise TFEMException('incorrect_fe_err')
         a, self.a = zeros((self.size, self.size)), zeros((self.size, self.size))
         for j in range(self.size):
             b = array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
@@ -309,7 +296,10 @@ class TFE2D6(TFE2D3, TFE2D):
                 a[i][4] = self.x[i][0] ** 2
                 a[i][5] = self.x[i][1] ** 2
             b[j] = 1.0
-            x = solve(a, b)
+            try:
+                x = solve(a, b)
+            except LinAlgError:
+                raise TFEMException('incorrect_fe_err')
             self.a[j] = list(x)
 
     # Производные от функций форм
@@ -344,12 +334,7 @@ class TFE2D4(TFE2D):
         self._eta = [-0.57735027, 0.57735027, -0.57735027, 0.57735027]
         self._w = [1.0, 1.0, 1.0, 1.0]
 
-    def _square(self):
-        return math.sqrt((self.x[0][0] - self.x[1][0])**2 + (self.x[0][1] - self.x[1][1])**2)
-
     def _create(self):
-        if self._square() == 0:
-            raise TFEMException('incorrect_fe_err')
         a, self.a = zeros((self.size, self.size)), zeros((self.size, self.size))
         for j in range(self.size):
             b = array([0.0, 0.0, 0.0, 0.0])
@@ -359,7 +344,10 @@ class TFE2D4(TFE2D):
                 a[i][2] = self.x[i][1]
                 a[i][3] = self.x[i][0] * self.x[i][1]
             b[j] = 1.0
-            x = solve(a, b)
+            try:
+                x = solve(a, b)
+            except LinAlgError:
+                raise TFEMException('incorrect_fe_err')
             self.a[j] = list(x)
 
     # Производные от функций форм
@@ -419,18 +407,7 @@ class TFE3D4(TFE):
         ]) * self.params.e[0] * (1.0 - self.params.m[0])/(1.0 + self.params.m[0])/(1.0 - 2.0 * self.params.m[0])
         return d
 
-    def _volume(self):
-        a = (self.x[1][0] - self.x[0][0]) * (self.x[2][1] - self.x[0][1]) * (self.x[3][2] - self.x[0][2]) + \
-            (self.x[3][0] - self.x[0][0]) * (self.x[1][1] - self.x[0][1]) * (self.x[2][2] - self.x[0][2]) + \
-            (self.x[2][0] - self.x[0][0]) * (self.x[3][1] - self.x[0][1]) * (self.x[1][2] - self.x[0][2])
-        b = (self.x[3][0] - self.x[0][0]) * (self.x[2][1] - self.x[0][1]) * (self.x[1][2] - self.x[0][2]) + \
-            (self.x[2][0] - self.x[0][0]) * (self.x[1][1] - self.x[0][1]) * (self.x[3][2] - self.x[0][2]) + \
-            (self.x[1][0] - self.x[0][0]) * (self.x[3][1] - self.x[0][1]) * (self.x[2][2] - self.x[0][2])
-        return math.fabs(a - b)/6.0
-
     def _create(self):
-        if self._volume() == 0:
-            raise TFEMException('incorrect_fe_err')
         a, self.a = zeros((self.size, self.size)), zeros((self.size, self.size))
         for j in range(self.size):
             b = array([0.0, 0.0, 0.0, 0.0])
@@ -440,7 +417,10 @@ class TFE3D4(TFE):
                 a[i][2] = self.x[i][1]
                 a[i][3] = self.x[i][2]
             b[j] = 1.0
-            x = solve(a, b)
+            try:
+                x = solve(a, b)
+            except LinAlgError:
+                raise TFEMException('incorrect_fe_err')
             self.a[j] = list(x)
 
     def calc(self, u):
@@ -524,8 +504,6 @@ class TFE3D10(TFE3D4):
         self.freedom = 3
 
     def _create(self):
-        if self._volume() == 0.0:
-            raise TFEMException('incorrect_fe_err')
         a, self.a = zeros((self.size, self.size)), zeros((self.size, self.size))
         for j in range(self.size):
             b = array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
@@ -541,7 +519,10 @@ class TFE3D10(TFE3D4):
                 a[i][8] = self.x[i][1] ** 2
                 a[i][9] = self.x[i][2] ** 2
             b[j] = 1.0
-            x = solve(a, b)
+            try:
+                x = solve(a, b)
+            except LinAlgError:
+                raise TFEMException('incorrect_fe_err')
             self.a[j] = list(x)
 
     def calc(self, u):
