@@ -107,24 +107,14 @@ class TFE:
         raise NotImplementedError('Method TFE._shape_deta() is pure virtual')
 
 
-# Линейный (двухузловой) одномерный КЭ
-class TFE1D2(TFE):
+# Абстрактный одномерный КЭ
+class TFE1D(TFE):
     def __init__(self):
         super().__init__()
-        self.size = 2
         self.freedom = 1
 
     def _lenght(self):
         return math.fabs(self.x[1][0] - self.x[0][0])
-
-    def _create(self):
-        if self._lenght() == 0.0:
-            raise TFEMException('incorrect_fe_err')
-        self.a = zeros((self.size, self.size))
-        self.a[0][0] = self.x[1][0]/(self.x[1][0] - self.x[0][0])
-        self.a[0][1] = -1.0/(self.x[1][0] - self.x[0][0])
-        self.a[1][0] = self.x[0][0]/(self.x[0][0] - self.x[1][0])
-        self.a[1][1] = -1.0/(self.x[0][0] - self.x[1][0])
 
     def calc(self, u):
         res = zeros((self.size, self.size))
@@ -133,21 +123,61 @@ class TFE1D2(TFE):
         return res
 
     def _elastic_matrix(self):
-        return array([
-            [1.0, -1.0],
-            [-1.0, 1.0]
-        ]) * self.params.e[0]
+        return self.params.e[0]
+
+    # Изопараметрические функции формы и их производные
+    def _shape(self, i):
+        return array([(1 - self._xi[i]) / 2, (1 + self._xi[i]) / 2])
+
+    def _shape_dxi(self, i):
+        return array([-1 / 2, 1 / 2])
 
     def generate(self, v_load, s_load, is_static=True):
-        self.K = self._elastic_matrix() / self._lenght() * self.params.thickness
-        self.load = array([1 / 2, 1 / 2]) * self._lenght() * self.params.thickness + array([1, 1]) * self.params.thickness # Уточнить вычисление поверхностной нагрузки
+        self.K = zeros((self.freedom * self.size, self.freedom * self.size))
+        self.load = zeros(self.freedom * self.size)
         if not is_static:
-            m = array([
-                [1.0, -1.0],
-                [-1.0, 1.0]
-            ])
-            self.M = 1.0/6.0 * m * self._lenght() * self.params.thickness * self.params.density
-            self.C = 1.0/6.0 * m * self._lenght() * self.params.thickness * self.params.damping
+            self.M = zeros((self.freedom * self.size, self.freedom * self.size))
+            self.C = zeros((self.freedom * self.size, self.freedom * self.size))
+        # Численное интегрирование по отрезку [-0,5; 0,5] (по формуле Гаусса)
+        for i in range(len(self._w)):
+            # Якобиан
+            jacobian = (self.x[1][0] - self.x[0][0]) / 2
+            inv_jacobi = jacobian
+            shape_dx = inv_jacobi * self._shape_dxi(i)
+            # Матрицы градиентов и функций форм
+            b = zeros((1, self.freedom * self.size))
+            n = zeros((1, self.freedom * self.size))
+            for j in range(self.size):
+                b[0][self.freedom * j] = shape_dx[j]
+                n[0][self.freedom * j] = self._shape(i)[j]
+            # Вычисление компонент локальной матрицы жесткости
+            self.K += (b.conj().transpose().dot(self._elastic_matrix()).dot(b)) * self.params.thickness * \
+                      abs(jacobian) * self._w[i]
+            self.load += (n.conj().transpose().dot(v_load) * self.params.thickness +
+                          n.conj().transpose().dot(s_load)) * abs(jacobian) * self._w[i]
+            if not is_static:
+                self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness *
+                           abs(jacobian) * self._w[i] * self.params.density)
+                self.C += (self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness *
+                           abs(jacobian) * self._w[i] * self.params.damping)
+
+
+# Линейный (двухузловой) одномерный КЭ
+class TFE1D2(TFE1D):
+    def __init__(self):
+        super().__init__()
+        self.size = 2
+        self._xi = [-0.57735027, 0, 0.57735027]
+        self._w = [5 / 9, 8 / 9, 5 / 9]
+
+    def _create(self):
+        if abs(self.x[1][0] - self.x[0][0]) == 0.0:
+            raise TFEMException('incorrect_fe_err')
+        self.a = zeros((self.size, self.size))
+        self.a[0][0] = self.x[1][0]/(self.x[1][0] - self.x[0][0])
+        self.a[0][1] = -1.0/(self.x[1][0] - self.x[0][0])
+        self.a[1][0] = self.x[0][0]/(self.x[0][0] - self.x[1][0])
+        self.a[1][1] = -1.0/(self.x[0][0] - self.x[1][0])
 
 
 # Абстрактный двумерный КЭ
