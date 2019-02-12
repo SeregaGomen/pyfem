@@ -15,9 +15,9 @@ def body1d(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [])
-        obj.add_boundary_condition('0', 'x=0', DIR_1)
-        # obj.add_volume_load('0.5', '', DIR_1)
-        obj.add_surface_load('0.5', 'x = 1', DIR_1)
+        obj.add_boundary_condition('0', 'x == 0', DIR_1)
+        obj.add_volume_load('-0.5', '', DIR_1)
+        # obj.add_surface_load('0.5', 'x == 1', DIR_1)
         # obj.add_concentrated_load('0.5', 'x=1', DIR_1)
         if obj.calc():
             obj.print_result()
@@ -1056,7 +1056,7 @@ if __name__ == '__main__':
     # shell_plate3('shell_plate3')
     # plate3('plate3')
 
-    plate3_test('plate3_test')
+    # plate3_test('plate3_test')
     # plate6_test('plate6_test')
     # plate4_test('plate4_test')
 
@@ -1073,7 +1073,7 @@ if __name__ == '__main__':
 
     # tube_test('tube_test')
     # plate3d('plate3d')
-    # tank3s('tank3s')
+    tank3s('tank3s')
 
 '''
 2. Правильно отображать динамическую задачу в plot3d
