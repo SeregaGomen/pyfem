@@ -671,17 +671,15 @@ class TGLWidget(QWidget):
         glEnable(GL_NORMALIZE)
 
     def draw_fe_border(self, tri):
-        glDisable(GL_LIGHTING)
-        glEnable(GL_COLOR_MATERIAL)
-        glColor3f(0, 0, 0)
+        if self.is_light:
+            self.__make_material(0, 0, 0)
+        else:
+            glColor3f(0, 0, 0)
         glBegin(GL_LINE_LOOP)
         n = len(tri) if len(tri) <= 4 else 3
         for i in range(0, n):
             glVertex3f(tri[i][0] - self.x_c[0], tri[i][1] - self.x_c[1], tri[i][2] - self.x_c[2])
         glEnd()
-        if self.is_light:
-            glDisable(GL_COLOR_MATERIAL)
-            glEnable(GL_LIGHTING)
 
     def __paint(self):
         glClearColor(0.39, 0.39, 0.6, 0.0)
@@ -823,7 +821,7 @@ class TGLWidget(QWidget):
     # Визуализация пространственной задачи
     def __paint_3d(self):
         # Изображение поверхности
-        # self.transform_coeff = 1.0E+1
+        self.transform_coeff = 1.0E+4
         for i in range(0, len(self.be)):
             tri = []
             for j in range(len(self.be[0])):

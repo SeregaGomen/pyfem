@@ -263,6 +263,13 @@ class TMesh:
         return True if self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_2d_4_s' or self.fe_type == 'fe_2d_6_s' \
             else False
 
+    def base_be_size(self):
+        if self.fe_type == 'fe_2d_6':
+            return 2
+        elif self.fe_type == 'fe_3d_10' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_6_s':
+            return 3
+        return len(self.fe[0])
+
     def base_fe_size(self):
         if self.fe_type == 'fe_2d_6' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_6_s':
             return 3
