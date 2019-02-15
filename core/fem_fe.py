@@ -205,7 +205,7 @@ class TFE2D(TFE):
             self.K += (b.conj().transpose().dot(self._elastic_matrix()).dot(b) * self.params.thickness *
                        abs(jacobian) * self._w[i])
             if self.params.dt != 0 and self.params.alpha != 0:
-                t_load = array([self.params.alpha * self.params.dt, self.params.alpha * self.params.dt])
+                t_load = array([self.params.alpha * self.params.dt, self.params.alpha * self.params.dt, 0])
                 self.load += b.conj().transpose().dot(self._elastic_matrix()).dot(t_load) * \
                              abs(jacobian) * self._w[i]
             if not is_static:
