@@ -50,6 +50,12 @@ class TObject:
     def set_solve_method(self, solve_method):
         self.__params.solve_method = solve_method
 
+    def set_alpha(self, a):
+        self.__params.alpha = a
+
+    def set_dt(self, t):
+        self.__params.dt = t
+
     def set_eps(self, e):
         self.__params.eps = e
 

@@ -59,6 +59,8 @@ class TFEMStatic(TFEM):
                 self._global_matrix_stiffness[k, r] += fe.K[i][j]
                 if k != r:
                     self._global_matrix_stiffness[r, k] += fe.K[i][j]
+            # Учет нагрузки
+            self._global_load[k] += fe.load[i]
 
     # Вычисление сосредоточенных нагрузок
     def _prepare_concentrated_load(self, t=0):

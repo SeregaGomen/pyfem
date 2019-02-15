@@ -58,6 +58,7 @@ class TFE:
         self.K = []                 # Локальная матрица жесткости
         self.M = []                 # ... масс
         self.C = []                 # ... демпфирования
+        self.load = []              # Вектор нагрузки
         self.a = []                 # Коэффициенты функций форм
         self._xi = []               # Параметры квадратур
         self._eta = []              # ...
@@ -176,6 +177,7 @@ class TFE2D(TFE):
     # Формирование локальной матрицы жесткости
     def generate(self, is_static=True):
         self.K = zeros((self.freedom * self.size, self.freedom * self.size))
+        self.load = zeros(self.freedom * self.size)
         if not is_static:
             self.M = zeros((self.freedom * self.size, self.freedom * self.size))
             self.C = zeros((self.freedom * self.size, self.freedom * self.size))
@@ -202,6 +204,10 @@ class TFE2D(TFE):
             # Вычисление компонент локальной матрицы жесткости
             self.K += (b.conj().transpose().dot(self._elastic_matrix()).dot(b) * self.params.thickness *
                        abs(jacobian) * self._w[i])
+            if self.params.dt != 0 and self.params.alpha != 0:
+                t_load = array([self.params.alpha * self.params.dt, self.params.alpha * self.params.dt])
+                self.load += b.conj().transpose().dot(self._elastic_matrix()).dot(t_load) * \
+                             abs(jacobian) * self._w[i]
             if not is_static:
                 self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness *
                            abs(jacobian) * self._w[i] * self.params.density)

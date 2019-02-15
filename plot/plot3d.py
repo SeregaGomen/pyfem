@@ -794,6 +794,7 @@ class TGLWidget(QWidget):
 
     # Визуализация плоской задачи
     def __paint_2d(self):
+        self.transform_coeff = 1.0E+2
         # Изображение КЭ
         for i in range(0, len(self.fe)):
             # for i in range(212, 214):
@@ -821,7 +822,7 @@ class TGLWidget(QWidget):
     # Визуализация пространственной задачи
     def __paint_3d(self):
         # Изображение поверхности
-        self.transform_coeff = 1.0E+4
+        # self.transform_coeff = 1.0E+4
         for i in range(0, len(self.be)):
             tri = []
             for j in range(len(self.be[0])):

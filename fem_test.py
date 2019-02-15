@@ -884,7 +884,9 @@ def quad3(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'y == -0.5', DIR_1 | DIR_2)
-        obj.add_volume_load('-0.05', '', DIR_2)
+        obj.set_alpha(12.5*1.0E-6)
+        obj.set_dt(100)
+        # obj.add_volume_load('-0.05', '', DIR_2)
         # obj.add_surface_load('-0.05', 'y == 0.5', DIR_2)
         # obj.add_concentrated_load('-0.05', 'y = 0.5 and (x = -0.5 or x = 0.5)', DIR_2)
         if obj.calc():
@@ -1032,7 +1034,7 @@ if __name__ == '__main__':
     # cube4('cube-4')
 
     # quad4('quad-4')
-    # quad3('quad-3')
+    quad3('quad-3')
     # quad6('quad-6')
 
     # rod4('rod4')
@@ -1069,7 +1071,7 @@ if __name__ == '__main__':
 
     # shell3_test('shell3_test')
     # shell4_test('shell4_test')
-    shell6_test('shell6_test')
+    # shell6_test('shell6_test')
 
     # tube_test('tube_test')
     # plate3d('plate3d')
