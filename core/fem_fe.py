@@ -121,6 +121,7 @@ class TFE1D(TFE):
 
     def generate(self, is_static=True):
         self.K = zeros((self.freedom * self.size, self.freedom * self.size))
+        self.load = zeros(self.freedom * self.size)
         if not is_static:
             self.M = zeros((self.freedom * self.size, self.freedom * self.size))
             self.C = zeros((self.freedom * self.size, self.freedom * self.size))
@@ -139,6 +140,10 @@ class TFE1D(TFE):
             # Вычисление компонент локальной матрицы жесткости
             self.K += b.conj().transpose().dot(self._elastic_matrix()).dot(b) * \
                       self.params.thickness * abs(jacobian) * self._w[i]
+            if self.params.dt != 0 and self.params.alpha != 0:
+                t_load = array([self.params.alpha * self.params.dt])
+                self.load += b.conj().transpose().dot(self._elastic_matrix()).dot(t_load) * \
+                             abs(jacobian) * self._w[i]
             if not is_static:
                 self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness *
                            abs(jacobian) * self._w[i] * self.params.density)
@@ -294,6 +299,7 @@ class TFE3D(TFE2D):
     # Формирование локальной ыматрицы жесткости
     def generate(self, is_static=True):
         self.K = zeros((self.freedom * self.size, self.freedom * self.size))
+        self.load = zeros(self.freedom * self.size)
         if not is_static:
             self.M = zeros((self.freedom * self.size, self.freedom * self.size))
             self.C = zeros((self.freedom * self.size, self.freedom * self.size))
@@ -327,6 +333,11 @@ class TFE3D(TFE2D):
                 b[2][j * self.freedom + 2] = b[4][j * self.freedom + 1] = b[5][j * self.freedom + 0] = shape_dz[j]
                 n[0][j * self.freedom + 0] = n[1][j * self.freedom + 1] = n[2][j * self.freedom + 2] = self._shape(i)[j]
             self.K += b.conj().transpose().dot(self._elastic_matrix()).dot(b) * abs(jacobian) * self._w[i]
+            if self.params.dt != 0 and self.params.alpha != 0:
+                t_load = array([self.params.alpha * self.params.dt, self.params.alpha * self.params.dt,
+                                self.params.alpha * self.params.dt, 0, 0, 0])
+                self.load += b.conj().transpose().dot(self._elastic_matrix()).dot(t_load) * \
+                             abs(jacobian) * self._w[i]
             if not is_static:
                 self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] *
                            self.params.density)
@@ -390,6 +401,7 @@ class TFEP(TFE2D):
     # Формирование локальной матрицы жесткости
     def generate(self, is_static=True):
         self.K = zeros((self.freedom * self.size, self.freedom * self.size))
+        self.load = zeros(self.freedom * self.size)
         if not is_static:
             self.M = zeros((self.freedom * self.size, self.freedom * self.size))
             self.C = zeros((self.freedom * self.size, self.freedom * self.size))
@@ -410,17 +422,23 @@ class TFEP(TFE2D):
             shape_dx = inv_jacobi[0, 0] * shape_dxi + inv_jacobi[0, 1] * shape_deta
             shape_dy = inv_jacobi[1, 0] * shape_dxi + inv_jacobi[1, 1] * shape_deta
             # Изопараметрические матрицы градиентов и функций форм
-            b1 = zeros([3, self.freedom * self.size])
-            b2 = zeros([2, self.freedom * self.size])
+            bm = zeros([3, self.freedom * self.size])
+            bp = zeros([2, self.freedom * self.size])
             n = zeros([3, self.freedom * self.size])
             for j in range(self.size):
-                b1[0][self.freedom * j + 2] = b1[2][self.freedom * j + 1] = b2[0][self.freedom * j + 0] = shape_dx[j]
-                b1[1][self.freedom * j + 1] = b1[2][self.freedom * j + 2] = b2[1][self.freedom * j + 0] = shape_dy[j]
-                b2[0][self.freedom * j + 2] = b2[1][self.freedom * j + 1] = shape[j]
+                bm[0][self.freedom * j + 2] = bm[2][self.freedom * j + 1] = bp[0][self.freedom * j + 0] = shape_dx[j]
+                bm[1][self.freedom * j + 1] = bm[2][self.freedom * j + 2] = bp[1][self.freedom * j + 0] = shape_dy[j]
+                bp[0][self.freedom * j + 2] = bp[1][self.freedom * j + 1] = shape[j]
                 n[0][self.freedom * j + 0] = n[1][self.freedom * j + 1] = n[2][self.freedom * j + 2] = shape[j]
-            self.K += (b1.conj().transpose().dot(self._elastic_matrix()).dot(b1) * self.params.thickness ** 3 / 12.0 +
-                       b2.conj().transpose().dot(self._extra_elastic_matrix()).
-                       dot(b2) * self.params.thickness * 5.0 / 6.0) * abs(jacobian) * self._w[i]
+            self.K += (bm.conj().transpose().dot(self._elastic_matrix()).dot(bm) * self.params.thickness ** 3 / 12.0 +
+                       bp.conj().transpose().dot(self._extra_elastic_matrix()).
+                       dot(bp) * self.params.thickness * 5.0 / 6.0) * abs(jacobian) * self._w[i]
+            if self.params.dt != 0 and self.params.alpha != 0:
+                t_load = array([1, 0, 0]) * self.params.alpha * self.params.dt
+                t_load1 = array([1, 0])
+                self.load += ((bm.conj().transpose().dot(self._elastic_matrix()).dot(t_load) +
+                              bp.conj().transpose().dot(self._extra_elastic_matrix()).dot(t_load1)) *
+                              abs(jacobian) * self._w[i])
             if not is_static:
                 self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.density
                 self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.damping
@@ -485,6 +503,7 @@ class TFES(TFEP):
 
     def generate(self, is_static=True):
         self.K = zeros((self.freedom * self.size, self.freedom * self.size))
+        self.load = zeros(self.freedom * self.size)
         if not is_static:
             self.M = zeros((self.freedom * self.size, self.freedom * self.size))
             self.C = zeros((self.freedom * self.size, self.freedom * self.size))
@@ -506,23 +525,31 @@ class TFES(TFEP):
             shape_dy = inv_jacobi[1, 0] * shape_dxi + inv_jacobi[1, 1] * shape_deta
             # Матрицы градиентов и функций форм
             bm = zeros([3, self.freedom * self.size])
-            bb = zeros([3, self.freedom * self.size])
+            bp = zeros([3, self.freedom * self.size])
             bc = zeros([2, self.freedom * self.size])
             n = zeros([6, self.freedom * self.size])
             for j in range(self.size):
-                bm[0][self.freedom * j + 0] = bm[2][self.freedom * j + 1] = bb[0][self.freedom * j + 3] = \
-                    bb[2][self.freedom * j + 4] = bc[0][self.freedom * j + 2] = shape_dx[j]
-                bm[1][self.freedom * j + 1] = bm[2][self.freedom * j + 0] = bb[1][self.freedom * j + 4] = \
-                    bb[2][self.freedom * j + 3] = bc[1][self.freedom * j + 2] = shape_dy[j]
+                bm[0][self.freedom * j + 0] = bm[2][self.freedom * j + 1] = bp[0][self.freedom * j + 3] = \
+                    bp[2][self.freedom * j + 4] = bc[0][self.freedom * j + 2] = shape_dx[j]
+                bm[1][self.freedom * j + 1] = bm[2][self.freedom * j + 0] = bp[1][self.freedom * j + 4] = \
+                    bp[2][self.freedom * j + 3] = bc[1][self.freedom * j + 2] = shape_dy[j]
                 bc[0][self.freedom * j + 3] = bc[1][self.freedom * j + 4] = shape[j]
                 n[0][self.freedom * j + 0] = n[1][self.freedom * j + 1] = n[2][self.freedom * j + 2] = \
                     n[3][self.freedom * j + 3] = n[4][self.freedom * j + 4] = n[5][self.freedom * j + 5] = shape[j]
             # Вычисление компонент локальной матрицы жесткости
             self.K += (bm.conj().transpose().dot(self._elastic_matrix()).dot(bm) * self.params.thickness +
-                       bb.conj().transpose().dot(self._elastic_matrix()).dot(bb) * self.params.thickness ** 3 / 12.0 +
+                       bp.conj().transpose().dot(self._elastic_matrix()).dot(bp) * self.params.thickness ** 3 / 12.0 +
                        bc.conj().transpose().dot(self._extra_elastic_matrix()).dot(bc) * self.params.thickness *
                        5 / 6) * abs(jacobian) * self._w[i]
             # Вычисление столбца нагрузки
+            if self.params.dt != 0 and self.params.alpha != 0:
+                t_load = array([1, 1, 0]) * self.params.alpha * self.params.dt
+                t_load1 = array([1, 0, 0]) * self.params.alpha * self.params.dt
+                t_load2 = array([0, 0]) * self.params.alpha * self.params.dt
+                self.load += ((bm.conj().transpose().dot(self._elastic_matrix()).dot(t_load) +
+                               bp.conj().transpose().dot(self._elastic_matrix()).dot(t_load1) +
+                               bc.conj().transpose().dot(self._extra_elastic_matrix()).dot(t_load2)) *
+                              abs(jacobian) * self._w[i])
             if not is_static:
                 self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.density
                 self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.damping

@@ -16,7 +16,9 @@ def body1d(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [])
         obj.add_boundary_condition('0', 'x == 0', DIR_1)
-        obj.add_volume_load('-0.5', '', DIR_1)
+        obj.set_alpha(12.5*1.0E-6)
+        obj.set_dt(100)
+        # obj.add_volume_load('-0.5', '', DIR_1)
         # obj.add_surface_load('0.5', 'x == 1', DIR_1)
         # obj.add_concentrated_load('0.5', 'x=1', DIR_1)
         if obj.calc():
@@ -35,9 +37,11 @@ def cube(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
+        obj.set_alpha(12.5*1.0E-6)
+        obj.set_dt(100)
         obj.add_boundary_condition('0', 'z==0', DIR_1 | DIR_2 | DIR_3)
         # obj.add_volume_load('-0.5', '', DIR_3)
-        obj.add_surface_load('-0.5', 'z == 1', DIR_3)
+        # obj.add_surface_load('-0.5', 'z == 1', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 0 and y == 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 1 and y == 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 0 and y == 1', DIR_3)
@@ -58,8 +62,10 @@ def cube4(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
+        obj.set_alpha(12.5*1.0E-6)
+        obj.set_dt(100)
         obj.add_boundary_condition('0', 'z == 0', DIR_1 | DIR_2 | DIR_3)
-        obj.add_volume_load('-0.5', '', DIR_3)
+        # obj.add_volume_load('-0.5', '', DIR_3)
         # obj.add_surface_load('-0.5', 'z = 1', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 0 and y == 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 1 and y == 0', DIR_3)
@@ -82,7 +88,9 @@ def cube10(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z == 0', DIR_1 | DIR_2 | DIR_3)
-        obj.add_volume_load('-0.5', '', DIR_3)
+        obj.set_alpha(12.5*1.0E-6)
+        obj.set_dt(100)
+        # obj.add_volume_load('-0.5', '', DIR_3)
         # obj.add_surface_load('-0.5', 'z = 1', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 0 and y == 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 1 and y == 0', DIR_3)
@@ -549,10 +557,12 @@ def shell3_test(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_thickness(0.0369)
+        obj.set_alpha(12.5*1.0E-6)
+        obj.set_dt(100)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z == 0 or z == 4.014', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_1)
-        obj.add_surface_load('0.05*sin(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_2)
+        # obj.add_surface_load('0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_1)
+        # obj.add_surface_load('0.05*sin(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -591,8 +601,10 @@ def plate3_test(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
+        obj.set_alpha(12.5*1.0E-6)
+        obj.set_dt(100)
         obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('0.05', '', DIR_1)
+        # obj.add_surface_load('0.05', '', DIR_1)
         # obj.add_volume_load('0.05', '', DIR_1)
         if obj.calc():
             obj.print_result()
@@ -839,14 +851,19 @@ def tank3s(res_name):
 
 def plate3d(res_name):
     obj = TObject()
-    if obj.set_mesh('mesh/plate3d.trpa'):
+    # if obj.set_mesh('mesh/plate3d.trpa'):
+    if obj.set_mesh('mesh/plate3d-1.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200000000], [0.27])
-        obj.add_boundary_condition('0', 'x = -0.5 or x = 0.5 or y = -0.5 or y = 0.5', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('-50000', 'z = 0', DIR_3)
+        obj.set_alpha(12.5*1.0E-6)
+        obj.set_dt(100)
+
+
+        obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
+        # obj.add_surface_load('-50000', 'z = 0', DIR_3)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -1034,7 +1051,7 @@ if __name__ == '__main__':
     # cube4('cube-4')
 
     # quad4('quad-4')
-    quad3('quad-3')
+    # quad3('quad-3')
     # quad6('quad-6')
 
     # rod4('rod4')
@@ -1059,6 +1076,9 @@ if __name__ == '__main__':
     # plate3('plate3')
 
     # plate3_test('plate3_test')
+
+
+
     # plate6_test('plate6_test')
     # plate4_test('plate4_test')
 
@@ -1069,7 +1089,7 @@ if __name__ == '__main__':
     # shell_plate4_test('shell_plate4_test')
 
 
-    # shell3_test('shell3_test')
+    shell3_test('shell3_test')
     # shell4_test('shell4_test')
     # shell6_test('shell6_test')
 
