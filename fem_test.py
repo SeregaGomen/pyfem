@@ -593,8 +593,8 @@ def shell6_test(res_name):
 
 def plate3_test(res_name):
     obj = TObject()
-    if obj.set_mesh('mesh/plate3.trpa'):
     # if obj.set_mesh('mesh/plate3_1_0.trpa'):
+    if obj.set_mesh('mesh/plate3.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_thickness(0.01)
@@ -616,8 +616,8 @@ def plate3_test(res_name):
 
 def plate6_test(res_name):
     obj = TObject()
-    if obj.set_mesh('mesh/plate6.trpa'):
     # if obj.set_mesh('mesh/plate3_1_0.trpa'):
+    if obj.set_mesh('mesh/plate6.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_thickness(0.01)
@@ -697,8 +697,8 @@ def shell_plate4_test(res_name):
 
 def plate4_test(res_name):
     obj = TObject()
-    if obj.set_mesh('mesh/plate4.trpa'):
     # if obj.set_mesh('mesh/plate4-1.0.trpa'):
+    if obj.set_mesh('mesh/plate4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_thickness(0.01)
@@ -860,7 +860,6 @@ def plate3d(res_name):
         obj.set_elasticity([203200000000], [0.27])
         obj.set_alpha(12.5*1.0E-6)
         obj.set_dt(100)
-
 
         obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
         # obj.add_surface_load('-50000', 'z = 0', DIR_3)
@@ -1077,8 +1076,6 @@ if __name__ == '__main__':
 
     # plate3_test('plate3_test')
 
-
-
     # plate6_test('plate6_test')
     # plate4_test('plate4_test')
 
@@ -1087,7 +1084,6 @@ if __name__ == '__main__':
     # shell_plate4_test('shell-plate4')
 
     # shell_plate4_test('shell_plate4_test')
-
 
     shell3_test('shell3_test')
     # shell4_test('shell4_test')
