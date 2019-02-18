@@ -169,7 +169,7 @@ class TFEMDynamic(TFEMStatic):
         k3 = 0.5 * (theta * self.params.th)
         self._global_load = zeros(len(self.mesh.x) * self.mesh.freedom)
         # Вычисление компонент нагрузки для текущего момента времени
-        self._prepare_concentrated_load(t)
+        self._use_concentrated_load(t)
         self._prepare_surface_load(t)
         self._prepare_volume_load(t)
         self._global_load += \

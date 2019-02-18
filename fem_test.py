@@ -16,9 +16,9 @@ def body1d(res_name):
         obj.set_precision(5)
         obj.set_elasticity([203200], [])
         obj.add_boundary_condition('0', 'x == 0', DIR_1)
-        obj.set_alpha(12.5*1.0E-6)
-        obj.set_dt(100)
-        # obj.add_volume_load('-0.5', '', DIR_1)
+        # obj.set_alpha(12.5*1.0E-6)
+        # obj.set_dt(100)
+        obj.add_volume_load('-0.5', '', DIR_1)
         # obj.add_surface_load('0.5', 'x == 1', DIR_1)
         # obj.add_concentrated_load('0.5', 'x=1', DIR_1)
         if obj.calc():
@@ -37,10 +37,10 @@ def cube(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
-        obj.set_alpha(12.5*1.0E-6)
-        obj.set_dt(100)
+        # obj.set_alpha(12.5*1.0E-6)
+        # obj.set_dt(100)
         obj.add_boundary_condition('0', 'z==0', DIR_1 | DIR_2 | DIR_3)
-        # obj.add_volume_load('-0.5', '', DIR_3)
+        obj.add_volume_load('-0.5', '', DIR_3)
         # obj.add_surface_load('-0.5', 'z == 1', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 0 and y == 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 1 and y == 0', DIR_3)
@@ -62,10 +62,10 @@ def cube4(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
-        obj.set_alpha(12.5*1.0E-6)
-        obj.set_dt(100)
+        # obj.set_alpha(12.5*1.0E-6)
+        # obj.set_dt(100)
         obj.add_boundary_condition('0', 'z == 0', DIR_1 | DIR_2 | DIR_3)
-        # obj.add_volume_load('-0.5', '', DIR_3)
+        obj.add_volume_load('-0.5', '', DIR_3)
         # obj.add_surface_load('-0.5', 'z = 1', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 0 and y == 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 1 and y == 0', DIR_3)
@@ -96,26 +96,6 @@ def cube10(res_name):
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 1 and y == 0', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 0 and y == 1', DIR_3)
         # obj.add_concentrated_load('-1000', 'z == 1 and x == 1 and y == 1', DIR_3)
-        if obj.calc():
-            obj.print_result()
-            obj.save_result(res_name)
-            TPlot(res_name)
-            return True
-        return False
-
-
-def cube_test(res_name):
-    obj = TObject()
-    e = [203200]
-    m = [0.27]
-    if obj.set_mesh('mesh/cube_test.trpa'):
-        obj.set_problem_type('static')
-        obj.set_solve_method('direct')
-        obj.set_width(10)
-        obj.set_precision(5)
-        obj.set_elasticity(e, m)
-        obj.add_boundary_condition('0', 'y=0', DIR_1 | DIR_2)
-        obj.add_surface_load('-1000', 'y=1', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -155,7 +135,7 @@ def beam_dynamic(res_name):
         obj.set_elasticity([6.5E+10], [0.3])
         obj.set_density(1.0E+3)
         obj.set_time(0, 1.0, 0.25)
-        obj.add_boundary_condition('0', 'y=0', DIR_1 | DIR_2 | DIR_3)
+        obj.add_boundary_condition('0', 'y == 0', DIR_1 | DIR_2 | DIR_3)
         obj.add_volume_load('-1.0E+5*cos(t)', '', DIR_2)
         obj.add_initial_condition('0', INIT_U)
         obj.add_initial_condition('0', INIT_V)
@@ -207,7 +187,7 @@ def console4(res_name):
         obj.set_precision(5)
     #    obj.set_solve_method('iterative')
         obj.set_elasticity(e, m)
-        obj.add_boundary_condition('0', 'x=0', DIR_1 | DIR_2)
+        obj.add_boundary_condition('0', 'x == 0', DIR_1 | DIR_2)
     #    obj.add_concentrated_load('-1.0E+5', 'x=10', DIR_Y)
         obj.add_volume_load('-1.0E+5', '', DIR_2)
         if obj.calc():
@@ -264,8 +244,8 @@ def quad(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity(e, m)
-        obj.add_boundary_condition('0', 'y=0', DIR_1 | DIR_2)
-        obj.add_concentrated_load('-1.0E+5', 'y=1', DIR_2)
+        obj.add_boundary_condition('0', 'y == 0', DIR_1 | DIR_2)
+        obj.add_concentrated_load('-1.0E+5', 'y == 1', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -423,8 +403,8 @@ def console_dynamic(res_name):
         obj.set_precision(5)
     #    obj.set_solve_method('iterative')
         obj.set_elasticity(e, m)
-        obj.add_boundary_condition('0', 'x=0', DIR_1 | DIR_2)
-        obj.add_concentrated_load('-1.0E+5*cos(t)', 'x=10', DIR_1)
+        obj.add_boundary_condition('0', 'x == 0', DIR_1 | DIR_2)
+        obj.add_concentrated_load('-1.0E+5*cos(t)', 'x == 10', DIR_1)
         obj.add_initial_condition('0', INIT_U)
         obj.add_initial_condition('0', INIT_V)
         obj.add_initial_condition('0', INIT_U_T)
@@ -557,12 +537,12 @@ def shell3_test(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_thickness(0.0369)
-        obj.set_alpha(12.5*1.0E-6)
-        obj.set_dt(100)
+        # obj.set_alpha(12.5*1.0E-6)
+        # obj.set_dt(100)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z == 0 or z == 4.014', DIR_1 | DIR_2 | DIR_3)
-        # obj.add_surface_load('0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_1)
-        # obj.add_surface_load('0.05*sin(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_2)
+        obj.add_surface_load('0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_1)
+        obj.add_surface_load('0.05*sin(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -1039,45 +1019,67 @@ def tank3ds(res_name):
         return False
 
 
+def test(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/test.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.set_width(10)
+        obj.set_precision(5)
+        obj.set_elasticity([203200], [0.27])
+        obj.add_boundary_condition('0', 'x == 0', DIR_1 | DIR_2)
+        obj.add_surface_load('-0.05', 'y == 1', DIR_2)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
 if __name__ == '__main__':
-    # tank3ds('tank3ds')
+    # test('test')
 
-    # beam3d4('beam3d-4')
-    # beam2d3('beam2d-3')
+    # -------------- 1d -----------------
+    # body1d('body1d')
 
-    # cube('cube')
-    # cube10('cube-10')
-    # cube4('cube-4')
-
+    # -------------- 2d -----------------
     # quad4('quad-4')
     # quad3('quad-3')
     # quad6('quad-6')
+    # console('console')
+    console4('console4')
+    # quad('quad')
 
-    # rod4('rod4')
-    # rod10('rod10')
+    # -------------- 3d -----------------
+    # cube('cube')
+    # cube10('cube-10')
+    # cube4('cube-4')
 
     # beam('beam')
     # head3d('head3d')
     # tank3('tank3')
     # cylinder('cylinder')
-    # quad('quad')
-    # cube_test('cube_test')
-    # console_dynamic('console_dynamic')
-    # console('console')
-    # console4('console4')
-    # body1d('body1d')
+    # rod4('rod4')
+    # rod10('rod10')
+    # beam3d4('beam3d-4')
+    # beam2d3('beam2d-3')
+
+    # tube_test('tube_test')
+    # plate3d('plate3d')
+
+
+    # ------------- Plate ----------------
+    # plate3('plate3')
+    # plate3_test('plate3_test')
+    # plate6_test('plate6_test')
+    # plate4_test('plate4_test')
     # plate4('plate4')
-    # body1d('body1d')
-    # beam_dynamic('beam_dynamic')
+
+    # -------------- Shell ---------------
     # shell3('shell3')
     # shell4('shell4')
     # shell_plate3('shell_plate3')
-    # plate3('plate3')
-
-    # plate3_test('plate3_test')
-
-    # plate6_test('plate6_test')
-    # plate4_test('plate4_test')
 
     # shell_plate3_test('shell-plate3')
     # shell_plate6_test('shell-plate3')
@@ -1085,13 +1087,17 @@ if __name__ == '__main__':
 
     # shell_plate4_test('shell_plate4_test')
 
-    shell3_test('shell3_test')
+    # shell3_test('shell3_test')
     # shell4_test('shell4_test')
     # shell6_test('shell6_test')
 
-    # tube_test('tube_test')
-    # plate3d('plate3d')
+    # tank3ds('tank3ds')
     # tank3s('tank3s')
+
+    # -------------- Dynamic -----------------
+    # console_dynamic('console_dynamic')
+    # beam_dynamic('beam_dynamic')
+
 
 '''
 2. Правильно отображать динамическую задачу в plot3d

@@ -4,10 +4,7 @@
 #           Конечно-элементная модель объекта расчета
 ###################################################################
 
-import math
-from numpy import array
 from core.fem_error import TFEMException
-from numpy.linalg import det
 
 
 # Типы конечных элементов
@@ -29,13 +26,14 @@ FEType = [
 
 class TMesh:
     def __init__(self):
-        self.mesh_file = ''     # Имя файла с данными о геометрической модели
-        self.fe_type = ''       # Тип КЭ
-        self.x = []             # Координаты узлов
-        self.be = []            # Связи граничных элементов
-        self.fe = []            # Связи в КЭ
-        self.freedom = 0        # Кол-во степеней свободы
-        self.dimension = 0      # Размерность КЭ
+        self.mesh_file = ''         # Имя файла с данными о геометрической модели
+        self.fe_type = ''           # Тип КЭ
+        self.x = []                 # Координаты узлов
+        self.be = []                # Связи граничных элементов
+        self.fe = []                # Связи в КЭ
+        self.freedom = 0            # Кол-во степеней свободы
+        self.dimension = 0          # Размерность КЭ
+        self.surface_links = []     # Список граничных элементов, соответствующих каждому узлу
 
     @staticmethod
     def get_fe_data(t):
@@ -79,6 +77,7 @@ class TMesh:
         self.fe_type, size_surface, size_fe, self.freedom, self.dimension = self.get_fe_data(int(lines[0]))
         # Кол-во узлов
         n = int(lines[1])
+        self.surface_links = [[] for i in range(n)]
         # Считываем узлы
         index = 2
         for i in range(0, n):
@@ -104,10 +103,12 @@ class TMesh:
         n = int(lines[index])
         index += 1
         # Считываем ГЭ
-        for i in range(0, n):
+        for i in range(n):
             row = []
-            for j in range(0, size_surface):
-                row.append(int(lines[index].split()[j]))
+            for j in range(size_surface):
+                k = int(lines[index].split()[j])
+                row.append(k)
+                self.surface_links[k].append(i)
             self.be.append(row)
             index += 1
         if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_3_s' or \
@@ -181,80 +182,6 @@ class TMesh:
             x.append(a / self.dimension)
         return x
 
-    # Вычисление длины (площади) заданного граничного элемента
-    def square(self, index):
-        x = self.get_be_coord(index)
-        if self.dimension == 2:     # Добавление z = 0 для плоского случая
-            for i in range(0, len(x)):
-                x[i].append(0)
-        s = 0
-        if self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_6':  # ГЭ - отрезок
-            s = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
-        elif self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_3d_4' or \
-                self.fe_type == 'fe_3d_10' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_6_s':
-            # ГЭ - треугольник
-            a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2 + (x[0][2] - x[1][2]) ** 2)
-            b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2 + (x[0][2] - x[2][2]) ** 2)
-            c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2 + (x[2][2] - x[1][2]) ** 2)
-            p = 0.5 * (a + b + c)
-            s = math.sqrt(p * (p - a) * (p - b) * (p - c))
-        elif self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_3d_8' or self.fe_type == 'fe_2d_4_s':
-            # ГЭ - четырехугольник
-            a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2 + (x[0][2] - x[1][2]) ** 2)
-            b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2 + (x[0][2] - x[2][2]) ** 2)
-            c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2 + (x[2][2] - x[1][2]) ** 2)
-            p = 0.5 * (a + b + c)
-            s = math.sqrt(p * (p - a) * (p - b) * (p - c))
-            a = math.sqrt((x[0][0] - x[3][0]) ** 2 + (x[0][1] - x[3][1]) ** 2 + (x[0][2] - x[3][2]) ** 2)
-            b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2 + (x[0][2] - x[2][2]) ** 2)
-            c = math.sqrt((x[2][0] - x[3][0]) ** 2 + (x[2][1] - x[3][1]) ** 2 + (x[2][2] - x[3][2]) ** 2)
-            p = 0.5 * (a + b + c)
-            s += math.sqrt(p * (p - a) * (p - b) * (p - c))
-        return s
-
-    # Вычисление объема (длины, площади) заданного конечного элемента
-    def volume(self, index):
-        v = 0
-        x = self.get_fe_coord(index)
-        if self.fe_type == 'fe_1d_2':
-            v = math.fabs(x[0][0] - x[1][0])
-        elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_6' or self.fe_type == 'fe_2d_3_p' or \
-                self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_6_s':
-            a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
-            b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2)
-            c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2)
-            p = 0.5 * (a + b + c)
-            v = math.sqrt(p * (p - a) * (p - b) * (p - c))
-        elif self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_2d_4_s':
-            a = math.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
-            b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2)
-            c = math.sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2)
-            p = 0.5 * (a + b + c)
-            v = math.sqrt(p * (p - a) * (p - b) * (p - c))
-            a = math.sqrt((x[0][0] - x[3][0]) ** 2 + (x[0][1] - x[3][1]) ** 2)
-            b = math.sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2)
-            c = math.sqrt((x[2][0] - x[3][0]) ** 2 + (x[2][1] - x[3][1]) ** 2)
-            p = 0.5 * (a + b + c)
-            v += math.sqrt(p * (p - a) * (p - b) * (p - c))
-        elif self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_10':
-            a = (x[1][0] - x[0][0]) * (x[2][1] - x[0][1]) * (x[3][2] - x[0][2]) + (x[3][0] - x[0][0]) * \
-                (x[1][1] - x[0][1]) * (x[2][2] - x[0][2]) + (x[2][0] - x[0][0])*(x[3][1] - x[0][1]) * \
-                (x[1][2] - x[0][2])
-            b = (x[3][0] - x[0][0]) * (x[2][1] - x[0][1]) * (x[1][2] - x[0][2]) + (x[2][0] - x[0][0]) * \
-                (x[1][1] - x[0][1]) * (x[3][2] - x[0][2]) + (x[1][0] - x[0][0])*(x[3][1] - x[0][1]) * \
-                (x[2][2] - x[0][2])
-            v = math.fabs(a - b)/6.0
-        elif self.fe_type == 'fe_3d_8':
-            ref = [[0, 1, 4, 7], [4, 1, 5, 7], [1, 2, 6, 7], [1, 5, 6, 7], [1, 2, 3, 7], [0, 3, 1, 7]]
-            for i in range(0, 6):
-                m = array([
-                    [x[ref[i][1]][0] - x[ref[i][0]][0], x[ref[i][1]][1] - x[ref[i][0]][1], x[ref[i][1]][2] - x[ref[i][0]][2]],
-                    [x[ref[i][2]][0] - x[ref[i][0]][0], x[ref[i][2]][1] - x[ref[i][0]][1], x[ref[i][2]][2] - x[ref[i][0]][2]],
-                    [x[ref[i][3]][0] - x[ref[i][0]][0], x[ref[i][3]][1] - x[ref[i][0]][1], x[ref[i][3]][2] - x[ref[i][0]][2]],
-                ])
-                v += abs(det(m)) / 6
-        return v
-
     def is_plate(self):
         return True if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_4_p' \
             else False
@@ -276,3 +203,36 @@ class TMesh:
         elif self.fe_type == 'fe_3d_10':
             return 4
         return len(self.fe[0])
+
+    # Процедура поиска граничных ребер (граней) у КЭ
+    def get_surface_list(self, index):
+        s_list = []
+        if self.fe_type == 'fe_1d_2':
+            s_index = [[0], [1]]
+        elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_6':
+            s_index = [[0, 1], [1, 2], [2, 0]]
+        elif self.fe_type == 'fe_2d_4':
+            s_index = [[0, 1], [1, 2], [2, 3], [3, 0]]
+        elif self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_10':
+            s_index = [[0, 1, 3], [1, 2, 3], [2, 0, 3], [0, 1, 2]]
+        elif self.fe_type == 'fe_3d_8':
+            s_index = [[0, 1, 2, 3], [4, 5, 6, 7], [1, 2, 6, 5], [3, 0, 4, 7], [0, 1, 5, 4], [2, 3, 7, 6]]
+        else:
+            s_index = []
+        # Формируем список граничных элементов, вершинами которых являются узлы треугольника
+        be_list = []
+        for i in range(len(self.fe[index])):
+            for j in range(len(self.surface_links[self.fe[index][i]])):
+                be_list.append(set(self.be[self.surface_links[self.fe[index][i]][j]]))
+        # Проверяем, есть ли ребра (грани) КЭ в этом списке
+        for i in range(len(s_index)):
+            surface = set([])
+            for j in range(len(s_index[i])):
+                surface.add(self.fe[index][s_index[i][j]])
+            for j in range(len(be_list)):
+                if surface == be_list[j]:
+                    s_list.append(i)
+                    break
+        if (len(s_list)):
+            print(s_list)
+        return s_list
