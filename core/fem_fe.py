@@ -64,9 +64,6 @@ class TFE:
         self._eta = []              # ...
         self._psi = []              # ...
         self._w = []                # ...
-        self._v_load = []           # Объемная нагрузка, действующая на элемент
-        self._s_load = []           # Поверхностная нагрузка, действующая на элемент
-        self._s_list = []           # Список граничных (поверхностных) ребер (граней) элемента
 
     # Задание параметров
     def set_params(self, p):
@@ -76,12 +73,6 @@ class TFE:
     def set_coord(self, x):
         self.x = array(x)
         self._create()
-
-    # Задание объемной и поверхностной нагрузок, действующей на элемент, а также списка его поверхностных ребер (граней)
-    def set_load(self, s, v, l):
-        self._s_load = s
-        self._v_load = v
-        self._s_list = l
 
     # Вычисление функций форм КЭ
     @abstractmethod
@@ -153,8 +144,6 @@ class TFE1D(TFE):
                 t_load = array([self.params.alpha * self.params.dt])
                 self.load += b.conj().transpose().dot(self._elastic_matrix()).dot(t_load) * \
                              abs(jacobian) * self._w[i]
-            if self._v_load[0] != 0:
-                self.load += n.conj().transpose().dot(self._v_load) * self.params.thickness * abs(jacobian) * self._w[i]
             if not is_static:
                 self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness *
                            abs(jacobian) * self._w[i] * self.params.density)
@@ -224,8 +213,6 @@ class TFE2D(TFE):
                 t_load = array([self.params.alpha * self.params.dt, self.params.alpha * self.params.dt, 0])
                 self.load += b.conj().transpose().dot(self._elastic_matrix()).dot(t_load) * \
                              abs(jacobian) * self._w[i]
-            if self._v_load[0] != 0 or self._v_load[1] != 0:
-                self.load += n.conj().transpose().dot(self._v_load) * self.params.thickness * abs(jacobian) * self._w[i]
             if not is_static:
                 self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * self.params.thickness *
                            abs(jacobian) * self._w[i] * self.params.density)
@@ -351,8 +338,6 @@ class TFE3D(TFE2D):
                                 self.params.alpha * self.params.dt, 0, 0, 0])
                 self.load += b.conj().transpose().dot(self._elastic_matrix()).dot(t_load) * \
                              abs(jacobian) * self._w[i]
-            if self._v_load[0] != 0 or self._v_load[1] != 0 or self._v_load[2] != 0:
-                self.load += n.conj().transpose().dot(self._v_load) * self.params.thickness * abs(jacobian) * self._w[i]
             if not is_static:
                 self.M += (self._shape(i).conj().transpose().dot(self._shape(i)) * abs(jacobian) * self._w[i] *
                            self.params.density)
@@ -454,10 +439,6 @@ class TFEP(TFE2D):
                 self.load += ((bm.conj().transpose().dot(self._elastic_matrix()).dot(t_load) +
                               bp.conj().transpose().dot(self._extra_elastic_matrix()).dot(t_load1)) *
                               abs(jacobian) * self._w[i])
-            if self._v_load[0] != 0 or self._v_load[1] != 0 or self._v_load[2] != 0:
-                self.load += n.conj().transpose().dot(self._v_load) * self.params.thickness * abs(jacobian) * self._w[i]
-            if self._s_load[0] != 0 or self._s_load[1] != 0 or self._s_load[2] != 0:
-                self.load += n.conj().transpose().dot(self._s_load) * abs(jacobian) * self._w[i]
             if not is_static:
                 self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.density
                 self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.damping
@@ -569,10 +550,6 @@ class TFES(TFEP):
                                bp.conj().transpose().dot(self._elastic_matrix()).dot(t_load1) +
                                bc.conj().transpose().dot(self._extra_elastic_matrix()).dot(t_load2)) *
                               abs(jacobian) * self._w[i])
-            if self._v_load[0] != 0 or self._v_load[1] != 0 or self._v_load[2] != 0:
-                self.load += n.conj().transpose().dot(self._v_load) * self.params.thickness * abs(jacobian) * self._w[i]
-            if self._s_load[0] != 0 or self._s_load[1] != 0 or self._s_load[2] != 0:
-                self.load += n.conj().transpose().dot(self._s_load) * abs(jacobian) * self._w[i]
             if not is_static:
                 self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.density
                 self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.damping

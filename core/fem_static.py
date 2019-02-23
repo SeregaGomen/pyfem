@@ -6,6 +6,7 @@
 
 from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve, bicgstab
+from numpy import array
 from core.fem_fem import TFEM
 from core.fem_defs import DIR_1, DIR_2, DIR_3
 from core.fem_result import TResult
@@ -27,20 +28,17 @@ class TFEMStatic(TFEM):
         fe = self.create_fe()
         fe.set_params(self.params)
         # Учет состредоточенных, поверхностных и объемных нагрузок
-        # self._prepare_surface_load()
-        # self._prepare_volume_load()
+        self._use_surface_load()
+        self._use_volume_load()
+        self._use_concentrated_load()
         # Формирование глобальной матрицы жесткости
         self._progress.set_process('Assembling global stiffness matrix...', 1, len(self.mesh.fe))
         for i in range(0, len(self.mesh.fe)):
             self._progress.set_progress(i + 1)
-            v_load, s_load, s_list = self._fe_load(i)
-            fe.set_load(s_load, v_load, s_list)
             fe.set_coord(self.mesh.get_fe_coord(i))
             fe.generate()
             # Ансамблирование ЛМЖ к ГМЖ
             self.__assembly(fe, i)
-        # Учет состредоточенных нагрузок
-        self._use_concentrated_load()
         # Учет краевых условий
         self._use_boundary_condition()
         # Решение СЛАУ
@@ -93,6 +91,69 @@ class TFEMStatic(TFEM):
                     self._global_load[j * self.mesh.freedom + 1] += load
                 if self.params.bc_list[i].direct & DIR_3:
                     self._global_load[j * self.mesh.freedom + 2] += load
+
+    # Вычисление поверхностных нагрузок
+    def _use_surface_load(self, t=0):
+        if not len(self.mesh.be):
+            return
+        counter = 0
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type == 'surface':
+                counter += 1
+        if not counter:
+            return
+        self._progress.set_process('Computation of surface load...', 1, counter * len(self.mesh.be))
+        counter = 1
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type != 'surface':
+                continue
+            for j in range(0, len(self.mesh.be)):
+                self._progress.set_progress(counter)
+                counter += 1
+                if not self.__check_be(j, self.params.bc_list[i].predicate):
+                    continue
+
+                share = self.__surface_load_share(j)
+                parser = self.create_parser(self.mesh.get_be_center(j), t)
+                parser.set_code(self.params.bc_list[i].expression)
+                load = parser.run()
+                for k in range(0, len(self.mesh.be[j])):
+                    if self.params.bc_list[i].direct & DIR_1:
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += load * share[k]
+                    if self.params.bc_list[i].direct & DIR_2:
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 1] += load * share[k]
+                    if self.params.bc_list[i].direct & DIR_3:
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 2] += load * share[k]
+
+    # Вычисление объемных нагрузок
+    def _use_volume_load(self, t=0):
+        counter = 0
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type == 'volume':
+                counter += 1
+        if not counter:
+            return
+        self._progress.set_process('Computation of volume load...', 1, counter * len(self.mesh.fe))
+        counter = 1
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type != 'volume':
+                continue
+            for j in range(0, len(self.mesh.fe)):
+                self._progress.set_progress(counter)
+                counter += 1
+                if not self.__check_fe(j, self.params.bc_list[i].predicate):
+                    continue
+                share = self.__volume_load_share(j)
+                parser = self.create_parser(self.mesh.get_fe_center(j), t)
+                parser.set_code(self.params.bc_list[i].expression)
+                load = parser.run()
+                for k in range(0, len(self.mesh.fe[j])):
+                    if self.params.bc_list[i].direct & DIR_1:
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 0] += load * share[k]
+                    if self.params.bc_list[i].direct & DIR_2:
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 1] += load * share[k]
+                    if self.params.bc_list[i].direct & DIR_3:
+                        self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 2] += load * share[k]
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...)
     def _calc_results(self, t=0):
@@ -205,7 +266,7 @@ class TFEMStatic(TFEM):
     def __check_be(self, i, predicate):
         if not len(predicate):
             return True
-        for k in range(self.mesh.base_fe_size()):
+        for k in range(self.mesh.base_be_size()):
             parser = self.create_parser(self.mesh.get_coord(self.mesh.be[i][k]))
             parser.set_code(predicate)
             if not parser.run():
@@ -254,29 +315,39 @@ class TFEMStatic(TFEM):
             ret = index3[i]
         return ret
 
-    # Вычисление объемных и поверхностных нагрузок, действующих на КЭ
-    def _fe_load(self, index, t=0):
-        v_load = [0] * self.mesh.freedom
-        s_load = [0] * self.mesh.freedom
-        parser = self.create_parser(self.mesh.get_fe_center(index), t)
-        for i in range(0, len(self.params.bc_list)):
-            if self.params.bc_list[i].type == 'volume' or self.params.bc_list[i].type == 'surface':
-                if self.__check_fe(index, self.params.bc_list[i].predicate):
-                    parser.set_code(self.params.bc_list[i].expression)
-                    load = parser.run()
-                    if self.params.bc_list[i].direct & DIR_1:
-                        if self.params.bc_list[i].type == 'volume':
-                            v_load[0] += load
-                        else:
-                            s_load[0] += load
-                    if self.params.bc_list[i].direct & DIR_2:
-                        if self.params.bc_list[i].type == 'volume':
-                            v_load[1] += load
-                        else:
-                            s_load[1] += load
-                    if self.params.bc_list[i].direct & DIR_3:
-                        if self.params.bc_list[i].type == 'volume':
-                            v_load[2] += load
-                        else:
-                            s_load[2] += load
-        return v_load, s_load, self.mesh.get_surface_list(index)
+    # Определение компонент поверхностной нагрузки в зависимости от типа КЭ
+    def __surface_load_share(self, index):
+        share = array([])
+        if self.mesh.fe_type == 'fe_1d_2':
+            share = array([1]) * self.params.thickness
+        elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_4':
+            share = array([1 / 2, 1 / 2]) * self.mesh.square(index)
+        elif self.mesh.fe_type == 'fe_2d_6':
+            share = array([1 / 6, 1 / 6, 2 / 3]) * self.mesh.square(index)
+        elif self.mesh.fe_type == 'fe_3d_4' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
+            share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
+        elif self.mesh.fe_type == 'fe_3d_8' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
+            share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.square(index)
+        elif self.mesh.fe_type == 'fe_3d_10' or self.mesh.fe_type == 'fe_2d_6_p':
+            share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
+        return share
+
+    # Определение компонент объемной нагрузки в зависимости от типа КЭ
+    def __volume_load_share(self, index):
+        share = array([])
+        if self.mesh.fe_type == 'fe_1d_2':
+            share = array([1 / 2, 1 / 2]) * self.mesh.volume(index) * self.params.thickness
+        elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
+            share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * self.params.thickness
+        elif self.mesh.fe_type == 'fe_2d_4' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
+            share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.volume(index) * self.params.thickness
+        elif self.mesh.fe_type == 'fe_2d_6' or self.mesh.fe_type == 'fe_2d_6_p':
+            share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * self.params.thickness
+        elif self.mesh.fe_type == 'fe_3d_4':
+            share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.volume(index)
+        elif self.mesh.fe_type == 'fe_3d_8':
+            share = array([1 / 8, 1 / 8, 1 / 8, 1 / 8, 1 / 8, 1 / 8, 1 / 8, 1 / 8]) * self.mesh.volume(index)
+        elif self.mesh.fe_type == 'fe_3d_10':
+            share = array([-1 / 20, -1 / 20, -1 / 20, -1 / 20, 1 / 5, 1 / 5, 1 / 5, 1 / 5, 1 / 5, 1 / 5]) * \
+                    self.mesh.volume(index)
+        return share
