@@ -1091,12 +1091,12 @@ if __name__ == '__main__':
 
     # shell_plate4_test('shell_plate4_test')
 
-    shell3_test('shell3_test')
+    # shell3_test('shell3_test')
     # shell4_test('shell4_test')
     # shell6_test('shell6_test')
 
     # tank3ds('tank3ds')
-    # tank3s('tank3s')
+    tank3s('tank3s')
 
     # -------------- Dynamic -----------------
     # console_dynamic('console_dynamic')
