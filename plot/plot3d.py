@@ -471,8 +471,6 @@ class TGLWidget(QWidget):
         self.__color_table.clear()
         step = self.num_color / 6
         h = 1.0 / step
-        # if self.min_u == self.max_u:
-            # self.max_u += 1
         green = 0
         blue = 1
         red = 0.24  # Темно-фиолетовый
@@ -794,14 +792,21 @@ class TGLWidget(QWidget):
 
     # Визуализация плоской задачи
     def __paint_2d(self):
-        # self.transform_coeff = 5.0E-1
+        self.transform_coeff = 1.0E+1
         # Изображение КЭ
         for i in range(0, len(self.fe)):
             # for i in range(212, 214):
             tri = []
             for j in range(0, len(self.fe[0])):
-                tri.append([self.x[self.fe[i][j]][0] + self.transform_coeff * self.results[0].results[self.fe[i][j]],
-                            self.x[self.fe[i][j]][1] + self.transform_coeff * self.results[1].results[self.fe[i][j]], 0,
+                dx = self.transform_coeff * self.results[0].results[self.fe[i][j]] if self.fe_type != 'fe_2d_3_p' and \
+                                                                                      self.fe_type != 'fe_2d_6_p' and \
+                                                                                      self.fe_type != 'fe_2d_4_p' else 0
+                dy = self.transform_coeff * self.results[1].results[self.fe[i][j]] if self.fe_type != 'fe_2d_3_p' and \
+                                                                                      self.fe_type != 'fe_2d_6_p' and \
+                                                                                      self.fe_type != 'fe_2d_4_p' else 0
+                dz = 0 if self.fe_type != 'fe_2d_3_p' and self.fe_type != 'fe_2d_6_p' and self.fe_type != 'fe_2d_4_p' \
+                    else self.transform_coeff * self.results[2].results[self.fe[i][j]]
+                tri.append([self.x[self.fe[i][j]][0] + dx, self.x[self.fe[i][j]][1] + dy, dz,
                             self.results[self.fun_index].results[self.fe[i][j]]])
             if len(tri) == 3:
                 # Линейный треугольник
@@ -822,7 +827,7 @@ class TGLWidget(QWidget):
     # Визуализация пространственной задачи
     def __paint_3d(self):
         # Изображение поверхности
-        # self.transform_coeff = 1.0E+4
+        self.transform_coeff = 1.0E-1
         for i in range(0, len(self.be)):
             tri = []
             for j in range(len(self.be[0])):

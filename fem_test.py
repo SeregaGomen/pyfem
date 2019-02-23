@@ -538,12 +538,12 @@ def shell3_test(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_thickness(0.0369)
-        # obj.set_alpha(12.5*1.0E-6)
-        # obj.set_dt(100)
+        obj.set_alpha(12.5*1.0E-6)
+        obj.set_dt(100)
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition('0', 'z == 0 or z == 4.014', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_1)
-        obj.add_surface_load('0.05*sin(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_2)
+        # obj.add_surface_load('0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_1)
+        # obj.add_surface_load('0.05*sin(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)', DIR_2)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -582,10 +582,10 @@ def plate3_test(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
-        # obj.set_alpha(12.5*1.0E-6)
-        # obj.set_dt(100)
+        obj.set_alpha(12.5*1.0E-6)
+        obj.set_dt(100)
         obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('0.05', '', DIR_1)
+        # obj.add_surface_load('0.05', '', DIR_1)
         # obj.add_volume_load('0.05', '', DIR_1)
         if obj.calc():
             obj.print_result()
@@ -686,8 +686,10 @@ def plate4_test(res_name):
         obj.set_width(10)
         obj.set_precision(5)
         obj.set_elasticity([203200], [0.27])
+        obj.set_alpha(12.5*1.0E-6)
+        obj.set_dt(100)
         obj.add_boundary_condition('0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5', DIR_1 | DIR_2 | DIR_3)
-        obj.add_surface_load('0.05', '', DIR_1)
+        # obj.add_surface_load('0.05', '', DIR_1)
         # obj.add_volume_load('0.05', '', DIR_1)
         if obj.calc():
             obj.print_result()
@@ -755,11 +757,15 @@ def tank3s(res_name):
         obj.add_variable('R', 1.037)
         obj.set_width(10)
         obj.set_precision(5)
+
+        obj.set_alpha(12.5*1.0E-6)
+        obj.set_dt(100)
+
         obj.add_boundary_condition('0', 'y == -0.643 and abs(x**2 + z**2 -1.641**2) <= eps', DIR_1 | DIR_2 | DIR_3)
         obj.add_boundary_condition('0', 'abs(x) <= eps', DIR_1)
         obj.add_boundary_condition('0', 'abs(z) <= eps', DIR_3)
 
-        obj.add_surface_load('P*cos(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)', DIR_1)
+        """obj.add_surface_load('P*cos(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)', DIR_1)
         obj.add_surface_load('P*sin(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)', DIR_3)
 
         obj.add_surface_load('P*cos(atan2(z,x))*sin(atan2((x**2 + z**2)**0.5,(y + L)))',
@@ -820,7 +826,7 @@ def tank3s(res_name):
                              'abs(y-((x**2+z**2)**0.5)*(1.3260378897)+2.8163434974)<=eps', DIR_2)
         obj.add_surface_load('p*z*(1.3260378897**2)/(((3*x*(1.3260378897**2))**2+(y - 2.8163434974)**2 + '
                              '(3*z*(1.3260378897**2))**2)**0.5)', '(y>-1.944 and y < -0.6431) and '
-                             'abs(y - ((x**2 + z**2)**0.5)*(1.3260378897) + 2.8163434974)<=eps', DIR_3)
+                             'abs(y - ((x**2 + z**2)**0.5)*(1.3260378897) + 2.8163434974)<=eps', DIR_3)"""
 
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
@@ -832,8 +838,8 @@ def tank3s(res_name):
 
 def plate3d(res_name):
     obj = TObject()
-    # if obj.set_mesh('mesh/plate3d.trpa'):
-    if obj.set_mesh('mesh/plate3d-1.trpa'):
+    if obj.set_mesh('mesh/plate3d.trpa'):
+    # if obj.set_mesh('mesh/plate3d-1.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_width(10)
@@ -1077,7 +1083,7 @@ if __name__ == '__main__':
     # plate3('plate3')
     # plate3_test('plate3_test')
     # plate6_test('plate6_test')
-    # plate4_test('plate4_test')
+    plate4_test('plate4_test')
     # plate4('plate4')
 
     # -------------- Shell ---------------
@@ -1096,7 +1102,7 @@ if __name__ == '__main__':
     # shell6_test('shell6_test')
 
     # tank3ds('tank3ds')
-    tank3s('tank3s')
+    # tank3s('tank3s')
 
     # -------------- Dynamic -----------------
     # console_dynamic('console_dynamic')

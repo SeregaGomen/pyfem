@@ -133,10 +133,8 @@ class TFE1D(TFE):
             shape_dx = inv_jacobi * self._shape_dxi(i)
             # Матрицы градиентов и функций форм
             b = zeros((1, self.freedom * self.size))
-            n = zeros((1, self.freedom * self.size))
             for j in range(self.size):
                 b[0][self.freedom * j] = shape_dx[j]
-                n[0][self.freedom * j] = self._shape(i)[j]
             # Вычисление компонент локальной матрицы жесткости
             self.K += b.conj().transpose().dot(self._elastic_matrix()).dot(b) * \
                       self.params.thickness * abs(jacobian) * self._w[i]
@@ -201,11 +199,9 @@ class TFE2D(TFE):
             shape_dy = inv_jacobi[1, 0] * self._shape_dxi(i) + inv_jacobi[1, 1] * self._shape_deta(i)
             # Матрицы градиентов и функций форм
             b = zeros([3, self.freedom * self.size])
-            n = zeros([2, self.freedom * self.size])
             for j in range(self.size):
                 b[0][self.freedom * j + 0] = b[2][self.freedom * j + 1] = shape_dx[j]
                 b[1][self.freedom * j + 1] = b[2][self.freedom * j + 0] = shape_dy[j]
-                n[1][self.freedom * j + 1] = n[0][self.freedom * j + 0] = self._shape(i)[j]
             # Вычисление компонент локальной матрицы жесткости
             self.K += (b.conj().transpose().dot(self._elastic_matrix()).dot(b) * self.params.thickness *
                        abs(jacobian) * self._w[i])
@@ -325,13 +321,10 @@ class TFE3D(TFE2D):
                        (inv_jacobi[2, 2] * self._shape_dpsi(i))
             # Изопараметрическая матрица градиентов
             b = zeros([6, self.freedom * self.size])
-            # Матрица функций форм
-            n = zeros([3, self.freedom * self.size])
             for j in range(self.size):
                 b[0][j * self.freedom + 0] = b[3][j * self.freedom + 1] = b[5][j * self.freedom + 2] = shape_dx[j]
                 b[1][j * self.freedom + 1] = b[3][j * self.freedom + 0] = b[4][j * self.freedom + 2] = shape_dy[j]
                 b[2][j * self.freedom + 2] = b[4][j * self.freedom + 1] = b[5][j * self.freedom + 0] = shape_dz[j]
-                n[0][j * self.freedom + 0] = n[1][j * self.freedom + 1] = n[2][j * self.freedom + 2] = self._shape(i)[j]
             self.K += b.conj().transpose().dot(self._elastic_matrix()).dot(b) * abs(jacobian) * self._w[i]
             if self.params.dt != 0 and self.params.alpha != 0:
                 t_load = array([self.params.alpha * self.params.dt, self.params.alpha * self.params.dt,
@@ -424,18 +417,16 @@ class TFEP(TFE2D):
             # Изопараметрические матрицы градиентов и функций форм
             bm = zeros([3, self.freedom * self.size])
             bp = zeros([2, self.freedom * self.size])
-            n = zeros([3, self.freedom * self.size])
             for j in range(self.size):
                 bm[0][self.freedom * j + 2] = bm[2][self.freedom * j + 1] = bp[0][self.freedom * j + 0] = shape_dx[j]
                 bm[1][self.freedom * j + 1] = bm[2][self.freedom * j + 2] = bp[1][self.freedom * j + 0] = shape_dy[j]
                 bp[0][self.freedom * j + 2] = bp[1][self.freedom * j + 1] = shape[j]
-                n[0][self.freedom * j + 0] = n[1][self.freedom * j + 1] = n[2][self.freedom * j + 2] = shape[j]
             self.K += (bm.conj().transpose().dot(self._elastic_matrix()).dot(bm) * self.params.thickness ** 3 / 12.0 +
                        bp.conj().transpose().dot(self._extra_elastic_matrix()).
                        dot(bp) * self.params.thickness * 5.0 / 6.0) * abs(jacobian) * self._w[i]
             if self.params.dt != 0 and self.params.alpha != 0:
-                t_load = array([1, 0, 0]) * self.params.alpha * self.params.dt
-                t_load1 = array([1, 0])
+                t_load = array([1, 0, 0]) * self.params.alpha * self.params.dt * 0
+                t_load1 = array([1, 0]) * self.params.alpha * self.params.dt
                 self.load += ((bm.conj().transpose().dot(self._elastic_matrix()).dot(t_load) +
                               bp.conj().transpose().dot(self._extra_elastic_matrix()).dot(t_load1)) *
                               abs(jacobian) * self._w[i])
@@ -527,15 +518,12 @@ class TFES(TFEP):
             bm = zeros([3, self.freedom * self.size])
             bp = zeros([3, self.freedom * self.size])
             bc = zeros([2, self.freedom * self.size])
-            n = zeros([6, self.freedom * self.size])
             for j in range(self.size):
                 bm[0][self.freedom * j + 0] = bm[2][self.freedom * j + 1] = bp[0][self.freedom * j + 3] = \
                     bp[2][self.freedom * j + 4] = bc[0][self.freedom * j + 2] = shape_dx[j]
                 bm[1][self.freedom * j + 1] = bm[2][self.freedom * j + 0] = bp[1][self.freedom * j + 4] = \
                     bp[2][self.freedom * j + 3] = bc[1][self.freedom * j + 2] = shape_dy[j]
                 bc[0][self.freedom * j + 3] = bc[1][self.freedom * j + 4] = shape[j]
-                n[0][self.freedom * j + 0] = n[1][self.freedom * j + 1] = n[2][self.freedom * j + 2] = \
-                    n[3][self.freedom * j + 3] = n[4][self.freedom * j + 4] = n[5][self.freedom * j + 5] = shape[j]
             # Вычисление компонент локальной матрицы жесткости
             self.K += (bm.conj().transpose().dot(self._elastic_matrix()).dot(bm) * self.params.thickness +
                        bp.conj().transpose().dot(self._elastic_matrix()).dot(bp) * self.params.thickness ** 3 / 12.0 +
@@ -544,11 +532,7 @@ class TFES(TFEP):
             # Вычисление столбца нагрузки
             if self.params.dt != 0 and self.params.alpha != 0:
                 t_load = array([1, 1, 0]) * self.params.alpha * self.params.dt
-                t_load1 = array([1, 0, 0]) * self.params.alpha * self.params.dt
-                t_load2 = array([0, 0]) * self.params.alpha * self.params.dt
-                self.load += ((bm.conj().transpose().dot(self._elastic_matrix()).dot(t_load) +
-                               bp.conj().transpose().dot(self._elastic_matrix()).dot(t_load1) +
-                               bc.conj().transpose().dot(self._extra_elastic_matrix()).dot(t_load2)) *
+                self.load += ((bm.conj().transpose().dot(self._elastic_matrix()).dot(t_load)) *
                               abs(jacobian) * self._w[i])
             if not is_static:
                 self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.params.density
@@ -563,7 +547,9 @@ class TFES(TFEP):
 
         # Подготовка матрицы преобразования
         m = prepare_transform_matrix(self.size, self.freedom, self.T)
+        # Преобразование из локальных координат в глобальные
         self.K = m.conj().transpose().dot(self.K).dot(m)
+        self.load = m.conj().transpose().dot(self.load)
         if not is_static:
             self.M = m.conj().transpose().dot(self.M).dot(m)
             self.C = m.conj().transpose().dot(self.C).dot(m)
