@@ -54,7 +54,7 @@ class TFE:
         self.freedom = 0            # Количество степеней свободы
         self.e = []                 # Модуль Юнга
         self.m = []                 # Коэффициент Пуассона
-        self.thickness = 0          # Площадь сечения (для 1d) или толщина КЭ (для 2d)
+        self.thickness = 1          # Площадь сечения (для 1d) или толщина КЭ (для 2d)
         self.alpha = 0              # Параметр температурного расширения
         self.dT = 0                 # Разность температур
         self.density = 0            # Плотность материала
@@ -70,15 +70,34 @@ class TFE:
         self._psi = []              # ...
         self._w = []                # ...
 
-    # Задание параметров
-    def set_params(self, p):
-        self.e = p.e
-        self.m = p.m
-        self.thickness = p.thickness
-        self.alpha = p.alpha
-        self.dT = p.dT
-        self.density = p.density
-        self.damping = p.damping
+    # Задание параметров упругости
+    def set_elasticity(self, e, m):
+        self.e = e
+        self.m = m
+
+    # Задание толщины элемента
+    def set_thickness(self, t):
+        self.thickness = t
+
+    # Задание параметра демпфирования
+    def set_damping(self, d):
+        self.damping = d
+
+    # Задание плотности материала
+    def set_density(self, d):
+        self.density = d
+
+    def set_temperature(self, dt, a):
+        self.dT = dt
+        self.alpha = a
+
+    # Определение центра КЭ
+    def center(self):
+        x = array([0, 0, 0])
+        for i in range(len(self.x)):
+            for j in range(len(self.x[i])):
+                x[j] += self.x[i][j]
+        return x / self.size
 
     # Задание координат
     def set_coord(self, x):

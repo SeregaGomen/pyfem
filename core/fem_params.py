@@ -48,18 +48,19 @@ std_name = [
     'Wtt'   # 24 - ... по z
 ]
 
-# Типы краевых условий
-boundary_condition = [
+# Типы условий (краевых, упругих, ...)
+type_condition = [
     'initial',
     'boundary',
     'volume',
     'surface',
-    'concentrated'
+    'concentrated',
+    'thickness'
 ]
 
 
-# Описание краевого условия
-class TBoundaryCondition:
+# Описание условия
+class TCondition:
     def __init__(self):
         self.direct = 0         # Направление (номер функции, для которой задается условие): 0 - по x и т.д.
         self.expression = ''    # Функциональное выражение, определяющее значение условия (например, 10^5)
@@ -75,7 +76,6 @@ class TFEMParams:
         self.width = 12         # Формат вывода результатов
         self.precision = 5
         self.eps = 1.0E-6       # Точность вычислений
-        self.thickness = 1.0    # Толщина (пластины, оболочки, ...) или площадь сечения (одномерные задачи)
         self.density = 0        # Плотность материала
         self.damping = 0        # Параметр демпфирования
         self.t0 = 0             # Начальный момент времени расчета
@@ -84,13 +84,13 @@ class TFEMParams:
         self.e = []             # Коэффициент упругости (модуль Юнга)
         self.m = []             # Коэффициент Пуассона
         self.alpha = 0          # Коэффициент теплового расширения
-        self.dt = 0             # Разность температур
+        self.dT = 0             # Разность температур
         self.names = std_name   # Список имен функций и их аргументов
         self.bc_list = []       # Список краевых условий
         self.var_list = {}      # Список вспомогательных переменных и их значений
 
-    def __add_condition(self, t, e, p, d):
-        c = TBoundaryCondition()
+    def __add_condition(self, t, e, p, d=0):
+        c = TCondition()
         c.type = t
         c.direct = d
         c.expression = e
@@ -111,6 +111,9 @@ class TFEMParams:
 
     def add_concentrated_load(self, e, p, d):
         self.__add_condition('concentrated', e, p, d)
+
+    def add_thickness(self, e, p):
+        self.__add_condition('thickness', e, p)
 
     def add_variable(self, var, val):
         self.var_list.setdefault(var, val)

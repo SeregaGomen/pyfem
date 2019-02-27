@@ -50,26 +50,19 @@ class TObject:
     def set_solve_method(self, solve_method):
         self.__params.solve_method = solve_method
 
-    def set_alpha(self, a):
+    def set_temperature(self, t, a):
+        self.__params.dT = t
         self.__params.alpha = a
-
-    def set_dt(self, t):
-        self.__params.dt = t
 
     def set_eps(self, e):
         self.__params.eps = e
 
-    def set_thickness(self, h):
-        self.__params.thickness = h
-
-    def set_width(self, width):
+    def set_output(self, width, precision):
         self.__params.width = width
+        self.__params.precision = precision
 
     def set_names(self, names):
         self.__params.names = names
-
-    def set_precision(self, precision):
-        self.__params.precision = precision
 
     def set_elasticity(self, e, m):
         self.__params.e = e
@@ -85,6 +78,9 @@ class TObject:
 
     def set_damping(self, damping):
         self.__params.damping = damping
+
+    def add_thickness(self, e, p=''):
+        self.__params.add_thickness(e, p)
 
     def add_boundary_condition(self, e, p, d):
         self.__params.add_boundary_condition(e, p, d)

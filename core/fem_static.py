@@ -25,17 +25,17 @@ class TFEMStatic(TFEM):
         self._global_matrix_stiffness = lil_matrix((size, size))
         self._global_load = [0] * size
 
-        fe = self.create_fe()
-        fe.set_params(self.params)
         # Учет состредоточенных, поверхностных и объемных нагрузок
         self._use_surface_load()
         self._use_volume_load()
         self._use_concentrated_load()
         # Формирование глобальной матрицы жесткости
         self._progress.set_process('Assembling global stiffness matrix...', 1, len(self.mesh.fe))
-        for i in range(0, len(self.mesh.fe)):
+        fe = self.create_fe()
+        for i in range(len(self.mesh.fe)):
             self._progress.set_progress(i + 1)
-            fe.set_coord(self.mesh.get_fe_coord(i))
+            # Настройка КЭ
+            self._set_fe(fe, i)
             fe.generate()
             # Ансамблирование ЛМЖ к ГМЖ
             self.__assembly(fe, i)
@@ -175,12 +175,11 @@ class TFEMStatic(TFEM):
                     res[j][i] = self._global_load[i * self.mesh.freedom + j]
         # Вычисляем стандартные результаты по всем КЭ
         fe = self.create_fe()
-        fe.set_params(self.params)
+        fe.set_elasticity(self.params.e, self.params.m)
         self._progress.set_process('Calculation results...', 1, len(self.mesh.fe))
         for i in range(0, len(self.mesh.fe)):
             self._progress.set_progress(i + 1)
-            x = self.mesh.get_fe_coord(i)
-            fe.set_coord(x)
+            fe.set_coord(self.mesh.get_fe_coord(i))
             for j in range(0, len(self.mesh.fe[i])):
                 for k in range(0, self.mesh.freedom):
                     uvw[j * self.mesh.freedom + k] = \
@@ -351,3 +350,25 @@ class TFEMStatic(TFEM):
             share = array([-1 / 20, -1 / 20, -1 / 20, -1 / 20, 1 / 5, 1 / 5, 1 / 5, 1 / 5, 1 / 5, 1 / 5]) * \
                     self.mesh.volume(index)
         return share
+
+    # Настройка параметров КЭ
+    def _set_fe(self, fe, fe_index):
+        fe.set_coord(self.mesh.get_fe_coord(fe_index))
+        fe.set_elasticity(self.params.e, self.params.m)
+        fe.set_density(self.params.density)
+        fe.set_damping(self.params.damping)
+        fe.set_temperature(self.params.dT, self.params.alpha)
+
+        # Определение толщины КЭ
+        parser = self.create_parser(fe.center())
+        for i in range(len(self.params.bc_list)):
+            if not self.params.bc_list[i].type == 'thickness':
+                continue
+            if len(self.params.bc_list[i].predicate):
+                parser.set_code(self.params.bc_list[i].predicate)
+                if not parser.run():
+                    continue
+            parser.set_code(self.params.bc_list[i].expression)
+            thickness = parser.run()
+            fe.set_thickness(thickness)
+            break
