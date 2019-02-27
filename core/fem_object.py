@@ -82,19 +82,19 @@ class TObject:
     def add_thickness(self, e, p=''):
         self.__params.add_thickness(e, p)
 
-    def add_boundary_condition(self, e, p, d):
+    def add_boundary_condition(self, d, e, p=''):
         self.__params.add_boundary_condition(e, p, d)
 
-    def add_initial_condition(self, e, d):
+    def add_initial_condition(self, d, e):
         self.__params.add_initial_condition(e, '', d)
 
-    def add_volume_load(self, e, p, d):
+    def add_volume_load(self, d, e, p=''):
         self.__params.add_volume_load(e, p, d)
 
-    def add_concentrated_load(self, e, p, d):
+    def add_concentrated_load(self, d, e, p=''):
         self.__params.add_concentrated_load(e, p, d)
 
-    def add_surface_load(self, e, p, d):
+    def add_surface_load(self, d, e, p=''):
         self.__params.add_surface_load(e, p, d)
 
     def add_variable(self, var, val):
