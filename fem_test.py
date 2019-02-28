@@ -989,10 +989,10 @@ if __name__ == '__main__':
     # shell6_test('shell6_test')
 
     # tank3ds('tank3ds')
-    tank3s('tank3s')
+    # tank3s('tank3s')
 
     # -------------- Dynamic -----------------
-    # console_dynamic('console_dynamic')
+    console_dynamic('console_dynamic')
     # beam_dynamic('beam_dynamic')
 
 
