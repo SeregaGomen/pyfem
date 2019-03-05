@@ -351,16 +351,27 @@ class TFEMStatic(TFEM):
                     self.mesh.volume(index)
         return share
 
+    # Определение координат центра КЭ
+    def _fe_center(self, x):
+        cx = array([0., 0., 0.])
+        n = self.mesh.base_fe_size()
+        for i in range(n):
+            for j in range(len(x[i])):
+                cx[j] += x[i][j]
+        return cx / n
+
     # Настройка параметров КЭ
     def _set_fe(self, fe, fe_index):
-        fe.set_coord(self.mesh.get_fe_coord(fe_index))
+        x = self.mesh.get_fe_coord(fe_index)
+        c_x = self._fe_center(x)
+        fe.set_coord(x)
         fe.set_elasticity(self.params.e, self.params.m)
         fe.set_density(self.params.density)
         fe.set_damping(self.params.damping)
         fe.set_temperature(self.params.dT, self.params.alpha)
 
         # Определение толщины КЭ
-        parser = self.create_parser(fe.center())
+        parser = self.create_parser(c_x)
         for i in range(len(self.params.bc_list)):
             if not self.params.bc_list[i].type == 'thickness':
                 continue
@@ -369,6 +380,5 @@ class TFEMStatic(TFEM):
                 if not parser.run():
                     continue
             parser.set_code(self.params.bc_list[i].expression)
-            thickness = parser.run()
-            fe.set_thickness(thickness)
+            fe.set_thickness(parser.run())
             break

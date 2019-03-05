@@ -667,14 +667,16 @@ def tank3s(res_name):
         obj.add_variable('p', 5000)
         obj.add_variable('R', 1.037)
 
-        obj.set_temperature(100, 12.5*1.0E-6)
+        # obj.set_temperature(100, 12.5*1.0E-6)
 
+        obj.add_thickness('0.025', 'abs(y + 1.724) <= eps and (x**2+z**2 - 0.342**2 <= eps)')
         obj.add_thickness('0.0015')
+
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'y == -0.643 and abs(x**2 + z**2 -1.641**2) <= eps')
         obj.add_boundary_condition(DIR_1, '0', 'abs(x) <= eps')
         obj.add_boundary_condition(DIR_3, '0', 'abs(z) <= eps')
 
-        """obj.add_surface_load(DIR_1, 'P*cos(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)')
+        obj.add_surface_load(DIR_1, 'P*cos(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)')
         obj.add_surface_load(DIR_3, 'P*sin(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)')
 
         obj.add_surface_load(DIR_1, 'P*cos(atan2(z,x))*sin(atan2((x**2 + z**2)**0.5,(y + L)))',
@@ -735,7 +737,7 @@ def tank3s(res_name):
                              'abs(y-((x**2+z**2)**0.5)*(1.3260378897)+2.8163434974)<=eps')
         obj.add_surface_load(DIR_3, 'p*z*(1.3260378897**2)/(((3*x*(1.3260378897**2))**2+(y - 2.8163434974)**2 + '
                              '(3*z*(1.3260378897**2))**2)**0.5)', '(y>-1.944 and y < -0.6431) and '
-                             'abs(y - ((x**2 + z**2)**0.5)*(1.3260378897) + 2.8163434974)<=eps')"""
+                             'abs(y - ((x**2 + z**2)**0.5)*(1.3260378897) + 2.8163434974)<=eps')
 
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
@@ -828,7 +830,7 @@ def tri6(res_name):
         obj.set_solve_method('direct')
         obj.set_elasticity([203200], [0.27])
         obj.add_boundary_condition(DIR_1 | DIR_2, '0', 'y = 0')
-        obj.add_surface_load(DIR_2), '-0.05', 'y = 1'
+        obj.add_surface_load(DIR_2, '-0.05', 'y = 1')
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -989,10 +991,10 @@ if __name__ == '__main__':
     # shell6_test('shell6_test')
 
     # tank3ds('tank3ds')
-    # tank3s('tank3s')
+    tank3s('tank3s')
 
     # -------------- Dynamic -----------------
-    console_dynamic('console_dynamic')
+    # console_dynamic('console_dynamic')
     # beam_dynamic('beam_dynamic')
 
 

@@ -91,14 +91,6 @@ class TFE:
         self.dT = dt
         self.alpha = a
 
-    # Определение центра КЭ
-    def center(self):
-        x = array([0, 0, 0])
-        for i in range(len(self.x)):
-            for j in range(len(self.x[i])):
-                x[j] += self.x[i][j]
-        return x / self.size
-
     # Задание координат
     def set_coord(self, x):
         self.x = array(x)
