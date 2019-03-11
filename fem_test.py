@@ -882,7 +882,8 @@ def tank3ds(res_name):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
 #        obj.set_solve_method('iterative')
-        obj.set_elasticity([6.5E+10], [0.3])
+        obj.add_young_modulus('6.5E+10')
+        obj.add_poisson_ratio('0.3')
         obj.add_variable('p', 1000)         # Давление
         obj.add_variable('eps', 1.0E-2)
         obj.add_variable('l', 16.691)       # Высота обечайки
@@ -991,11 +992,11 @@ if __name__ == '__main__':
     # shell4_test('shell4_test')
     # shell6_test('shell6_test')
 
-    # tank3ds('tank3ds')
+    tank3ds('tank3ds')
     # tank3s('tank3s')
 
     # -------------- Dynamic -----------------
-    console_dynamic('console_dynamic')
+    # console_dynamic('console_dynamic')
     # beam_dynamic('beam_dynamic')
 
 
