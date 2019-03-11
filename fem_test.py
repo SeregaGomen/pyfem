@@ -32,8 +32,9 @@ def cube(res_name):
     if obj.set_mesh('mesh/cube.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
         obj.set_temperature(100, 1.25E-5)
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z == 0')
         # obj.add_volume_load(DIR_3, '-0.5')
         # obj.add_surface_load(DIR_3, '-0.5', 'z == 1')
@@ -771,7 +772,8 @@ def quad4(res_name):
     if obj.set_mesh('mesh/quad-4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_boundary_condition(DIR_1 | DIR_2, '0', 'y == -0.5')
         obj.set_temperature(100, 1.25E-5)
         # obj.add_volume_load(DIR_2, '-0.05')
@@ -944,7 +946,7 @@ if __name__ == '__main__':
     # body1d('body1d')
 
     # -------------- 2d -----------------
-    quad4('quad-4')
+    # quad4('quad-4')
     # quad3('quad-3')
     # quad6('quad-6')
     # console('console')
@@ -952,7 +954,7 @@ if __name__ == '__main__':
     # quad('quad')
 
     # -------------- 3d -----------------
-    # cube('cube')
+    cube('cube')
     # cube10('cube-10')
     # cube4('cube-4')
 

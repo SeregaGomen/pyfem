@@ -64,10 +64,6 @@ class TObject:
     def set_names(self, names):
         self.__params.names = names
 
-    def set_elasticity(self, e, m):
-        self.__params.e = e
-        self.__params.m = m
-
     def set_density(self, density):
         self.__params.density = density
 
@@ -78,6 +74,12 @@ class TObject:
 
     def set_damping(self, damping):
         self.__params.damping = damping
+
+    def add_young_modulus(self, e, p=''):
+        self.__params.add_young_modulus(e, p)
+
+    def add_poisson_ratio(self, e, p=''):
+        self.__params.add_poisson_ratio(e, p)
 
     def add_thickness(self, e, p=''):
         self.__params.add_thickness(e, p)

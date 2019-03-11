@@ -175,11 +175,10 @@ class TFEMStatic(TFEM):
                     res[j][i] = self._global_load[i * self.mesh.freedom + j]
         # Вычисляем стандартные результаты по всем КЭ
         fe = self.create_fe()
-        fe.set_elasticity(self.params.e, self.params.m)
         self._progress.set_process('Calculation results...', 1, len(self.mesh.fe))
-        for i in range(0, len(self.mesh.fe)):
+        for i in range(len(self.mesh.fe)):
             self._progress.set_progress(i + 1)
-            fe.set_coord(self.mesh.get_fe_coord(i))
+            self._set_fe(fe, i)
             for j in range(0, len(self.mesh.fe[i])):
                 for k in range(0, self.mesh.freedom):
                     uvw[j * self.mesh.freedom + k] = \
@@ -365,20 +364,27 @@ class TFEMStatic(TFEM):
         x = self.mesh.get_fe_coord(fe_index)
         c_x = self._fe_center(x)
         fe.set_coord(x)
-        fe.set_elasticity(self.params.e, self.params.m)
         fe.set_density(self.params.density)
         fe.set_damping(self.params.damping)
         fe.set_temperature(self.params.dT, self.params.alpha)
 
-        # Определение толщины КЭ
+        # Определение переменных параметров КЭ
         parser = self.create_parser(c_x)
         for i in range(len(self.params.bc_list)):
-            if not self.params.bc_list[i].type == 'thickness':
+            if self.params.bc_list[i].type == 'thickness' or self.params.bc_list[i].type == 'young_modulus' or \
+                    self.params.bc_list[i].type == 'poisson_ratio':
+                param = self.params.bc_list[i].type
+            else:
                 continue
             if len(self.params.bc_list[i].predicate):
                 parser.set_code(self.params.bc_list[i].predicate)
                 if not parser.run():
                     continue
             parser.set_code(self.params.bc_list[i].expression)
-            fe.set_thickness(parser.run())
-            break
+            val = parser.run()
+            if param == 'thickness':
+                fe.set_thickness(val)
+            elif param == 'young_modulus':
+                fe.set_young_modulus([val])
+            elif param == 'poisson_ratio':
+                fe.set_poisson_ratio([val])

@@ -55,7 +55,9 @@ type_condition = [
     'volume',
     'surface',
     'concentrated',
-    'thickness'
+    'thickness',
+    'young_modulus',
+    'poisson_ratio'
 ]
 
 
@@ -81,8 +83,6 @@ class TFEMParams:
         self.t0 = 0             # Начальный момент времени расчета
         self.t1 = 0             # Конечный момент времени расчета
         self.th = 0             # Шаг по времени
-        self.e = []             # Коэффициент упругости (модуль Юнга)
-        self.m = []             # Коэффициент Пуассона
         self.alpha = 0          # Коэффициент теплового расширения
         self.dT = 0             # Разность температур
         self.names = std_name   # Список имен функций и их аргументов
@@ -115,6 +115,12 @@ class TFEMParams:
     def add_thickness(self, e, p):
         self.__add_condition('thickness', e, p)
 
+    def add_young_modulus(self, e, p):
+        self.__add_condition('young_modulus', e, p)
+
+    def add_poisson_ratio(self, e, p):
+        self.__add_condition('poisson_ratio', e, p)
+
     def add_variable(self, var, val):
         self.var_list.setdefault(var, val)
 
@@ -123,7 +129,14 @@ class TFEMParams:
             raise TFEMException('solve_method_err')
         if self.problem_type == '':
             raise TFEMException('problem_type_err')
-        if not len(self.e) or self.e[0] == 0:
+        is_young_modulus = False
+        is_poisson_ratio = False
+        for i in range(len(self.bc_list)):
+            if self.bc_list[i].type == 'young_modulus':
+                is_young_modulus = True
+            if self.bc_list[i].type == 'poisson_ratio':
+                is_poisson_ratio = True
+        if not is_young_modulus or not is_poisson_ratio:
             raise TFEMException('elasticity_err')
         if self.problem_type == 'dynamic' and (self.t0 == self.t1 or self.th <= 0):
             raise TFEMException('time_err')

@@ -70,9 +70,12 @@ class TFE:
         self._psi = []              # ...
         self._w = []                # ...
 
-    # Задание параметров упругости
-    def set_elasticity(self, e, m):
+    # Задание модуля Юнга
+    def set_young_modulus(self, e):
         self.e = e
+
+    # Коэффициента Пуассона
+    def set_poisson_ratio(self, m):
         self.m = m
 
     # Задание толщины элемента
