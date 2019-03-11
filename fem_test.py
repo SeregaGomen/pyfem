@@ -882,8 +882,15 @@ def tank3ds(res_name):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
 #        obj.set_solve_method('iterative')
-        obj.add_young_modulus('6.5E+10')
-        obj.add_poisson_ratio('0.3')
+
+        obj.add_young_modulus('6.5E+10','z < -7')
+        obj.add_poisson_ratio('0.3','z < -7')
+        obj.add_young_modulus('8.5E+10','z >= -7')
+        obj.add_poisson_ratio('0.3','z >= -7')
+
+        #obj.add_young_modulus('6.5E+10')
+        #obj.add_poisson_ratio('0.3')
+
         obj.add_variable('p', 1000)         # Давление
         obj.add_variable('eps', 1.0E-2)
         obj.add_variable('l', 16.691)       # Высота обечайки
