@@ -42,8 +42,6 @@ class TFEMDynamic(TFEMStatic):
         self._global_matrix_damping = lil_matrix((size, size))
         self._global_load = [0] * size
         fe = self.create_fe()
-        fe.set_elasticity(self.params.e, self.params.m)
-
         # Создание глобальных матриц жесткости, масс и демпфирования
         self._progress.set_process('Assembling global stiffness, mass and damping matrix...', 1, len(self.mesh.fe))
         for i in range(0, len(self.mesh.fe)):

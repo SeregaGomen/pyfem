@@ -354,8 +354,6 @@ def head3d(res_name):
 
 def console_dynamic(res_name):
     obj = TObject()
-    e = [6.5E+10]
-    m = [0.3]
     if obj.set_mesh('mesh/console.trpa'):
         obj.set_problem_type('dynamic')
         obj.set_solve_method('direct')
@@ -363,7 +361,8 @@ def console_dynamic(res_name):
         obj.set_damping(3.383)
         obj.set_time(0, 1.0, 0.25)
     #    obj.set_solve_method('iterative')
-        obj.set_elasticity(e, m)
+        obj.add_young_modulus('6.5E+10')
+        obj.add_poisson_ratio('0.3')
         obj.add_boundary_condition(DIR_1 | DIR_2, '0', 'x == 0')
         obj.add_concentrated_load(DIR_1, '-1.0E+5*cos(t)', 'x == 10')
         obj.add_initial_condition(INIT_U, '0')
@@ -954,7 +953,7 @@ if __name__ == '__main__':
     # quad('quad')
 
     # -------------- 3d -----------------
-    cube('cube')
+    # cube('cube')
     # cube10('cube-10')
     # cube4('cube-4')
 
@@ -996,7 +995,7 @@ if __name__ == '__main__':
     # tank3s('tank3s')
 
     # -------------- Dynamic -----------------
-    # console_dynamic('console_dynamic')
+    console_dynamic('console_dynamic')
     # beam_dynamic('beam_dynamic')
 
 
