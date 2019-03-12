@@ -25,10 +25,6 @@ class TFEMStatic(TFEM):
         self._global_matrix_stiffness = lil_matrix((size, size))
         self._global_load = [0] * size
 
-        # Учет состредоточенных, поверхностных и объемных нагрузок
-        self._use_surface_load()
-        self._use_volume_load()
-        self._use_concentrated_load()
         # Формирование глобальной матрицы жесткости
         self._progress.set_process('Assembling global stiffness matrix...', 1, len(self.mesh.fe))
         fe = self.create_fe()
@@ -39,6 +35,10 @@ class TFEMStatic(TFEM):
             fe.generate()
             # Ансамблирование ЛМЖ к ГМЖ
             self.__assembly(fe, i)
+        # Учет состредоточенных, поверхностных и объемных нагрузок
+        self._use_surface_load()
+        self._use_volume_load()
+        self._use_concentrated_load()
         # Учет краевых условий
         self._use_boundary_condition()
         # Решение СЛАУ

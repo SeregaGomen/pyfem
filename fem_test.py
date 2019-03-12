@@ -885,7 +885,7 @@ def tank3ds(res_name):
 
         obj.add_young_modulus('6.5E+10','z < -7')
         obj.add_poisson_ratio('0.3','z < -7')
-        obj.add_young_modulus('8.5E+10','z >= -7')
+        obj.add_young_modulus('9.5E+10','z >= -7')
         obj.add_poisson_ratio('0.3','z >= -7')
 
         #obj.add_young_modulus('6.5E+10')

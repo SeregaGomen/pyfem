@@ -99,6 +99,11 @@ class TFE:
         self.x = array(x)
         self._create()
 
+    # Проверка корректности параметров КЭ
+    def _check(self):
+        if not len(self.e):
+            raise TFEMException('elasticity_err')
+
     # Вычисление функций форм КЭ
     @abstractmethod
     def _create(self):
@@ -145,6 +150,7 @@ class TFE1D(TFE):
         return self.e[0]
 
     def generate(self, is_static=True):
+        self._check()
         self.K = zeros((self.freedom * self.size, self.freedom * self.size))
         self.load = zeros(self.freedom * self.size)
         if not is_static:
@@ -204,6 +210,7 @@ class TFE2D(TFE):
 
     # Формирование локальной матрицы жесткости
     def generate(self, is_static=True):
+        self._check()
         self.K = zeros((self.freedom * self.size, self.freedom * self.size))
         self.load = zeros(self.freedom * self.size)
         if not is_static:
@@ -319,6 +326,7 @@ class TFE3D(TFE2D):
 
     # Формирование локальной ыматрицы жесткости
     def generate(self, is_static=True):
+        self._check()
         self.K = zeros((self.freedom * self.size, self.freedom * self.size))
         self.load = zeros(self.freedom * self.size)
         if not is_static:
@@ -418,6 +426,7 @@ class TFEP(TFE2D):
 
     # Формирование локальной матрицы жесткости
     def generate(self, is_static=True):
+        self._check()
         self.K = zeros((self.freedom * self.size, self.freedom * self.size))
         self.load = zeros(self.freedom * self.size)
         if not is_static:
@@ -518,6 +527,7 @@ class TFES(TFEP):
         return res
 
     def generate(self, is_static=True):
+        self._check()
         self.K = zeros((self.freedom * self.size, self.freedom * self.size))
         self.load = zeros(self.freedom * self.size)
         if not is_static:
