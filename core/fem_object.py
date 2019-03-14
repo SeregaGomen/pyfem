@@ -50,10 +50,6 @@ class TObject:
     def set_solve_method(self, solve_method):
         self.__params.solve_method = solve_method
 
-    def set_temperature(self, t, a):
-        self.__params.dT = t
-        self.__params.alpha = a
-
     def set_eps(self, e):
         self.__params.eps = e
 
@@ -74,6 +70,12 @@ class TObject:
 
     def set_damping(self, damping):
         self.__params.damping = damping
+
+    def add_temperature(self, e, p=''):
+        self.__params.add_temperature(e, p)
+
+    def add_alpha(self, e, p=''):
+        self.__params.add_alpha(e, p)
 
     def add_young_modulus(self, e, p=''):
         self.__params.add_young_modulus(e, p)

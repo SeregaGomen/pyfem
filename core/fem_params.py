@@ -57,7 +57,9 @@ type_condition = [
     'concentrated',
     'thickness',
     'young_modulus',
-    'poisson_ratio'
+    'poisson_ratio',
+    'temperature',
+    'alpha'
 ]
 
 
@@ -120,6 +122,12 @@ class TFEMParams:
 
     def add_poisson_ratio(self, e, p):
         self.__add_condition('poisson_ratio', e, p)
+
+    def add_temperature(self, e, p):
+        self.__add_condition('temperature', e, p)
+
+    def add_alpha(self, e, p):
+        self.__add_condition('alpha', e, p)
 
     def add_variable(self, var, val):
         self.var_list.setdefault(var, val)

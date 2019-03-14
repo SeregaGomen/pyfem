@@ -668,7 +668,8 @@ def tank3s(res_name):
 
         obj.add_young_modulus('6.5E+10')
         obj.add_poisson_ratio('0.3')
-        obj.set_temperature(100, 1.25E-5)
+        obj.add_temperature('100')
+        obj.add_alpha('1.25E-5')
 
         obj.add_thickness('0.025', 'abs(y + 1.724) <= eps and (x**2+z**2 - 0.342**2 <= eps)')
         obj.add_thickness('0.0015')

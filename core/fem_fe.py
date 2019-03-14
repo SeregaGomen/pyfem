@@ -90,8 +90,12 @@ class TFE:
     def set_density(self, d):
         self.density = d
 
-    def set_temperature(self, dt, a):
+    # Задание разности температур
+    def set_temperature(self, dt):
         self.dT = dt
+
+    # Задание коэффициента теплового расширения
+    def set_alpha(self, a):
         self.alpha = a
 
     # Задание координат
