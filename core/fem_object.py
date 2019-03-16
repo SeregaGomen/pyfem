@@ -60,16 +60,16 @@ class TObject:
     def set_names(self, names):
         self.__params.names = names
 
-    def set_density(self, density):
-        self.__params.density = density
-
     def set_time(self, t0, t1, th):
         self.__params.t0 = t0
         self.__params.t1 = t1
         self.__params.th = th
 
-    def set_damping(self, damping):
-        self.__params.damping = damping
+    def add_density(self, e, p=''):
+        self.__params.add_density(e, p)
+
+    def add_damping(self, e, p=''):
+        self.__params.add_damping(e, p)
 
     def add_temperature(self, e, p=''):
         self.__params.add_temperature(e, p)

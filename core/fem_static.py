@@ -10,6 +10,7 @@ from numpy import array
 from core.fem_fem import TFEM
 from core.fem_defs import DIR_1, DIR_2, DIR_3
 from core.fem_result import TResult
+from core.fem_progress import TThreadProgress
 
 
 class TFEMStatic(TFEM):
@@ -241,13 +242,18 @@ class TFEMStatic(TFEM):
 
     # Прямое решение СЛАУ
     def _solve_direct(self):
-        self._progress.set_process('Solving of equation system...', 1, 1)
+        # self._progress.set_process('Solving of equation system...', 1, 1)
+        progress = TThreadProgress('Solving of equation system...')
+        progress.start()
         self._global_matrix_stiffness = self._global_matrix_stiffness.tocsr()
         try:
             self._global_load = spsolve(self._global_matrix_stiffness, self._global_load)
+            progress.stop()
         except ValueError:
+            progress.stop()
             return False
         except RuntimeError:
+            progress.stop()
             return False
         self._progress.set_progress(1)
         return True

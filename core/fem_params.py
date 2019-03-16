@@ -59,7 +59,9 @@ type_condition = [
     'young_modulus',
     'poisson_ratio',
     'temperature',
-    'alpha'
+    'alpha',
+    'density',
+    'damping'
 ]
 
 
@@ -80,13 +82,9 @@ class TFEMParams:
         self.width = 12         # Формат вывода результатов
         self.precision = 5
         self.eps = 1.0E-6       # Точность вычислений
-        self.density = 0        # Плотность материала
-        self.damping = 0        # Параметр демпфирования
         self.t0 = 0             # Начальный момент времени расчета
         self.t1 = 0             # Конечный момент времени расчета
         self.th = 0             # Шаг по времени
-        self.alpha = 0          # Коэффициент теплового расширения
-        self.dT = 0             # Разность температур
         self.names = std_name   # Список имен функций и их аргументов
         self.bc_list = []       # Список краевых условий
         self.var_list = {}      # Список вспомогательных переменных и их значений
@@ -113,6 +111,12 @@ class TFEMParams:
 
     def add_concentrated_load(self, e, p, d):
         self.__add_condition('concentrated', e, p, d)
+
+    def add_density(self, e, p):
+        self.__add_condition('density', e, p)
+
+    def add_damping(self, e, p):
+        self.__add_condition('damping', e, p)
 
     def add_thickness(self, e, p):
         self.__add_condition('thickness', e, p)
