@@ -15,8 +15,9 @@ from core.fem_result import TResult
 class TFEMStatic(TFEM):
     def __init__(self):
         super().__init__()
-        self._global_matrix_stiffness = lil_matrix((0, 0))   # Глобальная матрица жесткости (ГМЖ)
-        self._global_load = []                               # Глобальный вектор нагрузок (правая часть)
+        self._global_matrix_stiffness = lil_matrix((0, 0))  # Глобальная матрица жесткости (ГМЖ)
+        self._global_load = []                              # Глобальный вектор нагрузок (правая часть)
+        self._fe_thickness = []                             # Толщина каждого КЭ
 
     # Расчет статической задачи методом конечных элементов
     def _calc_problem(self):
@@ -317,7 +318,7 @@ class TFEMStatic(TFEM):
     def __surface_load_share(self, index):
         share = array([])
         if self.mesh.fe_type == 'fe_1d_2':
-            share = array([1]) * self.params.thickness
+            share = array([1]) * 1 if not len(self._fe_thickness) else self._fe_thickness[index]
         elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_4':
             share = array([1 / 2, 1 / 2]) * self.mesh.square(index)
         elif self.mesh.fe_type == 'fe_2d_6':
@@ -332,15 +333,16 @@ class TFEMStatic(TFEM):
 
     # Определение компонент объемной нагрузки в зависимости от типа КЭ
     def __volume_load_share(self, index):
+        thickness = 1 if not len(self._fe_thickness) else self._fe_thickness[index]
         share = array([])
         if self.mesh.fe_type == 'fe_1d_2':
-            share = array([1 / 2, 1 / 2]) * self.mesh.volume(index) * self.params.thickness
+            share = array([1 / 2, 1 / 2]) * self.mesh.volume(index) * thickness
         elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
-            share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * self.params.thickness
+            share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * thickness
         elif self.mesh.fe_type == 'fe_2d_4' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
-            share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.volume(index) * self.params.thickness
+            share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.volume(index) * thickness
         elif self.mesh.fe_type == 'fe_2d_6' or self.mesh.fe_type == 'fe_2d_6_p' or self.mesh.fe_type == 'fe_2d_6_s':
-            share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * self.params.thickness
+            share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * thickness
         elif self.mesh.fe_type == 'fe_3d_4':
             share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.volume(index)
         elif self.mesh.fe_type == 'fe_3d_8':
@@ -384,6 +386,7 @@ class TFEMStatic(TFEM):
             val = parser.run()
             if param == 'thickness':
                 fe.set_thickness(val)
+                self._fe_thickness.append(val)
             elif param == 'young_modulus':
                 fe.set_young_modulus([val])
             elif param == 'poisson_ratio':

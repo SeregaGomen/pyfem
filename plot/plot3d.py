@@ -792,7 +792,7 @@ class TGLWidget(QWidget):
 
     # Визуализация плоской задачи
     def __paint_2d(self):
-        self.transform_coeff = 1.0E+2
+        # self.transform_coeff = 1.0E+2
         # Изображение КЭ
         for i in range(0, len(self.fe)):
             # for i in range(212, 214):

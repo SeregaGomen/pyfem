@@ -12,11 +12,12 @@ def body1d(res_name):
     if obj.set_mesh('mesh/body1d.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0')
         obj.add_boundary_condition(DIR_1, '0', 'x == 0')
-        # obj.set_alpha(1.25E-5)
-        # obj.set_dt(100)
-        obj.add_volume_load(DIR_1, '-0.5')
+        obj.add_temperature('100')
+        obj.add_alpha('1.25E-5')
+        # obj.add_volume_load(DIR_1, '-0.5')
         # obj.add_surface_load(DIR_1, '0.5', 'x == 1')
         # obj.add_concentrated_load(DIR_1, '0.5', 'x == 1')
         if obj.calc():
@@ -32,11 +33,13 @@ def cube(res_name):
     if obj.set_mesh('mesh/cube.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_temperature(100, 1.25E-5)
+
+        # obj.add_temperature('100')
+        # obj.add_alpha('1.25E-5')
         obj.add_young_modulus('203200')
         obj.add_poisson_ratio('0.27')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z == 0')
-        # obj.add_volume_load(DIR_3, '-0.5')
+        obj.add_volume_load(DIR_3, '-0.5')
         # obj.add_surface_load(DIR_3, '-0.5', 'z == 1')
         # obj.add_concentrated_load(DIR_3, '-1000', 'z == 1 and x == 0 and y == 0')
         # obj.add_concentrated_load(DIR_3, '-1000', 'z == 1 and x == 1 and y == 0')
@@ -55,10 +58,12 @@ def cube4(res_name):
     if obj.set_mesh('mesh/cube-4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
-        obj.set_temperature(100, 1.25E-5)
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
+        # obj.add_temperature('100')
+        # obj.add_alpha('1.25E-5')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z == 0')
-        # obj.add_volume_load(DIR_3, '-0.5')
+        obj.add_volume_load(DIR_3, '-0.5')
         # obj.add_surface_load(DIR_3, '-0.5', 'z == 1')
         if obj.calc():
             obj.print_result()
@@ -73,10 +78,12 @@ def cube10(res_name):
     if obj.set_mesh('mesh/cube-10.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z == 0')
-        obj.set_temperature(100, 1.25E-5)
-        # bj.add_volume_load(DIR_3, '-0.5')
+        # obj.add_temperature('100')
+        # obj.add_alpha('1.25E-5')
+        obj.add_volume_load(DIR_3, '-0.5')
         # obj.add_surface_load(DIR_3, '-0.5', 'z == 1')
         if obj.calc():
             obj.print_result()
@@ -88,12 +95,11 @@ def cube10(res_name):
 
 def beam(res_name):
     obj = TObject()
-    e = [6.5E+10]
-    m = [0.3]
     if obj.set_mesh('mesh/beam.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('iterative')
-        obj.set_elasticity(e, m)
+        obj.add_young_modulus('6.5E+10')
+        obj.add_poisson_ratio('0.3')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'y=0')
         obj.add_volume_load(DIR_2, '-1.0E+5')
         # obj.add_surface_load(DIR_2, '-1.0E+5', 'y=4')
@@ -110,7 +116,8 @@ def beam_dynamic(res_name):
     if obj.set_mesh('mesh/beam.trpa'):
         obj.set_problem_type('dynamic')
         obj.set_solve_method('iterative')
-        obj.set_elasticity([6.5E+10], [0.3])
+        obj.add_young_modulus('6.5E+10')
+        obj.add_poisson_ratio('0.3')
         obj.set_density(1.0E+3)
         obj.set_time(0, 1.0, 0.25)
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'y == 0')
@@ -134,13 +141,12 @@ def beam_dynamic(res_name):
 
 def console(res_name):
     obj = TObject()
-    e = [6.5E+10]
-    m = [0.3]
     if obj.set_mesh('mesh/console.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
     #    obj.set_solve_method('iterative')
-        obj.set_elasticity(e, m)
+        obj.add_young_modulus('6.5E+10')
+        obj.add_poisson_ratio('0.3')
         obj.add_boundary_condition(DIR_1 | DIR_2, '0', 'x == 0')
         # obj.add_concentrated_load(DIR_2, '-1.0E+6', 'x=10 and y=-0.25')
         obj.add_surface_load(DIR_2, '-1.0E+6', 'y == 0.25')
@@ -154,13 +160,12 @@ def console(res_name):
 
 def console4(res_name):
     obj = TObject()
-    e = [6.5E+10]
-    m = [0.3]
     if obj.set_mesh('mesh/console4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
     #    obj.set_solve_method('iterative')
-        obj.set_elasticity(e, m)
+        obj.add_young_modulus('6.5E+10')
+        obj.add_poisson_ratio('0.3')
         obj.add_boundary_condition(DIR_1 | DIR_2, '0', 'x == 0')
     #    obj.add_concentrated_load(DIR_2, '-1.0E+5', 'x=10')
         # obj.add_volume_load(DIR_2, '-1.0E+5')
@@ -178,7 +183,8 @@ def rod4(res_name):
     if obj.set_mesh('mesh/rod-4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.3])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z = 0')
         obj.add_volume_load(DIR_3, '-0.0765')
         if obj.calc():
@@ -194,7 +200,8 @@ def rod10(res_name):
     if obj.set_mesh('mesh/rod-10.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.3])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z = 0')
         obj.add_volume_load(DIR_3, '-0.0765')
         if obj.calc():
@@ -207,12 +214,11 @@ def rod10(res_name):
 
 def quad(res_name):
     obj = TObject()
-    e = [6.5E+10]
-    m = [0.3]
     if obj.set_mesh('mesh/quad.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity(e, m)
+        obj.add_young_modulus('6.5E+10')
+        obj.add_poisson_ratio('0.3')
         obj.add_boundary_condition(DIR_1 | DIR_2, '0', 'y == 0')
         obj.add_concentrated_load(DIR_2, '-1.0E+5', 'y == 1')
         if obj.calc():
@@ -225,13 +231,12 @@ def quad(res_name):
 
 def cylinder(res_name):
     obj = TObject()
-    e = [6.5E+10]
-    m = [0.3]
     if obj.set_mesh('mesh/cyl.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
     #    obj.set_solve_method('iterative')
-        obj.set_elasticity(e, m)
+        obj.add_young_modulus('6.5E+10')
+        obj.add_poisson_ratio('0.3')
         obj.add_variable('eps', 1.0E-6)
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x=0')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x=2')
@@ -250,12 +255,11 @@ def cylinder(res_name):
 
 def tank3(res_name):
     obj = TObject()
-    e = [6.5E+10]
-    m = [0.3]
     if obj.set_mesh('mesh/tank3.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity(e, m)
+        obj.add_young_modulus('6.5E+10')
+        obj.add_poisson_ratio('0.3')
         obj.add_variable('eps', 1.0E-6)
         obj.add_variable('min', 0.0015)
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'y == -0.598 and abs(x**2 + z**2 - 1.6635**2) <= eps')
@@ -332,16 +336,15 @@ def tank3(res_name):
 
 def head3d(res_name):
     obj = TObject()
-    e = [1000]
-    m = [0.3]
     if obj.set_mesh('mesh/head3d.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
     #    obj.set_solve_method('iterative')
-        obj.set_elasticity(e, m)
+        obj.add_young_modulus('1000')
+        obj.add_poisson_ratio('0.3')
         obj.add_variable('eps', 1.0E-6)
-        obj.add_boundary_condition(DIR_1 | DIR_3, '0', 'y=0')
-        obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'y=991.3')
+        obj.add_boundary_condition(DIR_1 | DIR_3, '0', 'y == 0')
+        obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'y == 991.3')
         obj.add_surface_load(DIR_1, '-1*cos(atan2(z,x))', 'abs(x**2 + z**2 - 210**2) <=0.001')
         obj.add_surface_load(DIR_3, '-1*sin(atan2(z,x))', 'abs(x**2 + z**2 - 210**2) <= 0.001')
         if obj.calc():
@@ -384,7 +387,8 @@ def plate4(res_name):
     if obj.set_mesh('mesh/plate4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([2E+6], [0.3])
+        obj.add_young_modulus('2E+6')
+        obj.add_poisson_ratio('0.3')
 #        obj.set_names(['W', 'Tx', 'Ty', 'Exx', 'Eyy', 'Exy', 'Sxx', 'Syy', 'Sxy'])
         obj.add_thickness('0.01')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1')
@@ -402,7 +406,8 @@ def plate3(res_name):
     if obj.set_mesh('mesh/plate3_1.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([2E+6], [0.3])
+        obj.add_young_modulus('2E+6')
+        obj.add_poisson_ratio('0.3')
         obj.add_thickness('0.01')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1')
 #        obj.add_boundary_condition(DIR_1, '0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1')
@@ -421,7 +426,8 @@ def shell3(res_name):
     if obj.set_mesh('mesh/shell3.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([2E+6], [0.3])
+        obj.add_young_modulus('2E+6')
+        obj.add_poisson_ratio('0.3')
         obj.add_thickness('0.01')
         obj.add_boundary_condition(DIR_2, '0', 'y = 0')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z = 0')
@@ -439,7 +445,8 @@ def shell4(res_name):
     if obj.set_mesh('mesh/shell4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([2E+6], [0.3])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_thickness('0.01')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1')
         obj.add_surface_load(DIR_1, '-2000')
@@ -456,7 +463,8 @@ def shell_plate3(res_name):
     if obj.set_mesh('mesh/shell_plate3.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([2E+6], [0.3])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_thickness('0.01')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1')
 #        obj.add_concentrated_load(DIR_1, '-1.0E+5', 'x = 0 and y = 0')
@@ -476,8 +484,10 @@ def shell3_test(res_name):
     if obj.set_mesh('mesh/shell-tube-3.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_temperature(100, 1.25E-5)
-        obj.set_elasticity([203200], [0.27])
+        obj.add_temperature('100')
+        obj.add_alpha('1.25E-5')
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_thickness('0.0369')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z == 0 or z == 4.014')
         # obj.add_surface_load(DIR_1. '0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
@@ -495,7 +505,8 @@ def shell6_test(res_name):
     if obj.set_mesh('mesh/shell-tube6-1.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_thickness('0.0369')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z == 0 or z == 4.014')
         obj.add_surface_load(DIR_1, '0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
@@ -515,7 +526,8 @@ def plate3_test(res_name):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.set_output(20, 10)
-        obj.set_elasticity([203200], [0.27])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         # obj.set_alpha(1.25E-5)
         # obj.set_dt(100)
         obj.add_thickness('0.01')
@@ -535,7 +547,8 @@ def plate6_test(res_name):
     if obj.set_mesh('mesh/plate6.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_thickness('0.01')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5')
         obj.add_surface_load(DIR_1, '0.05')
@@ -552,7 +565,8 @@ def shell_plate3_test(res_name):
     if obj.set_mesh('mesh/shell-plate3.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_thickness('0.01')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5')
         obj.add_surface_load(DIR_3, '0.05')
@@ -569,7 +583,8 @@ def shell_plate6_test(res_name):
     if obj.set_mesh('mesh/shell-plate6.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_thickness('0.01')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5')
         obj.add_surface_load(DIR_3, '0.05')
@@ -586,7 +601,8 @@ def shell_plate4_test(res_name):
     if obj.set_mesh('mesh/shell-plate4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_thickness('0.01')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5')
         obj.add_surface_load(DIR_3, '0.05')
@@ -604,8 +620,10 @@ def plate4_test(res_name):
     if obj.set_mesh('mesh/plate4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
-        obj.set_temperature(100, 1.25E-5)
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
+        # obj.add_temperature('100')
+        # obj.add_alpha('1.25E-5')
         obj.add_thickness('0.01')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5')
         # obj.add_surface_load(DIR_1, '0.05')
@@ -623,7 +641,8 @@ def shell4_test(res_name):
     if obj.set_mesh('mesh/shell4_1_0.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_thickness('0.0369')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z == 0 or z == 4.014')
         obj.add_surface_load(DIR_1, '0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
@@ -641,7 +660,8 @@ def tube_test(res_name):
     if obj.set_mesh('mesh/tube-solid-test.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z == 0 or z == 4.014')
         obj.add_surface_load(DIR_1, '0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
         obj.add_surface_load(DIR_2, '0.05*sin(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
@@ -668,8 +688,8 @@ def tank3s(res_name):
 
         obj.add_young_modulus('6.5E+10')
         obj.add_poisson_ratio('0.3')
-        obj.add_temperature('100')
-        obj.add_alpha('1.25E-5')
+        # obj.add_temperature('100')
+        # obj.add_alpha('1.25E-5')
 
         obj.add_thickness('0.025', 'abs(y + 1.724) <= eps and (x**2+z**2 - 0.342**2 <= eps)')
         obj.add_thickness('0.0015')
@@ -677,7 +697,7 @@ def tank3s(res_name):
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'y == -0.643 and abs(x**2 + z**2 -1.641**2) <= eps')
         obj.add_boundary_condition(DIR_1, '0', 'abs(x) <= eps')
         obj.add_boundary_condition(DIR_3, '0', 'abs(z) <= eps')
-        """
+
         obj.add_surface_load(DIR_1, 'P*cos(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)')
         obj.add_surface_load(DIR_3, 'P*sin(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)')
 
@@ -740,7 +760,7 @@ def tank3s(res_name):
         obj.add_surface_load(DIR_3, 'p*z*(1.3260378897**2)/(((3*x*(1.3260378897**2))**2+(y - 2.8163434974)**2 + '
                              '(3*z*(1.3260378897**2))**2)**0.5)', '(y>-1.944 and y < -0.6431) and '
                              'abs(y - ((x**2 + z**2)**0.5)*(1.3260378897) + 2.8163434974)<=eps')
-        """
+
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
             obj.save_result(res_name)
@@ -751,15 +771,17 @@ def tank3s(res_name):
 
 def plate3d(res_name):
     obj = TObject()
-    # if obj.set_mesh('mesh/plate3d-1.trpa'):
-    if obj.set_mesh('mesh/plate3d.trpa'):
+    # if obj.set_mesh('mesh/plate3d.trpa'):
+    if obj.set_mesh('mesh/plate3d-1.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200000000], [0.27])
-        obj.set_temperature(100, 1.25E-5)
+        obj.add_young_modulus('203200000000')
+        obj.add_poisson_ratio('0.27')
+        obj.add_temperature('100')
+        obj.add_alpha('1.25E-5')
 
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5')
-        # obj.add_surface_load(DIR_3, '-50000', 'z = 0')
+        # obj.add_surface_load(DIR_3, '-50000', 'z == 0')
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -776,8 +798,9 @@ def quad4(res_name):
         obj.add_young_modulus('203200')
         obj.add_poisson_ratio('0.27')
         obj.add_boundary_condition(DIR_1 | DIR_2, '0', 'y == -0.5')
-        obj.set_temperature(100, 1.25E-5)
-        # obj.add_volume_load(DIR_2, '-0.05')
+        # obj.add_temperature('100')
+        # obj.add_alpha('1.25E-5')
+        obj.add_volume_load(DIR_2, '-0.05')
         # obj.add_surface_load(DIR_2, '-0.05', 'y == 0.5')
         # obj.add_concentrated_load(DIR_2, '-0.05', 'y = 0.5 and (x = -0.5 or x = 0.5)')
         if obj.calc():
@@ -793,10 +816,12 @@ def quad3(res_name):
     if obj.set_mesh('mesh/quad-3.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
         obj.add_boundary_condition(DIR_1 | DIR_2, '0', 'y == -0.5')
-        obj.set_temperature(100, 1.25E-5)
-        # obj.add_volume_load(DIR_2, '-0.05')
+        # obj.add_temperature('100')
+        # obj.add_alpha('1.25E-5')
+        obj.add_volume_load(DIR_2, '-0.05')
         # obj.add_surface_load(DIR_2, '-0.05', 'y == 0.5')
         # obj.add_concentrated_load(DIR_2, '-0.05', 'y = 0.5 and (x = -0.5 or x = 0.5)')
         if obj.calc():
@@ -812,28 +837,14 @@ def quad6(res_name):
     if obj.set_mesh('mesh/quad-6.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
-        obj.set_temperature(100, 1.25E-5)
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
+        # obj.add_temperature('100')
+        # obj.add_alpha('1.25E-5')
         obj.add_boundary_condition(DIR_1 | DIR_2, '0', 'y == -0.5')
-        # obj.add_volume_load(DIR_2, '-0.05')
+        obj.add_volume_load(DIR_2, '-0.05')
         # obj.add_surface_load(DIR_2, '-0.05', 'y == 0.5')
         # obj.add_concentrated_load(DIR_2, '-0.05', 'y = 0.5 and (x = -0.5 or x = 0.5)')
-        if obj.calc():
-            obj.print_result()
-            obj.save_result(res_name)
-            TPlot(res_name)
-            return True
-        return False
-
-
-def tri6(res_name):
-    obj = TObject()
-    if obj.set_mesh('mesh/tri-6.trpa'):
-        obj.set_problem_type('static')
-        obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
-        obj.add_boundary_condition(DIR_1 | DIR_2, '0', 'y = 0')
-        obj.add_surface_load(DIR_2, '-0.05', 'y = 1')
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -847,11 +858,12 @@ def beam2d3(res_name):
     if obj.set_mesh('mesh/beam2d-3.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.set_elasticity([203200], [0.27])
-        obj.add_boundary_condition(DIR_2, '0', '(x = -5 and y = -0.25) or (x = 5 and y = -0.25)')
-        # obj.add_boundary_condition(DIR_1 | DIR_2, '0', '(x = -5) or (x = 5)')
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
+        obj.add_boundary_condition(DIR_2, '0', '(x == -5 and y == -0.25) or (x == 5 and y == -0.25)')
+        # obj.add_boundary_condition(DIR_1 | DIR_2, '0', '(x == -5) or (x == 5)')
         obj.add_thickness('0.01')
-        obj.add_surface_load(DIR_2, '-1', 'y = 0.25')
+        obj.add_surface_load(DIR_2, '-1', 'y == 0.25')
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -886,13 +898,13 @@ def tank3ds(res_name):
         obj.set_solve_method('direct')
 #        obj.set_solve_method('iterative')
 
-        obj.add_young_modulus('6.5E+10','z < -7')
-        obj.add_poisson_ratio('0.3','z < -7')
-        obj.add_young_modulus('9.5E+10','z >= -7')
-        obj.add_poisson_ratio('0.3','z >= -7')
+        obj.add_young_modulus('6.5E+10', 'z < -7')
+        obj.add_poisson_ratio('0.3', 'z < -7')
+        obj.add_young_modulus('9.5E+10', 'z >= -7')
+        obj.add_poisson_ratio('0.3', 'z >= -7')
 
-        #obj.add_young_modulus('6.5E+10')
-        #obj.add_poisson_ratio('0.3')
+        # obj.add_young_modulus('6.5E+10')
+        # obj.add_poisson_ratio('0.3')
 
         obj.add_variable('p', 1000)         # Давление
         obj.add_variable('eps', 1.0E-2)
@@ -951,7 +963,7 @@ if __name__ == '__main__':
     # cube4('cube-4')
 
     # beam('beam')
-    # head3d('head3d')
+    head3d('head3d')
     # tank3('tank3')
     # cylinder('cylinder')
     # rod4('rod4')
@@ -985,7 +997,7 @@ if __name__ == '__main__':
     # shell6_test('shell6_test')
 
     # tank3ds('tank3ds')
-    tank3s('tank3s')
+    # tank3s('tank3s')
 
     # -------------- Dynamic -----------------
     # console_dynamic('console_dynamic')
