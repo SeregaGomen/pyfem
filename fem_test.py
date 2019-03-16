@@ -528,11 +528,11 @@ def plate3_test(res_name):
         obj.set_output(20, 10)
         obj.add_young_modulus('203200')
         obj.add_poisson_ratio('0.27')
-        # obj.set_alpha(1.25E-5)
-        # obj.set_dt(100)
+        obj.add_alpha('1.25E-5')
+        obj.add_temperature('100')
         obj.add_thickness('0.01')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5')
-        obj.add_surface_load(DIR_1, '0.05')
+        # obj.add_surface_load(DIR_1, '0.05')
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -586,6 +586,8 @@ def shell_plate6_test(res_name):
         obj.add_young_modulus('203200')
         obj.add_poisson_ratio('0.27')
         obj.add_thickness('0.01')
+        # obj.add_alpha('1.25E-5')
+        # obj.add_temperature('100')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5')
         obj.add_surface_load(DIR_3, '0.05')
         if obj.calc():
@@ -604,6 +606,8 @@ def shell_plate4_test(res_name):
         obj.add_young_modulus('203200')
         obj.add_poisson_ratio('0.27')
         obj.add_thickness('0.01')
+        # obj.add_temperature('100')
+        # obj.add_alpha('1.25E-5')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5')
         obj.add_surface_load(DIR_3, '0.05')
         if obj.calc():
@@ -962,7 +966,7 @@ if __name__ == '__main__':
     # cube10('cube-10')
     # cube4('cube-4')
 
-    beam('beam')
+    # beam('beam')
     # head3d('head3d')
     # tank3('tank3')
     # cylinder('cylinder')
@@ -990,20 +994,18 @@ if __name__ == '__main__':
     # shell_plate6_test('shell-plate3')
     # shell_plate4_test('shell-plate4')
 
-    # shell_plate4_test('shell_plate4_test')
-
     # shell3_test('shell3_test')
     # shell4_test('shell4_test')
     # shell6_test('shell6_test')
 
     # tank3ds('tank3ds')
-    # tank3s('tank3s')
+    tank3s('tank3s')
 
     # -------------- Dynamic -----------------
     # console_dynamic('console_dynamic')
     # beam_dynamic('beam_dynamic')
 
-
+    # TPlot('tank3s')
 '''
 2. Правильно отображать динамическую задачу в plot3d
 3. Рисовать оси координат

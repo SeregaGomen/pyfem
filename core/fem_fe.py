@@ -463,8 +463,8 @@ class TFEP(TFE2D):
                        bp.conj().transpose().dot(self._extra_elastic_matrix()).
                        dot(bp) * self.thickness * 5.0 / 6.0) * abs(jacobian) * self._w[i]
             if self.dT != 0 and self.alpha != 0:
-                t_load = array([1, 0, 0]) * self.alpha * self.dT * 0
-                t_load1 = array([1, 0]) * self.alpha * self.dT
+                t_load = array([1, 0, 0]) * self.alpha * self.dT
+                t_load1 = array([0, 0]) * self.alpha * self.dT
                 self.load += ((bm.conj().transpose().dot(self._elastic_matrix()).dot(t_load) +
                               bp.conj().transpose().dot(self._extra_elastic_matrix()).dot(t_load1)) *
                               abs(jacobian) * self._w[i])

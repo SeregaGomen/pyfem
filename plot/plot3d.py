@@ -7,16 +7,16 @@
 import os.path
 import simplejson as json
 from math import floor
-from core.fem_result import TResult
-from core.fem_object import print_error
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup,
-                             QMenu, QFileDialog)
-from PyQt5.QtGui import (QFont, QFontMetrics)
-from PyQt5.QtCore import (Qt, QObject, QPoint)
+from PyQt5.QtCore import Qt, QObject, QPoint
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup, \
+    QMenu, QFileDialog
+from PyQt5.QtGui import QFont, QFontMetrics
 from PyQt5.QtOpenGL import QGLWidget
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+from core.fem_result import TResult
+from core.fem_object import print_error
 
 
 class TMainWindow(QMainWindow):
