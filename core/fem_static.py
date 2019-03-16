@@ -366,15 +366,14 @@ class TFEMStatic(TFEM):
         x = self.mesh.get_fe_coord(fe_index)
         c_x = self._fe_center(x)
         fe.set_coord(x)
-        fe.set_density(self.params.density)
-        fe.set_damping(self.params.damping)
 
         # Определение переменных параметров КЭ
         parser = self.create_parser(c_x)
         for i in range(len(self.params.bc_list)):
             if self.params.bc_list[i].type == 'thickness' or self.params.bc_list[i].type == 'young_modulus' or \
                     self.params.bc_list[i].type == 'poisson_ratio' or self.params.bc_list[i].type == 'temperature' or \
-                    self.params.bc_list[i].type == 'alpha':
+                    self.params.bc_list[i].type == 'alpha' or self.params.bc_list[i].type == 'density' or \
+                    self.params.bc_list[i].type == 'damping':
                 param = self.params.bc_list[i].type
             else:
                 continue
@@ -395,3 +394,7 @@ class TFEMStatic(TFEM):
                 fe.set_temperature(val)
             elif param == 'alpha':
                 fe.set_alpha(val)
+            elif param == 'density':
+                fe.set_density(val)
+            elif param == 'damping':
+                fe.set_damping(val)
