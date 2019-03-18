@@ -679,8 +679,8 @@ def tube_test(res_name):
 
 def tank3s(res_name):
     obj = TObject()
-    # if obj.set_mesh('mesh/tank3s.trpa'):
-    if obj.set_mesh('mesh/tank6s.trpa'):
+    # if obj.set_mesh('mesh/tank6s.trpa'):
+    if obj.set_mesh('mesh/tank3s.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
 #        obj.set_solve_method('iterative')
@@ -697,10 +697,10 @@ def tank3s(res_name):
 
         obj.add_thickness('0.025', 'abs(y + 1.724) <= eps and (x**2+z**2 - 0.342**2 <= eps)')
         obj.add_thickness('0.0015')
-
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'y == -0.643 and abs(x**2 + z**2 -1.641**2) <= eps')
-        obj.add_boundary_condition(DIR_1, '0', 'abs(x) <= eps')
-        obj.add_boundary_condition(DIR_3, '0', 'abs(z) <= eps')
+        # obj.add_boundary_condition(DIR_1, '0', 'abs(x) <= eps')
+        # obj.add_boundary_condition(DIR_3, '0', 'abs(z) <= eps')
+
 
         obj.add_surface_load(DIR_1, 'P*cos(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)')
         obj.add_surface_load(DIR_3, 'P*sin(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)')

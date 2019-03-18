@@ -255,7 +255,6 @@ class TFEMStatic(TFEM):
         except RuntimeError:
             progress.stop()
             return False
-        self._progress.set_progress(1)
         return True
 
     # Приближенное решение СЛАУ
