@@ -701,7 +701,6 @@ def tank3s(res_name):
         # obj.add_boundary_condition(DIR_1, '0', 'abs(x) <= eps')
         # obj.add_boundary_condition(DIR_3, '0', 'abs(z) <= eps')
 
-
         obj.add_surface_load(DIR_1, 'P*cos(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)')
         obj.add_surface_load(DIR_3, 'P*sin(atan2(z,x))', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)')
 
@@ -999,13 +998,13 @@ if __name__ == '__main__':
     # shell6_test('shell6_test')
 
     # tank3ds('tank3ds')
-    tank3s('tank3s')
+    # tank3s('tank3s')
 
     # -------------- Dynamic -----------------
     # console_dynamic('console_dynamic')
     # beam_dynamic('beam_dynamic')
 
-    # TPlot('tank3s')
+    TPlot('tank3ds')
 '''
 2. Правильно отображать динамическую задачу в plot3d
 3. Рисовать оси координат

@@ -9,7 +9,7 @@ import simplejson as json
 from math import floor
 from PyQt5.QtCore import Qt, QObject, QPoint
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup, \
-    QMenu, QFileDialog
+    QMenu, QFileDialog, QDialog
 from PyQt5.QtGui import QFont, QFontMetrics
 from PyQt5.QtOpenGL import QGLWidget
 from OpenGL.GL import *
@@ -173,6 +173,13 @@ class TMainWindow(QMainWindow):
         color_menu.addAction(color_256_action)
         options_menu.addMenu(color_menu)
 
+        # Настройка Help
+        about_action = QAction('&About...', self)
+        about_action.setStatusTip('Show information about Plot3d')
+        about_action.triggered.connect(self.__about_action)
+        help_menu.addAction(about_action)
+
+
         self.show()
 
     def __init_function_menu(self):
@@ -217,6 +224,7 @@ class TMainWindow(QMainWindow):
         self.menuBar().actions()[2].menu().actions()[4].setChecked(False)
         self.menuBar().actions()[2].menu().actions()[5].setChecked(False)
         self.menuBar().actions()[2].menu().actions()[7].menu().actions()[0].setChecked(True)
+
 
     def __colors_action(self):
         num = int(QObject.sender(self).text().replace('&', ''))
@@ -273,6 +281,13 @@ class TMainWindow(QMainWindow):
         self.menuBar().actions()[0].menu().actions()[1].setEnabled(True)
         self.menuBar().actions()[1].setEnabled(True)                       # Function
         self.menuBar().actions()[2].setEnabled(True)                       # Options
+
+    def __about_action(self):
+        window = QDialog()
+        window.setWindowTitle('Choose function')
+        window.resize(200, 200)
+        window.setModal(True)
+        window.show()
 
 
 # Базовый класс, реализующий основной функционал OpenGL
