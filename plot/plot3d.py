@@ -179,7 +179,6 @@ class TMainWindow(QMainWindow):
         about_action.triggered.connect(self.__about_action)
         help_menu.addAction(about_action)
 
-
         self.show()
 
     def __init_function_menu(self):
@@ -224,7 +223,6 @@ class TMainWindow(QMainWindow):
         self.menuBar().actions()[2].menu().actions()[4].setChecked(False)
         self.menuBar().actions()[2].menu().actions()[5].setChecked(False)
         self.menuBar().actions()[2].menu().actions()[7].menu().actions()[0].setChecked(True)
-
 
     def __colors_action(self):
         num = int(QObject.sender(self).text().replace('&', ''))
@@ -287,7 +285,7 @@ class TMainWindow(QMainWindow):
         window.setWindowTitle('Choose function')
         window.resize(200, 200)
         window.setModal(True)
-        window.show()
+        window.exec()
 
 
 # Базовый класс, реализующий основной функционал OpenGL
