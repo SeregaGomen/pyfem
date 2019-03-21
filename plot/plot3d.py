@@ -9,7 +9,7 @@ import simplejson as json
 from math import floor
 from PyQt5.QtCore import Qt, QObject, QPoint
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup, \
-    QMenu, QFileDialog, QDialog
+    QMenu, QFileDialog, QDialog, QPushButton, QHBoxLayout, QSpacerItem
 from PyQt5.QtGui import QFont, QFontMetrics
 from PyQt5.QtOpenGL import QGLWidget
 from OpenGL.GL import *
@@ -283,8 +283,18 @@ class TMainWindow(QMainWindow):
     def __about_action(self):
         window = QDialog()
         window.setWindowTitle('Choose function')
-        window.resize(200, 200)
-        window.setModal(True)
+        window.resize(400, 200)
+
+        btn_layout = QHBoxLayout()
+        btn_ok = QPushButton('&OK')
+        btn_cancel = QPushButton('&Cancel')
+        spacer = QSpacerItem(150, 10)
+
+        btn_layout.addWidget(btn_ok)
+        btn_layout.addWidget(btn_cancel)
+        btn_layout.addWidget(spacer)
+        window.setLayout(btn_layout)
+
         window.exec()
 
 
@@ -840,7 +850,7 @@ class TGLWidget(QWidget):
     # Визуализация пространственной задачи
     def __paint_3d(self):
         # Изображение поверхности
-        self.transform_coeff = 0.25
+        # self.transform_coeff = 1.0E+5
         for i in range(0, len(self.be)):
             tri = []
             for j in range(len(self.be[0])):
