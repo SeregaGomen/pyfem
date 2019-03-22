@@ -7,9 +7,9 @@
 import os.path
 import simplejson as json
 from math import floor
-from PyQt5.QtCore import Qt, QObject, QPoint
+from PyQt5.QtCore import Qt, QObject, QPoint, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup, \
-    QMenu, QFileDialog, QDialog, QPushButton, QHBoxLayout, QSpacerItem
+    QMenu, QFileDialog, QDialog, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy, QListWidget
 from PyQt5.QtGui import QFont, QFontMetrics
 from PyQt5.QtOpenGL import QGLWidget
 from OpenGL.GL import *
@@ -28,6 +28,7 @@ class TMainWindow(QMainWindow):
         self.fe = []                # Связи КЭ
         self.be = []                # ... ГЭ
         self.results = []           # Результаты расчета
+        self.task_type = 'static'   # Тип задачи
 
         self.__gl_widget = TGLWidget()
         self.setCentralWidget(self.__gl_widget)
@@ -59,6 +60,7 @@ class TMainWindow(QMainWindow):
             print_error('Unable read file ' + self.file_name)
             return False
         # Обработка данных
+        self.task_type = data['header']['type']
         mesh = data['mesh']
         self.fe_type = mesh['fe_type']
         self.x = mesh['vertex']
@@ -280,20 +282,45 @@ class TMainWindow(QMainWindow):
         self.menuBar().actions()[1].setEnabled(True)                       # Function
         self.menuBar().actions()[2].setEnabled(True)                       # Options
 
+    @pyqtSignal()
+    def on_click(self):
+        print('PyQt5 button click')
+
     def __about_action(self):
         window = QDialog()
         window.setWindowTitle('Choose function')
         window.resize(400, 200)
+        window.setMaximumSize(400, 200)
+        window.setMinimumSize(400, 200)
 
         btn_layout = QHBoxLayout()
         btn_ok = QPushButton('&OK')
         btn_cancel = QPushButton('&Cancel')
-        spacer = QSpacerItem(150, 10)
+        # btn_cancel.clicked().connect(self.close())
+        btn_cancel.clicked().connect(self.on_click)
 
+        # QObject.connectNotify(btn_cancel, PyQt5.QtCore.PYQT_SIGNAL('clicked()'), self.close())
+        btn_cancel.connect(self.close())
+
+        spacer = QSpacerItem(200, 40, QSizePolicy.Maximum, QSizePolicy.Expanding)
+        btn_layout.addItem(spacer)
         btn_layout.addWidget(btn_ok)
         btn_layout.addWidget(btn_cancel)
-        btn_layout.addWidget(spacer)
-        window.setLayout(btn_layout)
+
+
+        main_layout = QVBoxLayout()
+        fun_list = QListWidget()
+        for i in range(len(self.results)):
+            fun_name = self.results[i].name
+            if self.task_type == 'dynamic':
+                fun_name += ('(' + str(self.results[i].t) + ')')
+            fun_list.addItem(fun_name)
+        fun_list.item(0).setSelected(True)
+
+        main_layout.addWidget(fun_list)
+        main_layout.addItem(btn_layout)
+
+        window.setLayout(main_layout)
 
         window.exec()
 
