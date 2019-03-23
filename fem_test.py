@@ -1001,10 +1001,10 @@ if __name__ == '__main__':
     # tank3s('tank3s')
 
     # -------------- Dynamic -----------------
-    # console_dynamic('console_dynamic')
+    console_dynamic('console_dynamic')
     # beam_dynamic('beam_dynamic')
 
-    TPlot('tank3ds')
+    # TPlot('tank3ds')
 '''
 2. Правильно отображать динамическую задачу в plot3d
 3. Рисовать оси координат

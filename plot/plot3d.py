@@ -19,12 +19,11 @@ from core.fem_result import TResult
 from core.fem_object import print_error
 
 
-class TLDialog(QDialog):
-    def __init__(self, results):
-        # super(TLDialog, self).__init__()
+class TFunctionListDialog(QDialog):
+    def __init__(self, results, index):
         super().__init__()
         self.fun_list = QListWidget()   # Список функций для визуализации
-        self.current_index = 0
+        self.current_index = index      # Текущий номер функции в списке
 
         self.setWindowTitle('Choose function')
         self.resize(400, 200)
@@ -36,26 +35,26 @@ class TLDialog(QDialog):
         dlg_btn_box.accepted.connect(self.ok_click)
         dlg_btn_box.rejected.connect(self.close)
 
-        main_layout = QVBoxLayout()
-        main_layout.addWidget(self.fun_list)
-        main_layout.addWidget(dlg_btn_box)
-        self.setLayout(main_layout)
-        self.set(results)
+        self.fun_list.doubleClicked.connect(self.ok_click)
 
-    def set(self, results):
         # Создание списка функций
         task_type = 'static' if results[len(results) - 1].t == 0 else 'dynamic'
         for i in range(len(results)):
             fun_name = results[i].name
             if task_type == 'dynamic':
-                fun_name += ('(' + str(self.results[i].t) + ')')
+                fun_name += ('(' + str(results[i].t) + ')')
             self.fun_list.addItem(fun_name)
         self.fun_list.item(self.current_index).setSelected(True)
+
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.fun_list)
+        main_layout.addWidget(dlg_btn_box)
+        self.setLayout(main_layout)
 
     @pyqtSlot()
     def ok_click(self):
         self.current_index = self.fun_list.currentRow()
-        self.close()
+        self.accept()
 
 
 class TMainWindow(QMainWindow):
@@ -67,7 +66,7 @@ class TMainWindow(QMainWindow):
         self.fe = []                # Связи КЭ
         self.be = []                # ... ГЭ
         self.results = []           # Результаты расчета
-        self.current_index = 1      # Номер текущей визуализируемой функции
+        self.current_index = 0      # Номер текущей визуализируемой функции
 
         self.__gl_widget = TGLWidget()
         self.setCentralWidget(self.__gl_widget)
@@ -320,43 +319,12 @@ class TMainWindow(QMainWindow):
         self.menuBar().actions()[1].setEnabled(True)                       # Function
         self.menuBar().actions()[2].setEnabled(True)                       # Options
 
-    @pyqtSlot()
-    def ok_click(self):
-        print('PyQt5 button click')
-
-    def __init_dialog(self):
-        # Настройка заголовка и размеров окна
-        dialog = QDialog()
-        dialog.setWindowTitle('Choose function')
-        dialog.resize(400, 200)
-        dialog.setMaximumSize(400, 200)
-        dialog.setMinimumSize(400, 200)
-        # Настройка кнопок
-        dlg_btn_box = QDialogButtonBox()
-        dlg_btn_box.setStandardButtons(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        dlg_btn_box.accepted.connect(self.ok_click)
-        dlg_btn_box.rejected.connect(dialog.close)
-
-        # Создание списка функций
-        main_layout = QVBoxLayout()
-        fun_list = QListWidget()
-        task_type = 'static' if self.results[len(self.results) - 1].t == 0 else 'dynamic'
-        for i in range(len(self.results)):
-            fun_name = self.results[i].name
-            if task_type == 'dynamic':
-                fun_name += ('(' + str(self.results[i].t) + ')')
-            fun_list.addItem(fun_name)
-        fun_list.item(0).setSelected(True)
-        main_layout.addWidget(fun_list)
-        # dialog.setLayout(main_layout)
-        main_layout.addWidget(dlg_btn_box)
-        dialog.setLayout(main_layout)
-        dialog.exec()
-
     def __about_action(self):
         # self.__init_dialog()
-        dialog = TLDialog(self.results)
-        dialog.exec()
+        dialog = TFunctionListDialog(self.results, self.current_index)
+        if dialog.exec() == QDialog.Accepted:
+            self.current_index = dialog.current_index
+            self.__gl_widget.set_fun_index(self.current_index)
 
 
 # Базовый класс, реализующий основной функционал OpenGL
