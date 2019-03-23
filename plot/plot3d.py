@@ -9,7 +9,7 @@ import simplejson as json
 from math import floor
 from PyQt5.QtCore import Qt, QObject, QPoint, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup, \
-    QMenu, QFileDialog, QDialog, QDialogButtonBox, QListWidget
+    QMenu, QFileDialog, QDialog, QDialogButtonBox, QListWidget, QLabel
 from PyQt5.QtGui import QFont, QFontMetrics
 from PyQt5.QtOpenGL import QGLWidget
 from OpenGL.GL import *
@@ -26,9 +26,9 @@ class TFunctionListDialog(QDialog):
         self.current_index = index      # Текущий номер функции в списке
 
         self.setWindowTitle('Choose function')
-        self.resize(400, 200)
-        self.setMaximumSize(400, 200)
-        self.setMinimumSize(400, 200)
+        self.resize(250, 200)
+        self.setMaximumSize(250, 200)
+        self.setMinimumSize(250, 200)
         # Настройка кнопок
         dlg_btn_box= QDialogButtonBox()
         dlg_btn_box.setStandardButtons(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -115,7 +115,7 @@ class TMainWindow(QMainWindow):
     def __init_main_menu(self):
         # Пункты главного меню
         file_menu = self.menuBar().addMenu('&File')
-        function_menu = self.menuBar().addMenu('F&unction')
+        analyse_menu = self.menuBar().addMenu('&Analyse')
         options_menu = self.menuBar().addMenu('&Option')
         help_menu = self.menuBar().addMenu('&?')
         # Настройка File
@@ -133,8 +133,11 @@ class TMainWindow(QMainWindow):
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
-        # Настройка Function
-        self.__init_function_menu()
+        # Настройка Analyse
+        function_action = QAction('&Function...', self)
+        function_action.setStatusTip('Choose function to analyse')
+        function_action.triggered.connect(self.__function_action)
+        analyse_menu.addAction(function_action)
 
         # Настройка Options
         light_action = QAction('&Light', self)
@@ -220,20 +223,11 @@ class TMainWindow(QMainWindow):
 
         self.show()
 
-    def __init_function_menu(self):
-        qa = QActionGroup(self)
-        for i in range(0, len(self.results)):
-            if i < 9:
-                fun = '&' + str(i + 1) + ' ' + self.results[i].name
-            else:
-                fun = '&' + chr(ord('A') + i - 9) + ' ' + self.results[i].name
-            function_action = QAction(fun, self)
-            function_action.setStatusTip('Visualization function ' + self.results[i].name)
-            function_action.setActionGroup(qa)
-            function_action.setCheckable(True)
-            function_action.setChecked(True if i == 0 else False)
-            function_action.triggered.connect(self.__fun_action)
-            self.menuBar().actions()[1].menu().addAction(function_action)
+    def __function_action(self):
+        dialog = TFunctionListDialog(self.results, self.current_index)
+        if dialog.exec() == QDialog.Accepted:
+            self.current_index = dialog.current_index
+            self.__gl_widget.set_fun_index(self.current_index)
 
     def __open_action(self):
         dlg = QFileDialog(self, 'Open data file', '', 'JSON data files (*.json)')
@@ -295,16 +289,6 @@ class TMainWindow(QMainWindow):
         self.__gl_widget.trigger_light_two_side()
         self.repaint()
 
-    # Поиск индекса функции по ее имени
-    def __get_fun_index(self, fun_name, t=0):
-        # Поиск индекса функции в списке результатов
-        index = -1
-        for i in range(0, len(self.results)):
-            if self.results[i].name == fun_name and self.results[i].t == t:
-                index = i
-                break
-        return index
-
     # Задание нового файла
     def __set_file(self, file_name):
         self.file_name = file_name
@@ -320,11 +304,21 @@ class TMainWindow(QMainWindow):
         self.menuBar().actions()[2].setEnabled(True)                       # Options
 
     def __about_action(self):
-        # self.__init_dialog()
-        dialog = TFunctionListDialog(self.results, self.current_index)
-        if dialog.exec() == QDialog.Accepted:
-            self.current_index = dialog.current_index
-            self.__gl_widget.set_fun_index(self.current_index)
+        dialog = QDialog()
+        dialog.setWindowTitle('Aboout Plot3d')
+        dialog.resize(250, 100)
+        dialog.setMaximumSize(250, 100)
+        dialog.setMinimumSize(250, 100)
+        # Настройка кнопок
+        dlg_btn_box= QDialogButtonBox()
+        dlg_btn_box.setStandardButtons(QDialogButtonBox.Ok)
+        dlg_btn_box.accepted.connect(dialog.close)
+
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(QLabel('Plot3d - simple visualizer for PyFEM'))
+        main_layout.addWidget(dlg_btn_box)
+        dialog.setLayout(main_layout)
+        dialog.exec()
 
 
 # Базовый класс, реализующий основной функционал OpenGL
