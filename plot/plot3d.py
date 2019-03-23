@@ -7,7 +7,7 @@
 import os.path
 import simplejson as json
 from math import floor
-from PyQt5.QtCore import Qt, QObject, QPoint, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import Qt, QObject, QPoint, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QMessageBox, QVBoxLayout, QAction, QActionGroup, \
     QMenu, QFileDialog, QDialog, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy, QListWidget
 from PyQt5.QtGui import QFont, QFontMetrics
@@ -17,6 +17,50 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from core.fem_result import TResult
 from core.fem_object import print_error
+
+
+class TFunctionListDialog(QDialog):
+    def _init__(self):
+        super().__init__()
+        self.fun_list = QListWidget()   # Список функций для визуализации
+        self.current_index = -1         # Индекс выбранной функции
+
+        self.__init()
+
+    def __init(self):
+        self.setWindowTitle('Choose function')
+        self.resize(400, 200)
+        self.setMaximumSize(400, 200)
+        self.setMinimumSize(400, 200)
+        # Настройка кнопок
+        btn_layout = QHBoxLayout()
+        btn_ok = QPushButton('&OK')
+        btn_ok.setDefault(True)
+        btn_ok.clicked.connect(self.ok_click)
+        btn_cancel = QPushButton('&Cancel')
+        btn_cancel.clicked.connect(self.hide)
+        spacer = QSpacerItem(200, 40, QSizePolicy.Maximum, QSizePolicy.Expanding)
+        btn_layout.addItem(spacer)
+        btn_layout.addWidget(btn_ok)
+        btn_layout.addWidget(btn_cancel)
+        # Создание списка функций
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.fun_list)
+        main_layout.addItem(btn_layout)
+        self.setLayout(main_layout)
+
+    def set(self, results):
+        for i in range(len(results)):
+            fun_name = results[i].name
+            if self.task_type == 'dynamic':
+                fun_name += ('(' + str(self.results[i].t) + ')')
+            self.fun_list.addItem(fun_name)
+        self.fun_list.item(0).setSelected(True)
+
+    @pyqtSlot()
+    def ok_click(self):
+        self.current_index = self.fun_list.currentRow()
+        self.hide()
 
 
 class TMainWindow(QMainWindow):
@@ -29,6 +73,7 @@ class TMainWindow(QMainWindow):
         self.be = []                # ... ГЭ
         self.results = []           # Результаты расчета
         self.task_type = 'static'   # Тип задачи
+        self.dialog = TFunctionListDialog()     # Диалоговое окно выбора функции
 
         self.__gl_widget = TGLWidget()
         self.setCentralWidget(self.__gl_widget)
@@ -38,6 +83,8 @@ class TMainWindow(QMainWindow):
             self.__gl_widget.set_data(self.fe_type, self.x, self.fe, self.be, self.results, 0)
         # Настройка окна
         self.__init_main_menu()
+        # Настройка диалога выбора функции
+        self.__init_dialog()
 
     # Загрузка данных из файла
     def __load_file(self):
@@ -282,32 +329,28 @@ class TMainWindow(QMainWindow):
         self.menuBar().actions()[1].setEnabled(True)                       # Function
         self.menuBar().actions()[2].setEnabled(True)                       # Options
 
-    @pyqtSignal()
-    def on_click(self):
+    @pyqtSlot()
+    def ok_click(self):
         print('PyQt5 button click')
+        # self.dialog.
 
-    def __about_action(self):
-        window = QDialog()
-        window.setWindowTitle('Choose function')
-        window.resize(400, 200)
-        window.setMaximumSize(400, 200)
-        window.setMinimumSize(400, 200)
-
+    def __init_dialog(self):
+        # Настройка заголовка и размеров окна
+        self.dialog.setWindowTitle('Choose function')
+        self.dialog.resize(400, 200)
+        self.dialog.setMaximumSize(400, 200)
+        self.dialog.setMinimumSize(400, 200)
+        # Настройка кнопок
         btn_layout = QHBoxLayout()
         btn_ok = QPushButton('&OK')
+        btn_ok.clicked.connect(self.ok_click)
         btn_cancel = QPushButton('&Cancel')
-        # btn_cancel.clicked().connect(self.close())
-        btn_cancel.clicked().connect(self.on_click)
-
-        # QObject.connectNotify(btn_cancel, PyQt5.QtCore.PYQT_SIGNAL('clicked()'), self.close())
-        btn_cancel.connect(self.close())
-
+        btn_cancel.clicked.connect(self.dialog.hide)
         spacer = QSpacerItem(200, 40, QSizePolicy.Maximum, QSizePolicy.Expanding)
         btn_layout.addItem(spacer)
         btn_layout.addWidget(btn_ok)
         btn_layout.addWidget(btn_cancel)
-
-
+        # Создание списка функций
         main_layout = QVBoxLayout()
         fun_list = QListWidget()
         for i in range(len(self.results)):
@@ -316,13 +359,12 @@ class TMainWindow(QMainWindow):
                 fun_name += ('(' + str(self.results[i].t) + ')')
             fun_list.addItem(fun_name)
         fun_list.item(0).setSelected(True)
-
         main_layout.addWidget(fun_list)
         main_layout.addItem(btn_layout)
+        self.dialog.setLayout(main_layout)
 
-        window.setLayout(main_layout)
-
-        window.exec()
+    def __about_action(self):
+        self.dialog.exec()
 
 
 # Базовый класс, реализующий основной функционал OpenGL
