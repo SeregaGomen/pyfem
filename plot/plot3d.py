@@ -247,7 +247,7 @@ class TMainWindow(QMainWindow):
         self.__gl_widget.clear()
         # Сброс меню
         self.menuBar().actions()[0].menu().actions()[1].setEnabled(False)   # Close
-        self.menuBar().actions()[1].menu().clear()                          # Очистка меню function
+        # self.menuBar().actions()[1].menu().clear()                          # Очистка меню function
         self.menuBar().actions()[1].setEnabled(False)                       # Function
         self.menuBar().actions()[2].setEnabled(False)                       # Options
         self.menuBar().actions()[2].menu().actions()[0].setChecked(True)
@@ -296,16 +296,17 @@ class TMainWindow(QMainWindow):
         if self.__load_file() is False:
             QMessageBox.critical(self, 'Error', 'Error read data from file ' + file_name, QMessageBox.Ok)
             return
-        self.__init_function_menu()
+        # self.__init_function_menu()
         self.__gl_widget.set_data(self.fe_type, self.x, self.fe, self.be, self.results, 0)
         # Настройка меню
         self.menuBar().actions()[0].menu().actions()[1].setEnabled(True)
         self.menuBar().actions()[1].setEnabled(True)                       # Function
         self.menuBar().actions()[2].setEnabled(True)                       # Options
 
+    @staticmethod
     def __about_action(self):
         dialog = QDialog()
-        dialog.setWindowTitle('Aboout Plot3d')
+        dialog.setWindowTitle('About Plot3d')
         dialog.resize(250, 100)
         dialog.setMaximumSize(250, 100)
         dialog.setMinimumSize(250, 100)
@@ -613,6 +614,17 @@ class TGLWidget(QWidget):
             self.__gl.renderText(self.rect().width() - font_w2 - 50, cy, '{:+0.5E}'.format(v), font)
             cy += font_h
             v -= step
+        self.__show_header()
+
+    def __show_header(self):
+        fun_name = self.results[self.fun_index].name
+        if self.results[len(self.results) - 1].t != 0:
+            fun_name += ('(' + str(self.results[self.fun_index].t) + ')')
+        font = QFont('Times', 14, QFont.Normal)
+        fm = QFontMetrics(font)
+        w = fm.width(fun_name)
+        h = fm.height()
+        self.__gl.renderText(self.rect().width() // 2 - w // 2, h, fun_name, font)
 
     @staticmethod
     def __sort(tri):

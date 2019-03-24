@@ -463,11 +463,13 @@ class TFEP(TFE2D):
                        bp.conj().transpose().dot(self._extra_elastic_matrix()).
                        dot(bp) * self.thickness * 5.0 / 6.0) * abs(jacobian) * self._w[i]
             if self.dT != 0 and self.alpha != 0:
-                t_load = array([1, 0, 0]) * self.alpha * self.dT
-                t_load1 = array([0, 0]) * self.alpha * self.dT
-                self.load += ((bm.conj().transpose().dot(self._elastic_matrix()).dot(t_load) +
-                              bp.conj().transpose().dot(self._extra_elastic_matrix()).dot(t_load1)) *
-                              abs(jacobian) * self._w[i])
+                # t_load = array([0, 0, 0]) * self.alpha * self.dT
+                # t_load1 = array([0, 1]) * self.alpha * self.dT
+                # self.load += ((bm.conj().transpose().dot(self._elastic_matrix()).dot(t_load) +
+                #              bp.conj().transpose().dot(self._extra_elastic_matrix()).dot(t_load1)) *
+                #              abs(jacobian) * self._w[i])
+                self.load += array(self.size * [self.e[0] * (1.0 - self.m[0])/(1.0 + self.m[0])/(1.0 - 2.0 * self.m[0]),
+                                                0, 0]) * self.alpha * self.dT * abs(jacobian) * self._w[i]
             if not is_static:
                 self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.density
                 self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.damping
