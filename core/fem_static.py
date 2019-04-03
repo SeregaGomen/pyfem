@@ -18,7 +18,7 @@ class TFEMStatic(TFEM):
         super().__init__()
         self._global_matrix_stiffness = lil_matrix((0, 0))  # Глобальная матрица жесткости (ГМЖ)
         self._global_load = []                              # Глобальный вектор нагрузок (правая часть)
-        self._fe_thickness = []                             # Толщина каждого КЭ
+        self._fe_thickness = []                             # Толщина каждого КЭ 
 
     # Расчет статической задачи методом конечных элементов
     def _calc_problem(self):
