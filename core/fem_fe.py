@@ -134,8 +134,6 @@ class TFE1D(TFE):
     def __init__(self):
         super().__init__()
         self.freedom = 1
-        self._xi = []               # Параметры квадратур
-        self._w = []                # ...
 
     def calc(self, u):
         res = zeros((2, self.size))
