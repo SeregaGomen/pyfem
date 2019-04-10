@@ -198,7 +198,7 @@ class TFE1D(TFE):
 
 
 # Абстрактный изопараметрический двумерный КЭ
-class TFE2D(TFE):
+class TFE2D(TFE1D):
     def __init__(self):
         super().__init__()
         self.freedom = 2
@@ -271,23 +271,9 @@ class TFE2D(TFE):
     def _create(self):
         raise NotImplementedError('Method TFE2D._create() is pure virtual')
 
-    # Производные от функций форм
-    @abstractmethod
-    def _dx(self, i, j):
-        raise NotImplementedError('Method TFE2D._dx() is pure virtual')
-
     @abstractmethod
     def _dy(self, i, j):
         raise NotImplementedError('Method TFE2D._dy() is pure virtual')
-
-    # Изопараметрические функции формы и их производные
-    @abstractmethod
-    def _shape(self, i):
-        raise NotImplementedError('Method TFE._shape() is pure virtual')
-
-    @abstractmethod
-    def _shape_dxi(self, i):
-        raise NotImplementedError('Method TFE._shape_dxi() is pure virtual')
 
     @abstractmethod
     def _shape_deta(self, i):
@@ -474,14 +460,6 @@ class TFEP(TFE2D):
                 self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.density
                 self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.damping
 
-    @abstractmethod
-    def _dx(self, i, j):
-        raise NotImplementedError('Method TFEP._dx() is pure virtual')
-
-    @abstractmethod
-    def _dy(self, i, j):
-        raise NotImplementedError('Method TFEP._dy() is pure virtual')
-
 
 # Абстрактный КЭ оболочки
 class TFES(TFEP):
@@ -513,6 +491,7 @@ class TFES(TFEP):
             s = self._elastic_matrix().dot(d)
             dc = bc.dot(lu)
             sc = self._extra_elastic_matrix().dot(dc)
+
             local_d = array([[d[0], d[2], dc[0]], [d[2], d[1], dc[1]], [dc[0], dc[1], 0]])
             local_s = array([[s[0], s[2], sc[0]], [s[2], s[1], sc[1]], [sc[0], sc[1], 0]])
             global_d = self.T.conj().transpose().dot(local_d).dot(self.T)
@@ -594,10 +573,6 @@ class TFES(TFEP):
         if not is_static:
             self.M = m.conj().transpose().dot(self.M).dot(m)
             self.C = m.conj().transpose().dot(self.C).dot(m)
-
-    @abstractmethod
-    def _create(self):
-        raise NotImplementedError('Method TFES._create() is pure virtual')
 
 
 # Линейный (двухузловой) одномерный КЭ
