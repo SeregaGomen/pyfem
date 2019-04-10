@@ -391,7 +391,7 @@ def plate4(res_name):
         obj.add_poisson_ratio('0.3')
 #        obj.set_names(['W', 'Tx', 'Ty', 'Exx', 'Eyy', 'Exy', 'Sxx', 'Syy', 'Sxy'])
         obj.add_thickness('0.01')
-        obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1')
+        obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.1 or x == 0.1 or y == -0.1 or y == 0.1')
         obj.add_surface_load(DIR_1, '-2000')
         if obj.calc():
             obj.print_result()
@@ -997,7 +997,7 @@ if __name__ == '__main__':
     # shell4_test('shell4_test')
     # shell6_test('shell6_test')
 
-    # tank3ds('tank3ds')
+    tank3ds('tank3ds')
     # tank3s('tank3s')
 
     # -------------- Dynamic -----------------
@@ -1005,7 +1005,7 @@ if __name__ == '__main__':
     # beam_dynamic('beam_dynamic')
 
     # TPlot('tank3ds')
-    TPlot('console_dynamic')
+    # TPlot('console_dynamic')
 '''
 2. Правильно отображать динамическую задачу в plot3d
 3. Рисовать оси координат
