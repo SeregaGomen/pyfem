@@ -980,7 +980,7 @@ if __name__ == '__main__':
     # ------------- Plate ----------------
     # plate3('plate3')
     # plate3_test('plate3_test')
-    # plate6_test('plate6_test')
+    plate6_test('plate6_test')
     # plate4_test('plate4_test')
     # plate4('plate4')
 
@@ -997,7 +997,7 @@ if __name__ == '__main__':
     # shell4_test('shell4_test')
     # shell6_test('shell6_test')
 
-    tank3ds('tank3ds')
+    # tank3ds('tank3ds')
     # tank3s('tank3s')
 
     # -------------- Dynamic -----------------

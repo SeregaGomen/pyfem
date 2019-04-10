@@ -966,36 +966,15 @@ class TFE2D4P(TFEP, TFE2D4):
     def __init__(self):
         super().__init__()
 
-    def _dx(self, i, j):
-        return self.a[j][1] + self.a[j][3] * self.x[i][1]
-
-    def _dy(self, i, j):
-        return self.a[j][2] + self.a[j][3] * self.x[i][0]
-
-
 # Треугольный КЭ пластины
 class TFE2D3P(TFEP, TFE2D3):
     def __init__(self):
         super().__init__()
 
-    def _dx(self, i, j):
-        return self.a[j][1]
-
-    def _dy(self, i, j):
-        return self.a[j][2]
-
-
 # Квадратичный треугольный КЭ пластины
 class TFE2D6P(TFEP, TFE2D6):
     def __init__(self):
         super().__init__()
-
-    def _dx(self, i, j):
-        return self.a[j][1] + self.a[j][3] * self.x[i][1] + 2 * self.a[j][4] * self.x[i][0]
-
-    def _dy(self, i, j):
-        return self.a[j][2] + self.a[j][3] * self.x[i][0] + 2 * self.a[j][5] * self.x[i][1]
-
 
 # Треугольный КЭ оболочки
 class TFE2D3S(TFES, TFE2D3P):
