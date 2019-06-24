@@ -13,7 +13,7 @@ from numpy.linalg import det
 def create_plate_mesh_4():
     x_min = [-0.5, -0.5]
     x_max = [0.5, 0.5]
-    n = 50
+    n = 200
     h = [(x_max[0] - x_min[0])/n, (x_max[1] - x_min[1])/n]
     index = []
     x = []
@@ -26,9 +26,11 @@ def create_plate_mesh_4():
             x.append([x_min[0] + i*h[0], x_min[1] + j*h[1]])
         index.append(c_index)
     with open('../mesh/plate4.trpa', 'w') as file:
+    # with open('../mesh/shell-plate4.trpa', 'w') as file:
         file.write('124\n')
         file.write(str(counter) + '\n')
         for i in range(0, len(x)):
+            # file.write(str(x[i][0]) + ' ' + str(x[i][1]) + ' 0\n')
             file.write(str(x[i][0]) + ' ' + str(x[i][1]) + '\n')
         file.write(str(n**2) + '\n')
         for i in range(0, len(index) - 1):
@@ -43,8 +45,8 @@ def create_plate_mesh_4():
 def create_shell_mesh_4():
     r = 3.98/2
     height = 4.014
-    n_xy = 100
-    n_z = 100
+    n_xy = 200
+    n_z = 200
     d_fi = 2*math.pi/n_xy
     d_h = height/n_z
     index = []
@@ -615,7 +617,7 @@ def mesh_restructure(file_src, file_dst):
 
 # convert_msh_2_2d_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', '../mesh/quad-4.trpa')
 # convert_msh_2_3d_trpa('d:/cube.msh', '../mesh/cube-4.trpa')
-# create_shell_mesh_4()
+create_shell_mesh_4()
 # create_plate_mesh_4()
 # mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
 
@@ -651,4 +653,11 @@ def mesh_restructure(file_src, file_dst):
 
 # mesh_convert_2d_3_2_6('../mesh/tank3s_full.trpa', '../mesh/tank6s.trpa')
 
-convert_msh_2_3d_trpa('D:/Work/Qt/QFEM/QFEM/mesh/tank3/gmsh/shell/tank3s.msh', '../mesh/tank3s.trpa')
+# convert_msh_2_3d_trpa('D:/Work/Qt/QFEM/QFEM/mesh/tank3/gmsh/shell/tank3s.msh',
+#                       'D:/Work/Qt/QFEM/QFEM/mesh/tank3/gmsh/shell/tank3s.trpa')
+
+# mesh_convert_2d_3_2_6('D:/Work/Qt/QFEM/QFEM/mesh/tank3/gmsh/shell/tank3s.trpa', 'D:/Work/Qt/QFEM/QFEM/mesh/tank3/gmsh/shell/tank3s6.trpa')
+
+# mesh_convert_2d_3_2_6('../mesh/shell-tube-3.trpa', '../mesh/shell-tube-6-1.trpa')
+
+# mesh_convert_3d_4_2_10('../mesh/tube-solid-test.trpa', '../mesh/tube-solid-test-10.trpa')

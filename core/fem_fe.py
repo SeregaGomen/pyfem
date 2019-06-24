@@ -389,27 +389,27 @@ class TFEP(TFE2D):
         res = zeros((12, self.size))
         for i in range(self.size):
             # Матрица градиентов
-            b1 = zeros([3, self.freedom * self.size])
-            b2 = zeros([2, self.freedom * self.size])
+            bm = zeros([3, self.freedom * self.size])
+            bp = zeros([2, self.freedom * self.size])
             for j in range(self.size):
                 shape = 1 if i == j else 0
-                b1[0][self.freedom * j + 2] = b1[2][self.freedom * j + 1] = b2[0][self.freedom * j + 0] = self._dx(i, j)
-                b1[1][self.freedom * j + 1] = b1[2][self.freedom * j + 2] = b2[1][self.freedom * j + 0] = self._dy(i, j)
-                b2[0][self.freedom * j + 2] = b2[1][self.freedom * j + 1] = shape
-            e1 = b1.dot(u)
-            s1 = self._elastic_matrix().dot(e1)
-            e2 = b2.dot(u)
-            s2 = self._extra_elastic_matrix().dot(e2)
-            res[0][i] += e1[0]  # Exx
-            res[1][i] += e1[1]  # Eyy
-            res[3][i] += e1[2]  # Exy
-            res[4][i] += e2[0]  # Exz
-            res[5][i] += e2[1]  # Eyz
-            res[6][i] += s1[0]  # Sxx
-            res[7][i] += s1[1]  # Syy
-            res[9][i] += s1[2]  # Sxy
-            res[10][i] += s2[0]  # Sxz
-            res[11][i] += s2[1]  # Syz
+                bm[0][self.freedom * j + 2] = bm[2][self.freedom * j + 1] = bp[0][self.freedom * j + 0] = self._dx(i, j)
+                bm[1][self.freedom * j + 1] = bm[2][self.freedom * j + 2] = bp[1][self.freedom * j + 0] = self._dy(i, j)
+                bp[0][self.freedom * j + 2] = bp[1][self.freedom * j + 1] = shape
+            em = bm.dot(u)
+            ep = bp.dot(u)
+            sm = self._elastic_matrix().dot(em) * self.thickness * 0.5
+            sp = self._extra_elastic_matrix().dot(ep)
+            res[0][i] += em[0]  # Exx
+            res[1][i] += em[1]  # Eyy
+            res[3][i] += em[2]  # Exy
+            res[4][i] += ep[0]  # Exz
+            res[5][i] += ep[1]  # Eyz
+            res[6][i] += sm[0]  # Sxx
+            res[7][i] += sm[1]  # Syy
+            res[9][i] += sm[2]  # Sxy
+            res[10][i] += sp[0]  # Sxz
+            res[11][i] += sp[1]  # Syz
         return res
 
     # Формирование локальной матрицы жесткости
@@ -485,28 +485,34 @@ class TFES(TFEP):
                 bm[1][self.freedom * j + 1] = bm[2][self.freedom * j + 0] = bp[1][self.freedom * j + 4] = \
                     bp[2][self.freedom * j + 3] = bc[1][self.freedom * j + 2] = self._dy(i, j)
                 bc[0][self.freedom * j + 3] = bc[1][self.freedom * j + 4] = shape
-            d = bm.dot(lu) + bp.dot(lu)
-            s = self._elastic_matrix().dot(d)
+            dm = bm.dot(lu)
+            dp = bp.dot(lu)
             dc = bc.dot(lu)
+            sm = self._elastic_matrix().dot(dm)
+            sp = self._elastic_matrix().dot(dp) * self.thickness * 0.5
             sc = self._extra_elastic_matrix().dot(dc)
 
-            local_d = array([[d[0], d[2], dc[0]], [d[2], d[1], dc[1]], [dc[0], dc[1], 0]])
-            local_s = array([[s[0], s[2], sc[0]], [s[2], s[1], sc[1]], [sc[0], sc[1], 0]])
+            local_d = array([[dm[0] + dp[0], dm[2] + dp[2], dc[0]],
+                             [dm[2] + dp[2], dm[1] + dp[1], dc[1]],
+                             [dc[0], dc[1], 0]])
+            local_s = array([[sm[0] + sp[0], sm[2] + sp[2], sc[0]],
+                             [sm[2] + sp[2], sm[1] + sp[1], sc[1]],
+                             [sc[0], sc[1], 0]])
             global_d = self.T.conj().transpose().dot(local_d).dot(self.T)
             global_s = self.T.conj().transpose().dot(local_s).dot(self.T)
 
-            res[0][i] = global_d[0][0]    # Exx
-            res[1][i] = global_d[1][1]    # Eyy
-            res[2][i] = global_d[2][2]    # Ezz
-            res[3][i] = global_d[0][1]    # Exy
-            res[4][i] = global_d[0][2]    # Exz
-            res[5][i] = global_d[1][2]    # Eyz
-            res[6][i] = global_s[0][0]    # Sxx
-            res[7][i] = global_s[1][1]    # Syy
-            res[8][i] = global_s[2][2]    # Szz
-            res[9][i] = global_s[0][1]    # Sxy
-            res[10][i] = global_s[0][2]   # Sxz
-            res[11][i] = global_s[1][2]   # Syz
+            res[0][i] += global_d[0][0]    # Exx
+            res[1][i] += global_d[1][1]    # Eyy
+            res[2][i] += global_d[2][2]    # Ezz
+            res[3][i] += global_d[0][1]    # Exy
+            res[4][i] += global_d[0][2]    # Exz
+            res[5][i] += global_d[1][2]    # Eyz
+            res[6][i] += global_s[0][0]    # Sxx
+            res[7][i] += global_s[1][1]    # Syy
+            res[8][i] += global_s[2][2]    # Szz
+            res[9][i] += global_s[0][1]    # Sxy
+            res[10][i] += global_s[0][2]   # Sxz
+            res[11][i] += global_s[1][2]   # Syz
         return res
 
     def generate(self, is_static=True):
@@ -556,12 +562,19 @@ class TFES(TFEP):
                 self.M += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.density
                 self.C += shape.conj().transpose().dot(shape) * abs(jacobian) * self._w[i] * self.damping
 
-        # Устранение сингулярности
+        # Поиск максимального диагонального элемента
+        singular = 0
         for i in range(len(self.K)):
-            if self.K[i][i] == 0:
-                self.K[i][i] = 1.0E+10
-                if not is_static:
-                    self.M[i][i] = self.C[i][i] = 1.0E+10
+            if self.K[i][i] > singular:
+                singular = self.K[i][i]
+        singular *= 1.0E-3
+
+        # Устранение сингулярности
+        for i in range(self.size):
+            self.K[self.freedom * (i + 1) - 1][self.freedom * (i + 1) - 1] = singular
+            if not is_static:
+                self.M[self.freedom * (i + 1) - 1][self.freedom * (i + 1) - 1] = \
+                    self.C[self.freedom * (i + 1) - 1][self.freedom * (i + 1) - 1] = singular
 
         # Подготовка матрицы преобразования
         m = prepare_transform_matrix(self.size, self.freedom, self.T)
@@ -966,15 +979,18 @@ class TFE2D4P(TFEP, TFE2D4):
     def __init__(self):
         super().__init__()
 
+
 # Треугольный КЭ пластины
 class TFE2D3P(TFEP, TFE2D3):
     def __init__(self):
         super().__init__()
 
+
 # Квадратичный треугольный КЭ пластины
 class TFE2D6P(TFEP, TFE2D6):
     def __init__(self):
         super().__init__()
+
 
 # Треугольный КЭ оболочки
 class TFE2D3S(TFES, TFE2D3P):

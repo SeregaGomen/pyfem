@@ -1,11 +1,11 @@
 {
     "Header": {
-        "DateTime": "2018-10-07T19:14:24.141",
+        "DateTime": "2019-04-21T20:36:39.815",
         "Object": "console",
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "console.trpa"
+        "File": "D:/Work/python/pyfem/mesh/console.trpa"
     },
     "Parameters": {
         "Accuracy": "1e-6",
@@ -49,13 +49,13 @@
             {
                 "Direct": "2",
                 "Expression": "-1.0E+6",
-                "Predicate": "x=10",
+                "Predicate": "x == 10 and y == -0.25",
                 "Type": "5"
             },
             {
                 "Direct": "3",
                 "Expression": "0",
-                "Predicate": "x=0",
+                "Predicate": "x == 0",
                 "Type": "2"
             }
         ],

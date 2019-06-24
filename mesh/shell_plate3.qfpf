@@ -1,11 +1,11 @@
 {
     "Header": {
-        "DateTime": "2019-01-24T13:32:05.868",
-        "Object": "shell_plate3",
+        "DateTime": "2019-05-04T14:40:06.114",
+        "Object": "shell-plate3",
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "shell-plate3.trpa"
+        "File": "D:/Work/python/pyfem/mesh/shell-plate3.trpa"
     },
     "Parameters": {
         "Accuracy": "1e-10",
@@ -66,14 +66,14 @@
             },
             {
                 "Direct": "4",
-                "Expression": "-0.05",
-                "Predicate": "z=0",
+                "Expression": "0.05",
+                "Predicate": "z == 0",
                 "Type": "4"
             },
             {
                 "Direct": "7",
                 "Expression": "0",
-                "Predicate": "x = -0.5 or x = 0.5 or y = -0.5 or y = 0.5",
+                "Predicate": "x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5",
                 "Type": "2"
             }
         ],
@@ -84,7 +84,7 @@
             "WilsonTheta": "1.37"
         },
         "GeometricalParameters": {
-            "Thickness": "1"
+            "Thickness": "0.01"
         },
         "Names": [
             "x",
@@ -94,6 +94,9 @@
             "U",
             "V",
             "W",
+            "Tx",
+            "Ty",
+            "Tz",
             "Exx",
             "Eyy",
             "Ezz",

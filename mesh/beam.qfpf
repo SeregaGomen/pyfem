@@ -1,6 +1,6 @@
 {
     "Header": {
-        "DateTime": "2018-10-07T19:20:49.385",
+        "DateTime": "2019-05-01T08:14:37.321",
         "Object": "beam",
         "Title": "QFEM problem file"
     },
@@ -73,7 +73,7 @@
             {
                 "Direct": "7",
                 "Expression": "0",
-                "Predicate": "y=0",
+                "Predicate": "y == 0",
                 "Type": "2"
             }
         ],

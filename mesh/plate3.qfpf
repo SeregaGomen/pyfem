@@ -1,6 +1,6 @@
 {
     "Header": {
-        "DateTime": "2018-11-18T17:22:39.099",
+        "DateTime": "2019-04-13T07:09:07.348",
         "Object": "plate3_1_0",
         "Title": "QFEM problem file"
     },
@@ -73,7 +73,7 @@
             {
                 "Direct": "7",
                 "Expression": "0",
-                "Predicate": "x = -0.5 or x = 0.5 or y = -0.5 or y = 0.5",
+                "Predicate": "x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5",
                 "Type": "2"
             }
         ],

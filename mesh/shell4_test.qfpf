@@ -1,11 +1,11 @@
 {
     "Header": {
-        "DateTime": "2019-01-25T13:26:31.205",
+        "DateTime": "2019-06-08T13:09:24.196",
         "Object": "shell4_1_0",
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "shell4_1_0.trpa"
+        "File": "D:/Work/python/pyfem/mesh/shell4-2.0.trpa"
     },
     "Parameters": {
         "Accuracy": "1e-10",
@@ -67,19 +67,19 @@
             {
                 "Direct": "1",
                 "Expression": "0.05*cos(atan2(y,x))",
-                "Predicate": "(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)",
+                "Predicate": "(abs(x**2 + y**2 - 1.99**2) <= eps)",
                 "Type": "4"
             },
             {
                 "Direct": "2",
                 "Expression": "0.05*sin(atan2(y,x))",
-                "Predicate": "(abs(x^2 + y^2 - 1.99^2) <= 1.0E-3)",
+                "Predicate": "(abs(x**2 + y**2 - 1.99**2) <= eps)",
                 "Type": "4"
             },
             {
                 "Direct": "7",
                 "Expression": "0",
-                "Predicate": "z = 0 or z = 4.014",
+                "Predicate": "z == 0 or z == 4.014",
                 "Type": "2"
             }
         ],
@@ -100,6 +100,9 @@
             "U",
             "V",
             "W",
+            "Tx",
+            "Ty",
+            "Tz",
             "Exx",
             "Eyy",
             "Ezz",
@@ -141,7 +144,7 @@
             "dT": "0"
         },
         "Variables": [
-            "eps 1e-10"
+            "eps 0.1"
         ]
     }
 }

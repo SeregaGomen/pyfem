@@ -78,38 +78,38 @@
             },
             {
                 "Direct": "1",
-                "Expression": "p*cos(atan2(y,x))*sin(atan2((x^2+y^2)^0.5,(z -c0)))",
-                "Predicate": "abs(x^2 + y^2 + (z - c0)^2 - r^2) <= eps",
+                "Expression": "p*cos(atan2(y,x))*sin(atan2((x ** 2+y ** 2) ** 0.5,(z -c0)))",
+                "Predicate": "abs(x ** 2 + y ** 2 + (z - c0) ** 2 - r ** 2) <= eps",
                 "Type": "4"
             },
             {
                 "Direct": "2",
-                "Expression": "p*sin(atan2(y,x))*sin(atan2((x^2+y^2)^0.5,(z - c0)))",
-                "Predicate": "abs(x^2 + y^2 + (z - c0)^2 - r^2) <= eps",
+                "Expression": "p*sin(atan2(y,x))*sin(atan2((x ** 2+y ** 2) ** 0.5,(z - c0)))",
+                "Predicate": "abs(x ** 2 + y ** 2 + (z - c0) ** 2 - r ** 2) <= eps",
                 "Type": "4"
             },
             {
                 "Direct": "4",
-                "Expression": "p*cos(atan2((x^2+y^2)^0.5,(z - c0)))",
-                "Predicate": "abs(x^2 + y^2 + (z - c0)^2 - r^2) <= eps",
+                "Expression": "p*cos(atan2((x ** 2+y ** 2) ** 0.5,(z - c0)))",
+                "Predicate": "abs(x ** 2 + y ** 2 + (z - c0) ** 2 - r ** 2) <= eps",
                 "Type": "4"
             },
             {
                 "Direct": "1",
-                "Expression": "p*cos(atan2(y,x))*sin(atan2((x^2+y^2)^0.5,(z -c1)))",
-                "Predicate": "abs(x^2 + y^2 + (z - c1)^2 - r^2) <= eps",
+                "Expression": "p*cos(atan2(y,x))*sin(atan2((x ** 2+y ** 2) ** 0.5,(z -c1)))",
+                "Predicate": "abs(x ** 2 + y ** 2 + (z - c1) ** 2 - r ** 2) <= eps",
                 "Type": "4"
             },
             {
                 "Direct": "2",
-                "Expression": "p*sin(atan2(y,x))*sin(atan2((x^2+y^2)^0.5,(z - c1)))",
-                "Predicate": "abs(x^2 + y^2 + (z - c1)^2 - r^2) <= eps",
+                "Expression": "p*sin(atan2(y,x))*sin(atan2((x ** 2+y ** 2) ** 0.5,(z - c1)))",
+                "Predicate": "abs(x ** 2 + y ** 2 + (z - c1) ** 2 - r ** 2) <= eps",
                 "Type": "4"
             },
             {
                 "Direct": "4",
-                "Expression": "p*cos(atan2((x^2+y^2)^0.5,(z - c1)))",
-                "Predicate": "abs(x^2 + y^2 + (z - c1)^2 - r^2) <= eps",
+                "Expression": "p*cos(atan2((x ** 2+y ** 2) ** 0.5,(z - c1)))",
+                "Predicate": "abs(x ** 2 + y ** 2 + (z - c1) ** 2 - r ** 2) <= eps",
                 "Type": "4"
             },
             {

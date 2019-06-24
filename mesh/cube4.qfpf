@@ -1,11 +1,11 @@
 {
     "Header": {
-        "DateTime": "2019-01-18T13:57:35.855",
-        "Object": "cube4",
+        "DateTime": "2019-04-29T22:28:44.181",
+        "Object": "cube-4",
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "cube-4.trpa"
+        "File": "D:/Work/python/pyfem/mesh/cube-4.trpa"
     },
     "Parameters": {
         "Accuracy": "1e-10",
@@ -67,13 +67,19 @@
             {
                 "Direct": "4",
                 "Expression": "-0.5",
-                "Predicate": "z=1",
+                "Predicate": "",
+                "Type": "3"
+            },
+            {
+                "Direct": "0",
+                "Expression": "-0.5",
+                "Predicate": "z==1",
                 "Type": "4"
             },
             {
                 "Direct": "7",
                 "Expression": "0",
-                "Predicate": "z=0",
+                "Predicate": "z==0",
                 "Type": "2"
             }
         ],
@@ -135,7 +141,7 @@
             "dT": "0"
         },
         "Variables": [
-            "eps 1e-06"
+            "eps 1e-6"
         ]
     }
 }
