@@ -63,8 +63,8 @@ def cube4(res_name):
         # obj.add_temperature('100')
         # obj.add_alpha('1.25E-5')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z == 0')
-        # obj.add_volume_load(DIR_3, '-0.5')
-        obj.add_surface_load(DIR_3, '-0.5', 'z == 1')
+        obj.add_volume_load(DIR_3, '-0.5')
+        # obj.add_surface_load(DIR_3, '-0.5', 'z == 1')
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -367,7 +367,7 @@ def console_dynamic(res_name):
         obj.add_young_modulus('6.5E+10')
         obj.add_poisson_ratio('0.3')
         obj.add_boundary_condition(DIR_1 | DIR_2, '0', 'x == 0')
-        obj.add_concentrated_load(DIR_1, '-1.0E+5*cos(t)', 'x == 10')
+        obj.add_concentrated_load(DIR_1, '-1.0E+5*cos(t)', 'x == 10 and y == -0.25')
         obj.add_initial_condition(INIT_U, '0')
         obj.add_initial_condition(INIT_V, '0')
         obj.add_initial_condition(INIT_U_T, '0')
@@ -387,12 +387,12 @@ def plate4(res_name):
     if obj.set_mesh('mesh/plate4.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
-        obj.add_young_modulus('2E+6')
-        obj.add_poisson_ratio('0.3')
+        obj.add_young_modulus('203200')
+        obj.add_poisson_ratio('0.27')
 #        obj.set_names(['W', 'Tx', 'Ty', 'Exx', 'Eyy', 'Exy', 'Sxx', 'Syy', 'Sxy'])
         obj.add_thickness('0.01')
-        obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.1 or x == 0.1 or y == -0.1 or y == 0.1')
-        obj.add_surface_load(DIR_1, '-2000')
+        obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5')
+        obj.add_surface_load(DIR_1, '0.05')
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -641,8 +641,8 @@ def plate4_test(res_name):
 
 def shell4_test(res_name):
     obj = TObject()
-    # if obj.set_mesh('mesh/shell4-2.0.trpa'):
-    if obj.set_mesh('mesh/shell4_1_0.trpa'):
+    if obj.set_mesh('mesh/shell4-2.0.trpa'):
+    # if obj.set_mesh('mesh/shell4_1_0.trpa'):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.add_young_modulus('203200')
@@ -981,7 +981,7 @@ if __name__ == '__main__':
     # plate3('plate3')
     # plate3_test('plate3_test')
     # plate6_test('plate6_test')
-    plate4_test('plate4_test')
+    # plate4_test('plate4_test')
     # plate4('plate4')
 
     # -------------- Shell ---------------
@@ -1001,7 +1001,7 @@ if __name__ == '__main__':
     # tank3s('tank3s')
 
     # -------------- Dynamic -----------------
-    # console_dynamic('console_dynamic')
+    console_dynamic('console_dynamic')
     # beam_dynamic('beam_dynamic')
 
     # TPlot('tank3ds')
