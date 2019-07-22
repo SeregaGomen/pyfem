@@ -1,0 +1,144 @@
+{
+    "Header": {
+        "DateTime": "2019-05-04T09:29:44.129",
+        "Object": "shell-plate3",
+        "Title": "QFEM problem file"
+    },
+    "Mesh": {
+        "File": "shell-plate4.trpa"
+    },
+    "Parameters": {
+        "Accuracy": "1e-10",
+        "BoundaryConditions": [
+            {
+                "Direct": "1",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "8",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "64",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "2",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "16",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "128",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "4",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "32",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "256",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "4",
+                "Expression": "-0.05",
+                "Predicate": "z == 0",
+                "Type": "4"
+            },
+            {
+                "Direct": "7",
+                "Expression": "0",
+                "Predicate": "x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5",
+                "Type": "2"
+            }
+        ],
+        "DynamicParameters": {
+            "T0": "0",
+            "T1": "0",
+            "TH": "0",
+            "WilsonTheta": "1.37"
+        },
+        "GeometricalParameters": {
+            "Thickness": "0.01"
+        },
+        "Names": [
+            "x",
+            "y",
+            "z",
+            "t",
+            "U",
+            "V",
+            "W",
+            "Tx",
+            "Ty",
+            "Tz",
+            "Exx",
+            "Eyy",
+            "Ezz",
+            "Exy",
+            "Exz",
+            "Eyz",
+            "Sxx",
+            "Syy",
+            "Szz",
+            "Sxy",
+            "Sxz",
+            "Syz",
+            "Ut",
+            "Vt",
+            "Wt",
+            "Utt",
+            "Vtt",
+            "Wtt"
+        ],
+        "Nonlinearity": {
+            "CalculationMethod": 0,
+            "ForceStep": "0.01",
+            "MechanicalProperty": [
+            ]
+        },
+        "OutputParameters": {
+            "Precision": "5",
+            "Width": "12"
+        },
+        "PhysicalParameters": {
+            "Damping": "0",
+            "Density": "0",
+            "PoissonsRatio": "0.27",
+            "YoungsModulus": "203200"
+        },
+        "ProblemType": "Static",
+        "ThermalParameters": {
+            "Alpha": "0",
+            "dT": "0"
+        },
+        "Variables": [
+            "eps 1e-10"
+        ]
+    }
+}

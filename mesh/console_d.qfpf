@@ -1,0 +1,126 @@
+{
+    "Header": {
+        "DateTime": "2019-07-22T07:23:27.651",
+        "Object": "console",
+        "Title": "QFEM problem file"
+    },
+    "Mesh": {
+        "File": "D:/Work/python/pyfem/mesh/console.trpa"
+    },
+    "Parameters": {
+        "Accuracy": "1e-6",
+        "BoundaryConditions": [
+            {
+                "Direct": "1",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "8",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "64",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "2",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "16",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "128",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "2",
+                "Expression": "-1.0E+5*cos(t)",
+                "Predicate": "x == 10 and y == -0.25",
+                "Type": "5"
+            },
+            {
+                "Direct": "3",
+                "Expression": "0",
+                "Predicate": "x == 0",
+                "Type": "2"
+            }
+        ],
+        "DynamicParameters": {
+            "T0": "0",
+            "T1": "1",
+            "TH": "0.25",
+            "WilsonTheta": "1.37"
+        },
+        "GeometricalParameters": {
+            "Thickness": "1"
+        },
+        "Names": [
+            "x",
+            "y",
+            "z",
+            "t",
+            "U",
+            "V",
+            "W",
+            "Tx",
+            "Ty",
+            "Tz",
+            "Exx",
+            "Eyy",
+            "Ezz",
+            "Exy",
+            "Exz",
+            "Eyz",
+            "Sxx",
+            "Syy",
+            "Szz",
+            "Sxy",
+            "Sxz",
+            "Syz",
+            "Ut",
+            "Vt",
+            "Wt",
+            "Utt",
+            "Vtt",
+            "Wtt"
+        ],
+        "Nonlinearity": {
+            "CalculationMethod": 0,
+            "ForceStep": "0.01",
+            "MechanicalProperty": [
+            ]
+        },
+        "OutputParameters": {
+            "Precision": "5",
+            "Width": "12"
+        },
+        "PhysicalParameters": {
+            "Damping": "3.383",
+            "Density": "1000",
+            "PoissonsRatio": "0.3",
+            "YoungsModulus": "6.5e+10"
+        },
+        "ProblemType": "Dynamic",
+        "ThermalParameters": {
+            "Alpha": "0",
+            "dT": "0"
+        },
+        "Variables": [
+            "eps 1e-6"
+        ]
+    }
+}

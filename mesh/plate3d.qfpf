@@ -1,0 +1,135 @@
+{
+    "Header": {
+        "DateTime": "2019-02-23T16:21:05.012",
+        "Object": "plate3d",
+        "Title": "QFEM problem file"
+    },
+    "Mesh": {
+        "File": "D:/Work/python/pyfem/mesh/plate3d.trpa"
+    },
+    "Parameters": {
+        "Accuracy": "1e-10",
+        "BoundaryConditions": [
+            {
+                "Direct": "1",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "8",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "64",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "2",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "16",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "128",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "4",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "32",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "256",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "7",
+                "Expression": "0",
+                "Predicate": "x = -0.5 or x = 0.5 or y = -0.5 or y = 0.5",
+                "Type": "2"
+            }
+        ],
+        "DynamicParameters": {
+            "T0": "0",
+            "T1": "0",
+            "TH": "0",
+            "WilsonTheta": "1.37"
+        },
+        "GeometricalParameters": {
+            "Thickness": "1"
+        },
+        "Names": [
+            "x",
+            "y",
+            "z",
+            "t",
+            "U",
+            "V",
+            "W",
+            "Exx",
+            "Eyy",
+            "Ezz",
+            "Exy",
+            "Exz",
+            "Eyz",
+            "Sxx",
+            "Syy",
+            "Szz",
+            "Sxy",
+            "Sxz",
+            "Syz",
+            "Ut",
+            "Vt",
+            "Wt",
+            "Utt",
+            "Vtt",
+            "Wtt"
+        ],
+        "Nonlinearity": {
+            "CalculationMethod": 0,
+            "ForceStep": "0.01",
+            "MechanicalProperty": [
+            ]
+        },
+        "OutputParameters": {
+            "Precision": "5",
+            "Width": "12"
+        },
+        "PhysicalParameters": {
+            "Damping": "0",
+            "Density": "0",
+            "PoissonsRatio": "0.27",
+            "YoungsModulus": "2.032e+11"
+        },
+        "ProblemType": "Static",
+        "ThermalParameters": {
+            "Alpha": "1.25e-5",
+            "dT": "100"
+        },
+        "Variables": [
+            "eps 1e-10"
+        ]
+    }
+}

@@ -1,0 +1,176 @@
+{
+    "Header": {
+        "DateTime": "2019-06-30T11:58:35.107",
+        "Object": "tank3ds",
+        "Title": "QFEM problem file"
+    },
+    "Mesh": {
+        "File": "D:/Work/python/pyfem/mesh/tank3ds.trpa"
+    },
+    "Parameters": {
+        "Accuracy": "1e-10",
+        "BoundaryConditions": [
+            {
+                "Direct": "1",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "8",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "64",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "2",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "16",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "128",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "4",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "32",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "256",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "0",
+                "Expression": "p + Ro * g * (z - h)",
+                "Predicate": "(z <= 0 and z >= -l)",
+                "Type": "6"
+            },
+            {
+                "Direct": "0",
+                "Expression": "-(p +  Ro * g * (z - h))",
+                "Predicate": "abs(x ** 2 + y ** 2 + (z - c0) ** 2 - r ** 2) <= eps",
+                "Type": "6"
+            },
+            {
+                "Direct": "0",
+                "Expression": "p + Ro * g * (z - h)",
+                "Predicate": "abs(x ** 2 + y ** 2 + (z - c1) ** 2 - r ** 2) <= eps",
+                "Type": "6"
+            },
+            {
+                "Direct": "1",
+                "Expression": "0",
+                "Predicate": "abs(x) <= eps",
+                "Type": "2"
+            },
+            {
+                "Direct": "2",
+                "Expression": "0",
+                "Predicate": "abs(y) <= eps",
+                "Type": "2"
+            },
+            {
+                "Direct": "7",
+                "Expression": "0",
+                "Predicate": "abs(z + h) <= eps",
+                "Type": "2"
+            }
+        ],
+        "DynamicParameters": {
+            "T0": "0",
+            "T1": "0",
+            "TH": "0",
+            "WilsonTheta": "1.37"
+        },
+        "GeometricalParameters": {
+            "Thickness": "0.0028"
+        },
+        "Names": [
+            "x",
+            "y",
+            "z",
+            "t",
+            "U",
+            "V",
+            "W",
+            "Tx",
+            "Ty",
+            "Tz",
+            "Exx",
+            "Eyy",
+            "Ezz",
+            "Exy",
+            "Exz",
+            "Eyz",
+            "Sxx",
+            "Syy",
+            "Szz",
+            "Sxy",
+            "Sxz",
+            "Syz",
+            "Ut",
+            "Vt",
+            "Wt",
+            "Utt",
+            "Vtt",
+            "Wtt"
+        ],
+        "Nonlinearity": {
+            "CalculationMethod": 0,
+            "ForceStep": "0.01",
+            "MechanicalProperty": [
+            ]
+        },
+        "OutputParameters": {
+            "Precision": "5",
+            "Width": "12"
+        },
+        "PhysicalParameters": {
+            "Damping": "0",
+            "Density": "0",
+            "PoissonsRatio": "0.3",
+            "YoungsModulus": "6.5e+10"
+        },
+        "ProblemType": "Static",
+        "ThermalParameters": {
+            "Alpha": "0",
+            "dT": "0"
+        },
+        "Variables": [
+            "Ro 1000",
+            "c0 -1.565",
+            "c1 -15.126",
+            "eps 0.01",
+            "g 9.78",
+            "h 17.626",
+            "l 16.691",
+            "p 1000",
+            "r 2.5"
+        ]
+    }
+}
