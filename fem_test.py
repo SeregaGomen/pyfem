@@ -993,7 +993,7 @@ if __name__ == '__main__':
     # shell_plate6_test('shell-plate3')
     # shell_plate4_test('shell-plate4')
 
-    # shell3_test('shell3_test')
+    shell3_test('shell3_test')
     # shell4_test('shell4_test')
     # shell6_test('shell6_test')
 
@@ -1001,7 +1001,7 @@ if __name__ == '__main__':
     # tank3s('tank3s')
 
     # -------------- Dynamic -----------------
-    console_dynamic('console_dynamic')
+    # console_dynamic('console_dynamic')
     # beam_dynamic('beam_dynamic')
 
     # TPlot('tank3ds')

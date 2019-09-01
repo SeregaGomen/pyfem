@@ -79,9 +79,20 @@ class TMainWindow(QMainWindow):
 
     # Загрузка данных из файла
     def __load_file(self):
-        # Подготовка имени файла
-        if len(self.file_name) < 5 or self.file_name[len(self.file_name) - 5:] != '.json':
+        ret = False
+        ext = os.path.splitext(self.file_name)[1]
+        if ext == '':
+            # По-уморлчанию работаем с json-файлом
             self.file_name += '.json'
+            ext = '.json'
+        if ext == '.json':
+            ret = self.__load_file_json()
+        elif ext == '.qres':
+            ret = self.__load_file_qres()
+        return ret
+
+    # Загрузка данных из json-файла
+    def __load_file_json(self):
         # Проверка наличия файла
         if not os.path.exists(self.file_name):
             print_error('Unable open file ' + self.file_name)
@@ -109,6 +120,112 @@ class TMainWindow(QMainWindow):
             res.name = results[i]['function']
             res.t = results[i]['t']
             res.results = results[i]['results']
+            self.results.append(res)
+        return True
+
+    # Загрузка данных из qres-файла
+    def __load_file_qres(self):
+        # Проверка наличия файла
+        if not os.path.exists(self.file_name):
+            print_error('Unable open file ' + self.file_name)
+            self.statusBar().showMessage('Error read data from file ' + self.file_name)
+            self.setWindowTitle('PyFEM results viewer')
+            return False
+        self.setWindowTitle('PyFEM results viewer - ' + self.file_name)
+        self.statusBar().showMessage('Success load file ' + self.file_name)
+        # Чтение файла
+        try:
+            file = open(self.file_name)
+            lines = file.readlines()
+            file.close()
+        except IOError:
+            print_error('Unable read file ' + self.file_name)
+            return False
+        # Обработка данных
+        if lines[0].split('\n')[0] != 'QFEM results file':
+            print_error('Wrong file format: ' + self.file_name)
+            return False
+        # Тип КЭ
+        type = int(lines[1])
+        if type == 3:
+            self.fe_type = 'fe_2d_3'
+        elif type == 4:
+            self.fe_type = 'fe_3d_4'
+        elif type == 6:
+            self.fe_type = 'fe_2d_6'
+        elif type == 8:
+            self.fe_type = 'fe_3d_8'
+        elif type == 10:
+            self.fe_type = 'fe_3d_10'
+        elif type == 24:
+            self.fe_type = 'fe_2d_4'
+        elif type == 34:
+            self.fe_type = 'fe_1d_2'
+        elif type == 123:
+            self.fe_type = 'fe_2d_3_p'
+        elif type == 124:
+            self.fe_type = 'fe_2d_4_p'
+        elif type == 125:
+            self.fe_type = 'fe_2d_6_p'
+        elif type == 223:
+            self.fe_type = 'fe_2d_3_s'
+        elif type == 224:
+            self.fe_type = 'fe_2d_4_s'
+        elif type == 225:
+            self.fe_type = 'fe_2d_6_s'
+        else:
+            print_error('Wrong file format: ' + self.file_name)
+            return False
+        # Кол-во узлов
+        n = int(lines[2])
+        # Считываем узлы
+        index = 3
+        for i in range(n):
+            row = list()
+            coord = lines[3 + i].split()
+            for j in range(len(coord)):
+                row.append(float(coord[j]))
+            self.x.append(row)
+            index += 1
+        # Кол-во КЭ
+        n = int(lines[index])
+        index += 1
+        # Считываем КЭ
+        for i in range(n):
+            row = []
+            fe = lines[index].split()
+            for j in range(len(fe)):
+                row.append(int(fe[j]))
+            self.fe.append(row)
+            index += 1
+        # Кол-во ГЭ
+        n = int(lines[index])
+        index += 1
+        # Считываем ГЭ
+        for i in range(n):
+            row = []
+            be = lines[index].split()
+            for j in range(len(be)):
+                row.append(int(be[j]))
+            self.be.append(row)
+            index += 1
+        if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_3_s' or \
+                self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_2d_6_s' or self.fe_type == 'fe_2d_4_s':
+            self.be = self.fe
+        # Пропускаекм время расчета
+        index += 1
+        # Считываем кол-во функций
+        n = int(lines[index])
+        index += 1
+        for i in range(n):
+            res = TResult()
+            res.name = lines[index].split('\n')[0]
+            res.t = float(lines[index + 1])
+            m = int(lines[index + 2])
+            index += 3
+            for j in range(m):
+                res.results.append(float(lines[index]))
+                index += 1
             self.results.append(res)
         return True
 
@@ -230,7 +347,7 @@ class TMainWindow(QMainWindow):
             self.__gl_widget.set_fun_index(self.current_index)
 
     def __open_action(self):
-        dlg = QFileDialog(self, 'Open data file', '', 'JSON data files (*.json)')
+        dlg = QFileDialog(self, 'Open data file', '', 'JSON data files (*.json);;QFEM results file (*.qres)')
         if dlg.exec_():
             if len(self.x):
                 self.__close_action()
