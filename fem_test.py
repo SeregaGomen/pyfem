@@ -772,6 +772,37 @@ def tank3s(res_name):
         return False
 
 
+def tank3s6(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/tank3s6.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+#        obj.set_solve_method('iterative')
+        obj.add_variable('eps', 0.01)
+        obj.add_variable('L', 0.269)
+        obj.add_variable('P', 10000)
+        obj.add_variable('p', 5000)
+        obj.add_variable('R', 1.037)
+
+        obj.add_young_modulus('6.5E+10')
+        obj.add_poisson_ratio('0.3')
+        # obj.add_temperature('100')
+        # obj.add_alpha('1.25E-5')
+
+        obj.add_thickness('0.0015')
+        obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'y == -0.643 and abs(x**2 + z**2 -1.641**2) <= eps')
+
+#################################
+        obj.add_pressure_loads
+
+        if obj.calc():
+            obj.print_result('mesh/' + obj.object_name() + '.res')
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
+
 def plate3d(res_name):
     obj = TObject()
     # if obj.set_mesh('mesh/plate3d.trpa'):
@@ -923,7 +954,7 @@ def tank3ds(res_name):
         obj.add_boundary_condition(DIR_1, '0', 'abs(x) <= eps')
         obj.add_boundary_condition(DIR_2, '0', 'abs(y) <= eps')
 
-        obj.add_surface_load(DIR_1, 'p*cos(atan2(y,x))', '(z <= 0 and z >= -l)', )
+        obj.add_surface_load(DIR_1, 'p*cos(atan2(y,x))', '(z <= 0 and z >= -l)')
         obj.add_surface_load(DIR_2, 'p*sin(atan2(y,x))', '(z <= 0 and z >= -l)')
 
         obj.add_surface_load(DIR_1, 'p*cos(atan2(y,x))*sin(atan2((x**2+y**2)**0.5,(z -c0)))',
@@ -993,12 +1024,13 @@ if __name__ == '__main__':
     # shell_plate6_test('shell-plate3')
     # shell_plate4_test('shell-plate4')
 
-    shell3_test('shell3_test')
+    # shell3_test('shell3_test')
     # shell4_test('shell4_test')
     # shell6_test('shell6_test')
 
     # tank3ds('tank3ds')
     # tank3s('tank3s')
+    tank3s6('tank3s6')
 
     # -------------- Dynamic -----------------
     # console_dynamic('console_dynamic')
