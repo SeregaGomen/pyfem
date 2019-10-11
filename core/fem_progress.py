@@ -50,7 +50,7 @@ class TThreadProgress(Thread):
         for c in itertools.cycle(['|', '/', '-', '\\']):
             if self.is_stopped:
                 break
-            sys.stdout.write('\r' + self.progress_name + ': ' + c)
+            sys.stdout.write('\r' + self.progress_name + ' ' + c)
             sys.stdout.flush()
             time.sleep(0.1)
         sys.stdout.write('\r' + self.progress_name + ' 100%\n')
