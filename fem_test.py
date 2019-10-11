@@ -429,9 +429,9 @@ def shell3(res_name):
         obj.add_young_modulus('2E+6')
         obj.add_poisson_ratio('0.3')
         obj.add_thickness('0.01')
-        obj.add_boundary_condition(DIR_2, '0', 'y = 0')
-        obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z = 0')
-        obj.add_concentrated_load(DIR_2, '-1.0E+2', 'z = 5')
+        obj.add_boundary_condition(DIR_2, '0', 'y == 0')
+        obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z == 0')
+        obj.add_concentrated_load(DIR_2, '-1.0E+2', 'z == 5')
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -448,7 +448,7 @@ def shell4(res_name):
         obj.add_young_modulus('203200')
         obj.add_poisson_ratio('0.27')
         obj.add_thickness('0.01')
-        obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1')
+        obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'x == -0.1 or x == 0.1 or y == -0.1 or y == 0.1')
         obj.add_surface_load(DIR_1, '-2000')
         if obj.calc():
             obj.print_result()
@@ -490,8 +490,9 @@ def shell3_test(res_name):
         # obj.add_temperature('100')
         # obj.add_alpha('1.25E-5')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z == 0 or z == 4.014')
-        obj.add_surface_load(DIR_1, '0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
-        obj.add_surface_load(DIR_2, '0.05*sin(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
+        # obj.add_surface_load(DIR_1, '0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
+        # obj.add_surface_load(DIR_2, '0.05*sin(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
+        obj.add_pressure_load('0.05')
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -793,7 +794,14 @@ def tank3s6(res_name):
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'y == -0.643 and abs(x**2 + z**2 -1.641**2) <= eps')
 
 #################################
-        obj.add_pressure_loads
+        obj.add_pressure_load('P - p', '(y <= 0 and y>=-L) and (abs(x**2 + z**2 - R**2) <= eps)')
+        obj.add_pressure_load('P - p', '(y < -L) and (abs(x**2 + z**2 + (y + L)**2 - R**2) <= eps)')
+        obj.add_pressure_load('P', '(y > 0) and (abs(x**2 + y**2 + z**2 - R**2) <= eps)')
+        obj.add_pressure_load('p', '(y == -1.724) and (x**2+z**2 - 0.342**2 <= eps)')
+        obj.add_pressure_load('p', '(y == -1.944) and (x**2+z**2 - 0.660**2 <= eps)')
+        obj.add_pressure_load('p', '(y > -0.641 and y <-0.0234) and abs(y-((x**2+z**2)**0.5)*(-1.0644108554)-1.1013629509)<=eps')
+        obj.add_pressure_load('p', '(y>-1.944 and y <-1.7235) and abs(y - ((x**2 + z**2)**0.5)*(-1.0018498686)+1.3808172524)<=eps')
+        obj.add_pressure_load('p', '(y>-1.944 and y < -0.6431) and abs(y - ((x**2 + z**2)**0.5)*(1.3260378897) + 2.8163434974)<=eps')
 
         if obj.calc():
             obj.print_result('mesh/' + obj.object_name() + '.res')
@@ -1024,13 +1032,15 @@ if __name__ == '__main__':
     # shell_plate6_test('shell-plate3')
     # shell_plate4_test('shell-plate4')
 
-    # shell3_test('shell3_test')
+    shell3_test('shell3_test')
     # shell4_test('shell4_test')
     # shell6_test('shell6_test')
 
     # tank3ds('tank3ds')
     # tank3s('tank3s')
-    tank3s6('tank3s6')
+
+
+    # tank3s6('tank3s6')
 
     # -------------- Dynamic -----------------
     # console_dynamic('console_dynamic')

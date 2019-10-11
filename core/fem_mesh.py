@@ -14,13 +14,14 @@ from core.fem_error import TFEMException
 FEType = [
     'fe_1d_2',
     'fe_2d_3',
+    'fe_2d_4',
     'fe_2d_6',
     'fe_2d_3_p',
-    'fe_2d_6_p',
-    'fe_2d_3_s',
-    'fe_2d_6_s',
-    'fe_2d_4',
     'fe_2d_4_p',
+    'fe_2d_6_p',
+    'fe_3d_3_s',
+    'fe_3d_4_s',
+    'fe_3d_6_s',
     'fe_3d_4',
     'fe_3d_8',
     'fe_3d_10'
@@ -60,11 +61,11 @@ class TMesh:
         elif t == 125:
             return 'fe_2d_6_p', 0, 6, 3, 2
         elif t == 223:
-            return 'fe_2d_3_s', 0, 3, 6, 3
+            return 'fe_3d_3_s', 0, 3, 6, 3
         elif t == 224:
-            return 'fe_2d_4_s', 0, 4, 6, 3
+            return 'fe_3d_4_s', 0, 4, 6, 3
         elif t == 225:
-            return 'fe_2d_6_s', 0, 6, 6, 3
+            return 'fe_3d_6_s', 0, 6, 6, 3
         else:
             raise TFEMException('unknown_fe_err')
 
@@ -110,8 +111,8 @@ class TMesh:
                 row.append(int(lines[index].split()[j]))
             self.be.append(row)
             index += 1
-        if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_3_s' or \
-                self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_2d_6_s' or self.fe_type == 'fe_2d_4_s':
+        if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_3d_3_s' or \
+                self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_3d_6_s' or self.fe_type == 'fe_3d_4_s':
             self.be = self.fe
 
     def fe_name(self):
@@ -127,13 +128,13 @@ class TMesh:
             return 'triangular plate element (3 nodes)'
         elif self.fe_type == 'fe_2d_6_p':
             return 'triangular plate element (6 nodes)'
-        elif self.fe_type == 'fe_2d_3_s':
+        elif self.fe_type == 'fe_3d_3_s':
             return 'triangular shell element (3 nodes)'
-        elif self.fe_type == 'fe_2d_6_s':
+        elif self.fe_type == 'fe_3d_6_s':
             return 'triangular shell element (6 nodes)'
         elif self.fe_type == 'fe_2d_4_p':
             return 'plate element (4 nodes)'
-        elif self.fe_type == 'fe_2d_4_s':
+        elif self.fe_type == 'fe_3d_4_s':
             return 'shell element (4 nodes)'
         elif self.fe_type == 'fe_3d_4':
             return 'linear tetrahedron (4 nodes)'
@@ -186,18 +187,27 @@ class TMesh:
             else False
 
     def is_shell(self):
-        return True if self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_2d_4_s' or self.fe_type == 'fe_2d_6_s' \
+        return True if self.fe_type == 'fe_3d_3_s' or self.fe_type == 'fe_3d_4_s' or self.fe_type == 'fe_3d_6_s' \
             else False
+
+    def is_1d(self):
+        return True if self.fe_type == 'fe_1d_2' else False
+
+    def is_2d(self):
+        return True if self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_6' else False
+
+    def is_3d(self):
+        return True if self.fe_type == 'fe_3d_4' or self.fe_type == 'fe_3d_8' or self.fe_type == 'fe_3d_10' else False
 
     def base_be_size(self):
         if self.fe_type == 'fe_2d_6':
             return 2
-        elif self.fe_type == 'fe_3d_10' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_6_s':
+        elif self.fe_type == 'fe_3d_10' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_3d_6_s':
             return 3
         return len(self.be[0])
 
     def base_fe_size(self):
-        if self.fe_type == 'fe_2d_6' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_6_s':
+        if self.fe_type == 'fe_2d_6' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_3d_6_s':
             return 3
         elif self.fe_type == 'fe_3d_10':
             return 4
@@ -212,15 +222,15 @@ class TMesh:
         s = 0
         if self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_6':  # ГЭ - отрезок
             s = sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
-        elif self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_3d_4' or \
-                self.fe_type == 'fe_3d_10' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_6_s':
+        elif self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_3d_3_s' or self.fe_type == 'fe_3d_4' or \
+                self.fe_type == 'fe_3d_10' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_3d_6_s':
             # ГЭ - треугольник
             a = sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2 + (x[0][2] - x[1][2]) ** 2)
             b = sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2 + (x[0][2] - x[2][2]) ** 2)
             c = sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2 + (x[2][2] - x[1][2]) ** 2)
             p = 0.5 * (a + b + c)
             s = sqrt(p * (p - a) * (p - b) * (p - c))
-        elif self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_3d_8' or self.fe_type == 'fe_2d_4_s':
+        elif self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_3d_8' or self.fe_type == 'fe_3d_4_s':
             # ГЭ - четырехугольник
             a = sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2 + (x[0][2] - x[1][2]) ** 2)
             b = sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2 + (x[0][2] - x[2][2]) ** 2)
@@ -241,13 +251,13 @@ class TMesh:
         if self.fe_type == 'fe_1d_2':
             v = abs(x[0][0] - x[1][0])
         elif self.fe_type == 'fe_2d_3' or self.fe_type == 'fe_2d_6' or self.fe_type == 'fe_2d_3_p' or \
-                self.fe_type == 'fe_2d_3_s' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_6_s':
+                self.fe_type == 'fe_3d_3_s' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_3d_6_s':
             a = sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
             b = sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2)
             c = sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2)
             p = 0.5 * (a + b + c)
             v = sqrt(p * (p - a) * (p - b) * (p - c))
-        elif self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_2d_4_s':
+        elif self.fe_type == 'fe_2d_4' or self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_3d_4_s':
             a = sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2)
             b = sqrt((x[0][0] - x[2][0]) ** 2 + (x[0][1] - x[2][1]) ** 2)
             c = sqrt((x[2][0] - x[1][0]) ** 2 + (x[2][1] - x[1][1]) ** 2)
@@ -278,4 +288,36 @@ class TMesh:
                      x[ref[i][3]][2] - x[ref[i][0]][2]],
                 ])
                 v += abs(det(m)) / 6
+        return v
+
+    # Построение вектора нормали к заданному ГЭ
+    def be_normal(self, index):
+        v = [0, 0, 0]
+        # Построение нормали зависит от типа КЭ
+        if self.is_1d():
+            # Одномерная задача
+            v[0] = 1
+        elif self.is_2d():
+            # Плоская задача
+            v[0] = self.x[self.be[index][0]][1] - self.x[self.be[index][1]][1]
+            v[1] = self.x[self.be[index][1]][0] - self.x[self.be[index][0]][0]
+        elif self.is_plate():
+            # Пластины
+            v[0] = v[1] = 0
+        else:
+            # Оболочка или трехмерная задача
+            v[0] = (self.x[self.be[index][1]][1] - self.x[self.be[index][0]][1]) * (self.x[self.be[index][2]][2] -
+                    self.x[self.be[index][0]][2]) - (self.x[self.be[index][2]][1] - self.x[self.be[index][0]][1]) * \
+                   (self.x[self.be[index][1]][2] - self.x[self.be[index][0]][2])
+            v[1] = (self.x[self.be[index][2]][0] - self.x[self.be[index][0]][0]) * (self.x[self.be[index][1]][2] -
+                    self.x[self.be[index][0]][2]) - (self.x[self.be[index][1]][0] - self.x[self.be[index][0]][0]) * \
+                   (self.x[self.be[index][2]][2] - self.x[self.be[index][0]][2])
+            v[2] = (self.x[self.be[index][1]][0] - self.x[self.be[index][0]][0]) * (self.x[self.be[index][2]][1] -
+                    self.x[self.be[index][0]][1]) - (self.x[self.be[index][2]][0] - self.x[self.be[index][0]][0]) * \
+                   (self.x[self.be[index][1]][1] - self.x[self.be[index][0]][1])
+        # Нормализируем вектор
+        len = (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) ** 0.5
+        v[0] /= len
+        v[1] /= len
+        v[2] /= len
         return v

@@ -55,6 +55,7 @@ type_condition = [
     'volume',
     'surface',
     'concentrated',
+    'pressure',
     'thickness',
     'young_modulus',
     'poisson_ratio',
@@ -66,7 +67,7 @@ type_condition = [
 
 
 # Описание условия
-class TCondition:
+class TParameter:
     def __init__(self):
         self.direct = 0         # Направление (номер функции, для которой задается условие): 0 - по x и т.д.
         self.expression = ''    # Функциональное выражение, определяющее значение условия (например, 10^5)
@@ -89,8 +90,8 @@ class TFEMParams:
         self.bc_list = []       # Список краевых условий
         self.var_list = {}      # Список вспомогательных переменных и их значений
 
-    def __add_condition(self, t, e, p, d=0):
-        c = TCondition()
+    def __add_parameter(self, t, e, p, d=0):
+        c = TParameter()
         c.type = t
         c.direct = d
         c.expression = e
@@ -98,40 +99,43 @@ class TFEMParams:
         self.bc_list.append(c)
 
     def add_boundary_condition(self, e, p, d):
-        self.__add_condition('boundary', e, p, d)
+        self.__add_parameter('boundary', e, p, d)
 
     def add_initial_condition(self, e, p, d):
-        self.__add_condition('initial', e, p, d)
+        self.__add_parameter('initial', e, p, d)
 
     def add_volume_load(self, e, p, d):
-        self.__add_condition('volume', e, p, d)
+        self.__add_parameter('volume', e, p, d)
 
     def add_surface_load(self, e, p, d):
-        self.__add_condition('surface', e, p, d)
+        self.__add_parameter('surface', e, p, d)
 
     def add_concentrated_load(self, e, p, d):
-        self.__add_condition('concentrated', e, p, d)
+        self.__add_parameter('concentrated', e, p, d)
+
+    def add_pressure_load(self, e, p):
+        self.__add_parameter('pressure', e, p, 0)
 
     def add_density(self, e, p):
-        self.__add_condition('density', e, p)
+        self.__add_parameter('density', e, p)
 
     def add_damping(self, e, p):
-        self.__add_condition('damping', e, p)
+        self.__add_parameter('damping', e, p)
 
     def add_thickness(self, e, p):
-        self.__add_condition('thickness', e, p)
+        self.__add_parameter('thickness', e, p)
 
     def add_young_modulus(self, e, p):
-        self.__add_condition('young_modulus', e, p)
+        self.__add_parameter('young_modulus', e, p)
 
     def add_poisson_ratio(self, e, p):
-        self.__add_condition('poisson_ratio', e, p)
+        self.__add_parameter('poisson_ratio', e, p)
 
     def add_temperature(self, e, p):
-        self.__add_condition('temperature', e, p)
+        self.__add_parameter('temperature', e, p)
 
     def add_alpha(self, e, p):
-        self.__add_condition('alpha', e, p)
+        self.__add_parameter('alpha', e, p)
 
     def add_variable(self, var, val):
         self.var_list.setdefault(var, val)

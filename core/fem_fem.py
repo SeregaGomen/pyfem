@@ -78,11 +78,11 @@ class TFEM:
             fe = TFE2D6P()
         elif self.mesh.fe_type == 'fe_2d_4_p':
             fe = TFE2D4P()
-        elif self.mesh.fe_type == 'fe_2d_3_s':
+        elif self.mesh.fe_type == 'fe_3d_3_s':
             fe = TFE2D3S()
-        elif self.mesh.fe_type == 'fe_2d_6_s':
+        elif self.mesh.fe_type == 'fe_3d_6_s':
             fe = TFE2D6S()
-        elif self.mesh.fe_type == 'fe_2d_4_s':
+        elif self.mesh.fe_type == 'fe_3d_4_s':
             fe = TFE2D4S()
         return fe
 

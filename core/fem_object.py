@@ -101,6 +101,9 @@ class TObject:
     def add_surface_load(self, d, e, p=''):
         self.__params.add_surface_load(e, p, d)
 
+    def add_pressure_load(self, e, p=''):
+        self.__params.add_pressure_load(e, p)
+
     def add_variable(self, var, val):
         self.__params.add_variable(var, val)
 

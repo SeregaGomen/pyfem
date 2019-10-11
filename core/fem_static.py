@@ -41,6 +41,7 @@ class TFEMStatic(TFEM):
         self._use_surface_load()
         self._use_volume_load()
         self._use_concentrated_load()
+        self._use_pressure_load()
         # Учет краевых условий
         self._use_boundary_condition()
         # Решение СЛАУ
@@ -156,6 +157,39 @@ class TFEMStatic(TFEM):
                         self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 1] += load * share[k]
                     if self.params.bc_list[i].direct & DIR_3:
                         self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 2] += load * share[k]
+
+    # Вычисление нагрузок поверхностного давления
+    def _use_pressure_load(self, t=0):
+        counter = 0
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type == 'pressure':
+                counter += 1
+        if not counter:
+            return
+        self._progress.set_process('Computation of pressure load...', 1, counter * len(self.mesh.be))
+        counter = 1
+        for i in range(0, len(self.params.bc_list)):
+            if self.params.bc_list[i].type != 'pressure':
+                continue
+            for j in range(len(self.mesh.be)):
+                self._progress.set_progress(counter)
+                counter += 1
+                if not self.__check_be(j, self.params.bc_list[i].predicate):
+                    continue
+
+                share = self.__surface_load_share(j)
+                parser = self.create_parser(self.mesh.get_be_center(j), t)
+                parser.set_code(self.params.bc_list[i].expression)
+                load = parser.run()
+                # Вычисление нормали к ГЭ
+                v = self.mesh.be_normal(j)
+                for k in range(0, len(self.mesh.be[j])):
+                    if self.mesh.is_plate():
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += load * share[k]
+                    else:
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += load * share[k] * v[0]
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 1] += load * share[k] * v[1]
+                        self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 2] += load * share[k] * v[2]
 
     # Вычисление вспомогательных результатов (деформаций, напряжений, ...)
     def _calc_results(self, t=0):
@@ -328,11 +362,11 @@ class TFEMStatic(TFEM):
             share = array([1 / 2, 1 / 2]) * self.mesh.square(index)
         elif self.mesh.fe_type == 'fe_2d_6':
             share = array([1 / 6, 1 / 6, 2 / 3]) * self.mesh.square(index)
-        elif self.mesh.fe_type == 'fe_3d_4' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
+        elif self.mesh.fe_type == 'fe_3d_4' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_3d_3_s':
             share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
-        elif self.mesh.fe_type == 'fe_3d_8' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
+        elif self.mesh.fe_type == 'fe_3d_8' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_3d_4_s':
             share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.square(index)
-        elif self.mesh.fe_type == 'fe_3d_10' or self.mesh.fe_type == 'fe_2d_6_p' or self.mesh.fe_type == 'fe_2d_6_s':
+        elif self.mesh.fe_type == 'fe_3d_10' or self.mesh.fe_type == 'fe_2d_6_p' or self.mesh.fe_type == 'fe_3d_6_s':
             share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.square(index)
         return share
 
@@ -342,11 +376,11 @@ class TFEMStatic(TFEM):
         share = array([])
         if self.mesh.fe_type == 'fe_1d_2':
             share = array([1 / 2, 1 / 2]) * self.mesh.volume(index) * thickness
-        elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_2d_3_s':
+        elif self.mesh.fe_type == 'fe_2d_3' or self.mesh.fe_type == 'fe_2d_3_p' or self.mesh.fe_type == 'fe_3d_3_s':
             share = array([1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * thickness
-        elif self.mesh.fe_type == 'fe_2d_4' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_2d_4_s':
+        elif self.mesh.fe_type == 'fe_2d_4' or self.mesh.fe_type == 'fe_2d_4_p' or self.mesh.fe_type == 'fe_3d_4_s':
             share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.volume(index) * thickness
-        elif self.mesh.fe_type == 'fe_2d_6' or self.mesh.fe_type == 'fe_2d_6_p' or self.mesh.fe_type == 'fe_2d_6_s':
+        elif self.mesh.fe_type == 'fe_2d_6' or self.mesh.fe_type == 'fe_2d_6_p' or self.mesh.fe_type == 'fe_3d_6_s':
             share = array([0, 0, 0, 1 / 3, 1 / 3, 1 / 3]) * self.mesh.volume(index) * thickness
         elif self.mesh.fe_type == 'fe_3d_4':
             share = array([1 / 4, 1 / 4, 1 / 4, 1 / 4]) * self.mesh.volume(index)
