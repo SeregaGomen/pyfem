@@ -1,7 +1,7 @@
 {
     "Header": {
-        "DateTime": "2019-06-08T13:09:24.196",
-        "Object": "shell4_1_0",
+        "DateTime": "2020-01-12T16:00:40.246",
+        "Object": "shell4-2.0",
         "Title": "QFEM problem file"
     },
     "Mesh": {
@@ -10,6 +10,24 @@
     "Parameters": {
         "Accuracy": "1e-10",
         "BoundaryConditions": [
+            {
+                "Direct": "0",
+                "Expression": "203200",
+                "Predicate": "",
+                "Type": "7"
+            },
+            {
+                "Direct": "0",
+                "Expression": "0.27",
+                "Predicate": "",
+                "Type": "8"
+            },
+            {
+                "Direct": "0",
+                "Expression": "0.0369",
+                "Predicate": "",
+                "Type": "9"
+            },
             {
                 "Direct": "1",
                 "Expression": "0",
@@ -89,9 +107,6 @@
             "TH": "0",
             "WilsonTheta": "1.37"
         },
-        "GeometricalParameters": {
-            "Thickness": "0.0369"
-        },
         "Names": [
             "x",
             "y",
@@ -124,25 +139,13 @@
         ],
         "Nonlinearity": {
             "CalculationMethod": 0,
-            "ForceStep": "0.01",
-            "MechanicalProperty": [
-            ]
+            "ForceStep": "0.01"
         },
         "OutputParameters": {
             "Precision": "5",
             "Width": "12"
         },
-        "PhysicalParameters": {
-            "Damping": "0",
-            "Density": "0",
-            "PoissonsRatio": "0.27",
-            "YoungsModulus": "203200"
-        },
         "ProblemType": "Static",
-        "ThermalParameters": {
-            "Alpha": "0",
-            "dT": "0"
-        },
         "Variables": [
             "eps 0.1"
         ]

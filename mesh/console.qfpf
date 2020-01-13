@@ -1,6 +1,6 @@
 {
     "Header": {
-        "DateTime": "2019-04-21T20:36:39.815",
+        "DateTime": "2020-01-13T06:28:49.526",
         "Object": "console",
         "Title": "QFEM problem file"
     },
@@ -8,8 +8,26 @@
         "File": "D:/Work/python/pyfem/mesh/console.trpa"
     },
     "Parameters": {
-        "Accuracy": "1e-6",
+        "Accuracy": "1e-06",
         "BoundaryConditions": [
+            {
+                "Direct": "0",
+                "Expression": "6.5E+10",
+                "Predicate": "",
+                "Type": "7"
+            },
+            {
+                "Direct": "0",
+                "Expression": "0.3",
+                "Predicate": "",
+                "Type": "8"
+            },
+            {
+                "Direct": "0",
+                "Expression": "1",
+                "Predicate": "",
+                "Type": "9"
+            },
             {
                 "Direct": "1",
                 "Expression": "0",
@@ -47,6 +65,24 @@
                 "Type": "1"
             },
             {
+                "Direct": "4",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "32",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "256",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
                 "Direct": "2",
                 "Expression": "-1.0E+6",
                 "Predicate": "x == 10 and y == -0.25",
@@ -64,9 +100,6 @@
             "T1": "0",
             "TH": "0",
             "WilsonTheta": "1.37"
-        },
-        "GeometricalParameters": {
-            "Thickness": "1"
         },
         "Names": [
             "x",
@@ -100,27 +133,15 @@
         ],
         "Nonlinearity": {
             "CalculationMethod": 0,
-            "ForceStep": "0.01",
-            "MechanicalProperty": [
-            ]
+            "ForceStep": "0.01"
         },
         "OutputParameters": {
             "Precision": "5",
             "Width": "12"
         },
-        "PhysicalParameters": {
-            "Damping": "0",
-            "Density": "0",
-            "PoissonsRatio": "0.3",
-            "YoungsModulus": "6.5e+10"
-        },
         "ProblemType": "Static",
-        "ThermalParameters": {
-            "Alpha": "0",
-            "dT": "0"
-        },
         "Variables": [
-            "eps 1e-6"
+            "eps 1e-06"
         ]
     }
 }

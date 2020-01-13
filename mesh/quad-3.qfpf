@@ -1,6 +1,6 @@
 {
     "Header": {
-        "DateTime": "2019-05-01T08:23:25.280",
+        "DateTime": "2020-01-13T06:17:27.194",
         "Object": "quad-3",
         "Title": "QFEM problem file"
     },
@@ -10,6 +10,24 @@
     "Parameters": {
         "Accuracy": "1e-10",
         "BoundaryConditions": [
+            {
+                "Direct": "0",
+                "Expression": "203200",
+                "Predicate": "",
+                "Type": "7"
+            },
+            {
+                "Direct": "0",
+                "Expression": "0.27",
+                "Predicate": "",
+                "Type": "8"
+            },
+            {
+                "Direct": "0",
+                "Expression": "1",
+                "Predicate": "",
+                "Type": "9"
+            },
             {
                 "Direct": "1",
                 "Expression": "0",
@@ -47,6 +65,24 @@
                 "Type": "1"
             },
             {
+                "Direct": "4",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "32",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "256",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
                 "Direct": "2",
                 "Expression": "-0.05",
                 "Predicate": "",
@@ -65,9 +101,6 @@
             "TH": "0",
             "WilsonTheta": "1.37"
         },
-        "GeometricalParameters": {
-            "Thickness": "1"
-        },
         "Names": [
             "x",
             "y",
@@ -76,6 +109,9 @@
             "U",
             "V",
             "W",
+            "Tx",
+            "Ty",
+            "Tz",
             "Exx",
             "Eyy",
             "Ezz",
@@ -97,25 +133,13 @@
         ],
         "Nonlinearity": {
             "CalculationMethod": 0,
-            "ForceStep": "0.01",
-            "MechanicalProperty": [
-            ]
+            "ForceStep": "0.01"
         },
         "OutputParameters": {
             "Precision": "5",
             "Width": "12"
         },
-        "PhysicalParameters": {
-            "Damping": "0",
-            "Density": "0",
-            "PoissonsRatio": "0.27",
-            "YoungsModulus": "203200"
-        },
         "ProblemType": "Static",
-        "ThermalParameters": {
-            "Alpha": "0",
-            "dT": "0"
-        },
         "Variables": [
             "eps 1e-10"
         ]

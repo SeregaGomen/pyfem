@@ -1,6 +1,6 @@
 {
     "Header": {
-        "DateTime": "2019-04-22T06:42:17.033",
+        "DateTime": "2020-01-12T18:55:10.829",
         "Object": "body1d",
         "Title": "QFEM problem file"
     },
@@ -10,6 +10,18 @@
     "Parameters": {
         "Accuracy": "1e-10",
         "BoundaryConditions": [
+            {
+                "Direct": "0",
+                "Expression": "203200",
+                "Predicate": "",
+                "Type": "7"
+            },
+            {
+                "Direct": "0",
+                "Expression": "1",
+                "Predicate": "",
+                "Type": "9"
+            },
             {
                 "Direct": "1",
                 "Expression": "0",
@@ -29,10 +41,58 @@
                 "Type": "1"
             },
             {
-                "Direct": "1",
+                "Direct": "2",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "16",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "128",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "4",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "32",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "256",
+                "Expression": "0",
+                "Predicate": "",
+                "Type": "1"
+            },
+            {
+                "Direct": "0",
+                "Expression": "-0.5",
+                "Predicate": "",
+                "Type": "3"
+            },
+            {
+                "Direct": "0",
                 "Expression": "0.5",
                 "Predicate": "x == 1",
                 "Type": "4"
+            },
+            {
+                "Direct": "1",
+                "Expression": "0.5",
+                "Predicate": "x == 1",
+                "Type": "5"
             },
             {
                 "Direct": "1",
@@ -47,9 +107,6 @@
             "TH": "0",
             "WilsonTheta": "1.37"
         },
-        "GeometricalParameters": {
-            "Thickness": "1"
-        },
         "Names": [
             "x",
             "y",
@@ -58,6 +115,9 @@
             "U",
             "V",
             "W",
+            "Tx",
+            "Ty",
+            "Tz",
             "Exx",
             "Eyy",
             "Ezz",
@@ -79,27 +139,15 @@
         ],
         "Nonlinearity": {
             "CalculationMethod": 0,
-            "ForceStep": "0.01",
-            "MechanicalProperty": [
-            ]
+            "ForceStep": "0.01"
         },
         "OutputParameters": {
             "Precision": "5",
             "Width": "12"
         },
-        "PhysicalParameters": {
-            "Damping": "0",
-            "Density": "0",
-            "PoissonsRatio": "0",
-            "YoungsModulus": "203200"
-        },
         "ProblemType": "Static",
-        "ThermalParameters": {
-            "Alpha": "0",
-            "dT": "0"
-        },
         "Variables": [
-            "eps 1e-6"
+            "eps 1e-06"
         ]
     }
 }
