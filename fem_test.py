@@ -490,9 +490,9 @@ def shell3_test(res_name):
         # obj.add_temperature('100')
         # obj.add_alpha('1.25E-5')
         obj.add_boundary_condition(DIR_1 | DIR_2 | DIR_3, '0', 'z == 0 or z == 4.014')
-        obj.add_surface_load(DIR_1, '0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
-        obj.add_surface_load(DIR_2, '0.05*sin(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
-        # obj.add_pressure_load('0.05')
+        # obj.add_surface_load(DIR_1, '0.05*cos(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
+        # obj.add_surface_load(DIR_2, '0.05*sin(atan2(y,x))', '(abs(x**2 + y**2 - 1.99**2) <= 1.0E-3)')
+        obj.add_pressure_load('-0.05')
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
@@ -995,7 +995,7 @@ if __name__ == '__main__':
     # quad4('quad-4')
     # quad3('quad-3')
     # quad6('quad-6')
-    console('console')
+    # console('console')
     # console4('console4')
     # quad('quad')
 
@@ -1033,7 +1033,7 @@ if __name__ == '__main__':
     # shell_plate4_test('shell-plate4')
 
     # shell3_test('shell3_test')
-    # shell4_test('shell4_test')
+    shell4_test('shell4_test')
     # shell6_test('shell6_test')
 
     # tank3ds('tank3ds')

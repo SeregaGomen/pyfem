@@ -1,11 +1,11 @@
 {
     "Header": {
-        "DateTime": "2020-01-12T15:53:48.240",
+        "DateTime": "2020-01-23T10:31:36.179",
         "Object": "shell-tube-3",
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "D:/Work/python/pyfem/mesh/shell-tube-3.trpa"
+        "File": "/home/serg/work/python/pyfem/mesh/shell-tube-3.trpa"
     },
     "Parameters": {
         "Accuracy": "1e-10",
@@ -84,7 +84,7 @@
             },
             {
                 "Direct": "0",
-                "Expression": "0.05",
+                "Expression": "-0.05",
                 "Predicate": "",
                 "Type": "6"
             },
@@ -133,7 +133,7 @@
         ],
         "Nonlinearity": {
             "CalculationMethod": 0,
-            "ForceStep": "0.01"
+            "LoadStep": "0"
         },
         "OutputParameters": {
             "Precision": "5",

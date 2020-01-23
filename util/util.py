@@ -245,14 +245,17 @@ def convert_msh_2_3d_trpa(file_msh, file_trpa):
                     break
                 sx = line.split(' ')
                 n = int(sx[3])  # Количество координат в текущем блоке
+                for i in range(0, n): # Считываем tags
+                    line = file.readline()
+                    t_index.append(int(line))
                 for i in range(0, n):
                     line = file.readline()
                     sx = line.split(' ')
                     cx = []
-                    t_index.append(int(sx[0]))
-                    for j in range(1, len(sx)):
+                    for j in range(0, len(sx)):
                         cx.append(float(sx[j]))
                     x.append(cx)
+
         # Переиндексируем номера узлов
         max_index = t_index[len(t_index) - 1]
         index = [0]*max_index
@@ -614,10 +617,18 @@ def mesh_restructure(file_src, file_dst):
             file.write('\n')
     return True
 
+mesh_convert_2d_3_2_6('/home/serg/work/Qt/QFEM/mesh/tank3-new/tank3-new.trpa', '/home/serg/work/Qt/QFEM/mesh/tank3-new/tank3-new-6.trpa')
+
+# convert_msh_2_3d_trpa('/home/serg/work/Qt/QFEM/mesh/tank3-new/tank3-new.msh', '/home/serg/work/Qt/QFEM/mesh/tank3-new/tank3-new.trpa')
+
+
+
+
+
 
 # convert_msh_2_2d_trpa('/home/serg/work/Qt/QFEM/QFEM/mesh/tank-new/gmsh/quad-1.msh', '../mesh/quad-4.trpa')
 # convert_msh_2_3d_trpa('d:/cube.msh', '../mesh/cube-4.trpa')
-create_shell_mesh_4()
+# create_shell_mesh_4()
 # create_plate_mesh_4()
 # mesh_convert_2d_3_2_6('../mesh/quad-3.trpa', '../mesh/quad-6.trpa')
 
