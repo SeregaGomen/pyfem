@@ -1,11 +1,11 @@
 {
     "Header": {
-        "DateTime": "2020-01-12T16:00:40.246",
+        "DateTime": "2020-03-14T20:05:02.129",
         "Object": "shell4-2.0",
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "shell4-2.0.trpa"
+        "File": "D:/Work/python/pyfem/mesh/shell4-2.0.trpa"
     },
     "Parameters": {
         "Accuracy": "1e-10",
@@ -14,19 +14,19 @@
                 "Direct": "0",
                 "Expression": "203200",
                 "Predicate": "",
-                "Type": "7"
+                "Type": "64"
             },
             {
                 "Direct": "0",
                 "Expression": "0.27",
                 "Predicate": "",
-                "Type": "8"
+                "Type": "128"
             },
             {
                 "Direct": "0",
                 "Expression": "0.0369",
                 "Predicate": "",
-                "Type": "9"
+                "Type": "256"
             },
             {
                 "Direct": "1",
@@ -86,13 +86,13 @@
                 "Direct": "1",
                 "Expression": "0.05*cos(atan2(y,x))",
                 "Predicate": "(abs(x**2 + y**2 - 1.99**2) <= eps)",
-                "Type": "4"
+                "Type": "8"
             },
             {
                 "Direct": "2",
                 "Expression": "0.05*sin(atan2(y,x))",
                 "Predicate": "(abs(x**2 + y**2 - 1.99**2) <= eps)",
-                "Type": "4"
+                "Type": "8"
             },
             {
                 "Direct": "7",
@@ -139,11 +139,11 @@
         ],
         "Nonlinearity": {
             "CalculationMethod": 0,
-            "ForceStep": "0.01"
+            "LoadStep": "1"
         },
         "OutputParameters": {
             "Precision": "5",
-            "Width": "12"
+            "Width": "15"
         },
         "ProblemType": "Static",
         "Variables": [

@@ -1,6 +1,6 @@
 {
     "Header": {
-        "DateTime": "2019-07-13T10:31:57.403",
+        "DateTime": "2020-04-24T13:40:00.076",
         "Object": "console4",
         "Title": "QFEM problem file"
     },
@@ -8,65 +8,110 @@
         "File": "D:/Work/python/pyfem/mesh/console4.trpa"
     },
     "Parameters": {
-        "Accuracy": "1e-10",
+        "Accuracy": 1e-10,
         "BoundaryConditions": [
             {
-                "Direct": "1",
+                "Direct": 0,
+                "Expression": "203200",
+                "Predicate": "",
+                "Type": 7
+            },
+            {
+                "Direct": 0,
+                "Expression": "0.3",
+                "Predicate": "",
+                "Type": 8
+            },
+            {
+                "Direct": 0,
+                "Expression": "0.001",
+                "Predicate": "",
+                "Type": 9
+            },
+            {
+                "Direct": 0,
+                "Expression": "1",
+                "Predicate": "",
+                "Type": 12
+            },
+            {
+                "Direct": 0,
+                "Expression": "1",
+                "Predicate": "",
+                "Type": 13
+            },
+            {
+                "Direct": 1,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "8",
+                "Direct": 8,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "64",
+                "Direct": 64,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "2",
+                "Direct": 2,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "16",
+                "Direct": 16,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "128",
+                "Direct": 128,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "0",
-                "Expression": "0.05*cos(t)",
-                "Predicate": "y == 1",
-                "Type": "6"
-            },
-            {
-                "Direct": "3",
+                "Direct": 4,
                 "Expression": "0",
-                "Predicate": "x == 0",
-                "Type": "2"
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 32,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 256,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 2,
+                "Expression": "-1.0E+5",
+                "Predicate": "",
+                "Type": 4
+            },
+            {
+                "Direct": 3,
+                "Expression": "0",
+                "Predicate": "x==0",
+                "Type": 2
             }
         ],
         "DynamicParameters": {
-            "T0": "0",
-            "T1": "1",
-            "TH": "0.1",
-            "WilsonTheta": "1.37"
-        },
-        "GeometricalParameters": {
-            "Thickness": "1"
+            "T0": 0,
+            "T1": 0.5,
+            "TH": 0.1,
+            "WilsonTheta": 1.37
         },
         "Names": [
             "x",
@@ -100,27 +145,15 @@
         ],
         "Nonlinearity": {
             "CalculationMethod": 0,
-            "ForceStep": "0.01",
-            "MechanicalProperty": [
-            ]
+            "LoadStep": 0
         },
         "OutputParameters": {
-            "Precision": "5",
-            "Width": "12"
-        },
-        "PhysicalParameters": {
-            "Damping": "0",
-            "Density": "100",
-            "PoissonsRatio": "0.27",
-            "YoungsModulus": "203200"
+            "Precision": 5,
+            "Width": 15
         },
         "ProblemType": "Dynamic",
-        "ThermalParameters": {
-            "Alpha": "0",
-            "dT": "0"
-        },
         "Variables": [
-            "eps 1e-10"
+            "eps 1e-06"
         ]
     }
 }

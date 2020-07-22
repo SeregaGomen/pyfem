@@ -10,7 +10,7 @@ import json
 from timeit import default_timer as timer
 from datetime import *
 from math import fabs
-from core.fem_mesh import TMesh
+from core.fem_mesh import TMesh, TMeshTRPA
 from core.fem_fem import TFEM
 from core.fem_params import TFEMParams
 from core.fem_static import TFEMStatic
@@ -31,10 +31,15 @@ class TObject:
 
     def set_mesh(self, name):
         try:
-            self.__mesh.load(name)
-            print('Object: %s' % self.object_name())
-            print('Points: %d' % len(self.__mesh.x))
-            print('FE: %d - %s' % (len(self.__mesh.fe), self.__mesh.fe_name()))
+            if os.path.splitext(name)[1].upper() == '.TRPA':
+                self.__mesh = TMeshTRPA()
+                self.__mesh.load(name)
+                print('Object: %s' % self.object_name())
+                print('Points: %d' % len(self.__mesh.x))
+                print('FE: %d - %s' % (len(self.__mesh.fe), self.__mesh.fe_name()))
+            else:
+                print_error('Unknown file extension!')
+                return False
         except TFEMException as err:
             err.print_error()
             return False

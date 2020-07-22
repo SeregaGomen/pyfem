@@ -1,6 +1,6 @@
 {
     "Header": {
-        "DateTime": "2020-01-13T06:05:49.399",
+        "DateTime": "2020-04-27T11:46:46.506",
         "Object": "quad-4",
         "Title": "QFEM problem file"
     },
@@ -8,98 +8,110 @@
         "File": "D:/Work/python/pyfem/mesh/quad-4.trpa"
     },
     "Parameters": {
-        "Accuracy": "1e-10",
+        "Accuracy": 1e-10,
         "BoundaryConditions": [
             {
-                "Direct": "0",
+                "Direct": 0,
                 "Expression": "203200",
                 "Predicate": "",
-                "Type": "7"
+                "Type": 7
             },
             {
-                "Direct": "0",
+                "Direct": 0,
                 "Expression": "0.27",
                 "Predicate": "",
-                "Type": "8"
+                "Type": 8
             },
             {
-                "Direct": "0",
+                "Direct": 0,
                 "Expression": "1",
                 "Predicate": "",
-                "Type": "9"
+                "Type": 9
             },
             {
-                "Direct": "1",
+                "Direct": 0,
+                "Expression": "1.25E-5",
+                "Predicate": "",
+                "Type": 11
+            },
+            {
+                "Direct": 0,
+                "Expression": "100",
+                "Predicate": "",
+                "Type": 10
+            },
+            {
+                "Direct": 1,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "8",
+                "Direct": 8,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "64",
+                "Direct": 64,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "2",
+                "Direct": 2,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "16",
+                "Direct": 16,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "128",
+                "Direct": 128,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "4",
+                "Direct": 4,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "32",
+                "Direct": 32,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "256",
+                "Direct": 256,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "2",
+                "Direct": 0,
                 "Expression": "-0.05",
                 "Predicate": "y == 0.5",
-                "Type": "4"
+                "Type": 4
             },
             {
-                "Direct": "3",
+                "Direct": 3,
                 "Expression": "0",
                 "Predicate": "y == -0.5",
-                "Type": "2"
+                "Type": 2
             }
         ],
         "DynamicParameters": {
-            "T0": "0",
-            "T1": "0",
-            "TH": "0",
-            "WilsonTheta": "1.37"
+            "T0": 0,
+            "T1": 0,
+            "TH": 0,
+            "WilsonTheta": 1.37
         },
         "Names": [
             "x",
@@ -133,11 +145,11 @@
         ],
         "Nonlinearity": {
             "CalculationMethod": 0,
-            "ForceStep": "0.01"
+            "LoadStep": 0
         },
         "OutputParameters": {
-            "Precision": "5",
-            "Width": "12"
+            "Precision": 5,
+            "Width": 12
         },
         "ProblemType": "Static",
         "Variables": [

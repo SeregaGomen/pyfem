@@ -4,6 +4,7 @@
 #           Конечно-элементная модель объекта расчета
 ###################################################################
 
+from abc import abstractmethod
 from math import sqrt
 from numpy import array
 from numpy.linalg import det
@@ -28,6 +29,7 @@ FEType = [
 ]
 
 
+# Абстрактный класс, инкапсулирующий понятие дискретной модели объекта
 class TMesh:
     def __init__(self):
         self.mesh_file = ''         # Имя файла с данными о геометрической модели
@@ -69,51 +71,9 @@ class TMesh:
         else:
             raise TFEMException('unknown_fe_err')
 
+    @abstractmethod
     def load(self, name):
-        try:
-            self.mesh_file = name
-            file = open(self.mesh_file)
-            lines = file.readlines()
-            file.close()
-        except IOError:
-            raise TFEMException('read_file_err')
-        self.fe_type, size_surface, size_fe, self.freedom, self.dimension = self.get_fe_data(int(lines[0]))
-        # Кол-во узлов
-        n = int(lines[1])
-        # Считываем узлы
-        index = 2
-        for i in range(0, n):
-            tx = list()
-            tx.append(float(lines[2 + i].split()[0]))
-            if self.dimension > 1:
-                tx.append(float(lines[2 + i].split()[1]))
-            if self.dimension > 2 and not self.is_plate():
-                tx.append(float(lines[2 + i].split()[2]))
-            self.x.append(tx)
-            index += 1
-        # Кол-во КЭ
-        n = int(lines[index])
-        index += 1
-        # Считываем КЭ
-        for i in range(0, n):
-            row = []
-            for j in range(0, size_fe):
-                row.append(int(lines[index].split()[j]))
-            self.fe.append(row)
-            index += 1
-        # Кол-во ГЭ
-        n = int(lines[index])
-        index += 1
-        # Считываем ГЭ
-        for i in range(n):
-            row = []
-            for j in range(size_surface):
-                row.append(int(lines[index].split()[j]))
-            self.be.append(row)
-            index += 1
-        if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_3d_3_s' or \
-                self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_3d_6_s' or self.fe_type == 'fe_3d_4_s':
-            self.be = self.fe
+        raise NotImplementedError('Method TMesh.load() is pure virtual')
 
     def fe_name(self):
         if self.fe_type == 'fe_1d_2':
@@ -321,3 +281,55 @@ class TMesh:
         v[1] /= len
         v[2] /= len
         return v
+
+
+# Дискретная модель в формате TRPA
+class TMeshTRPA(TMesh):
+    def __init__(self):
+        super().__init__()
+
+    def load(self, name):
+        try:
+            self.mesh_file = name
+            file = open(self.mesh_file)
+            lines = file.readlines()
+            file.close()
+        except IOError:
+            raise TFEMException('read_file_err')
+        self.fe_type, size_surface, size_fe, self.freedom, self.dimension = self.get_fe_data(int(lines[0]))
+        # Кол-во узлов
+        n = int(lines[1])
+        # Считываем узлы
+        index = 2
+        for i in range(0, n):
+            tx = list()
+            tx.append(float(lines[2 + i].split()[0]))
+            if self.dimension > 1:
+                tx.append(float(lines[2 + i].split()[1]))
+            if self.dimension > 2 and not self.is_plate():
+                tx.append(float(lines[2 + i].split()[2]))
+            self.x.append(tx)
+            index += 1
+        # Кол-во КЭ
+        n = int(lines[index])
+        index += 1
+        # Считываем КЭ
+        for i in range(0, n):
+            row = []
+            for j in range(0, size_fe):
+                row.append(int(lines[index].split()[j]))
+            self.fe.append(row)
+            index += 1
+        # Кол-во ГЭ
+        n = int(lines[index])
+        index += 1
+        # Считываем ГЭ
+        for i in range(n):
+            row = []
+            for j in range(size_surface):
+                row.append(int(lines[index].split()[j]))
+            self.be.append(row)
+            index += 1
+        if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_3d_3_s' or \
+                self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_3d_6_s' or self.fe_type == 'fe_3d_4_s':
+            self.be = self.fe

@@ -1,15 +1,33 @@
 {
     "Header": {
-        "DateTime": "2019-04-25T15:58:52.150",
-        "Object": "plate6",
+        "DateTime": "2020-03-08T21:13:34.500",
+        "Object": "plate4",
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "plate4.trpa"
+        "File": "D:/Work/python/pyfem/mesh/plate4.trpa"
     },
     "Parameters": {
         "Accuracy": "1e-10",
         "BoundaryConditions": [
+            {
+                "Direct": "0",
+                "Expression": "203200",
+                "Predicate": "",
+                "Type": "7"
+            },
+            {
+                "Direct": "0",
+                "Expression": "0.27",
+                "Predicate": "",
+                "Type": "8"
+            },
+            {
+                "Direct": "0",
+                "Expression": "0.01",
+                "Predicate": "",
+                "Type": "9"
+            },
             {
                 "Direct": "1",
                 "Expression": "0",
@@ -83,9 +101,6 @@
             "TH": "0",
             "WilsonTheta": "1.37"
         },
-        "GeometricalParameters": {
-            "Thickness": "0.01"
-        },
         "Names": [
             "x",
             "y",
@@ -118,25 +133,13 @@
         ],
         "Nonlinearity": {
             "CalculationMethod": 0,
-            "ForceStep": "0.01",
-            "MechanicalProperty": [
-            ]
+            "LoadStep": "1"
         },
         "OutputParameters": {
             "Precision": "5",
-            "Width": "12"
-        },
-        "PhysicalParameters": {
-            "Damping": "0",
-            "Density": "0",
-            "PoissonsRatio": "0.27",
-            "YoungsModulus": "203200"
+            "Width": "15"
         },
         "ProblemType": "Static",
-        "ThermalParameters": {
-            "Alpha": "0",
-            "dT": "0"
-        },
         "Variables": [
             "eps 1e-10"
         ]

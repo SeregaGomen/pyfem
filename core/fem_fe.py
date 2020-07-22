@@ -597,7 +597,7 @@ class TFE1D2(TFE1D):
     def __init__(self):
         super().__init__()
         self.size = 2
-        self._xi = [-0.57735027, 0, 0.57735027]
+        self._xi = [-0.774596669241483, 0, 0.774596669241483]
         self._w = [5 / 9, 8 / 9, 5 / 9]
 
     def _create(self):
@@ -1007,7 +1007,7 @@ class TFE2D3S(TFES, TFE2D3P):
     def _create(self):
         self.T = create_transform_matrix(self.x)
         self.global_x = self.x
-        self.x = array([self.T.dot(self.x[0, :]), self.T.dot(self.x[1, :]), self.T.dot(self.x[2, :])]) - self.x[0, :]
+        self.x = array([self.T.dot(self.x[0, :]), self.T.dot(self.x[1, :]), self.T.dot(self.x[2, :])]) #- self.x[0, :]
         TFE2D3._create(self)
 
 

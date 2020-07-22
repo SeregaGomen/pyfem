@@ -618,10 +618,10 @@ def mesh_restructure(file_src, file_dst):
     return True
 
 # mesh_convert_2d_3_2_6('/home/serg/work/Qt/QFEM/mesh/tank3-new/tank3-new.trpa', '/home/serg/work/Qt/QFEM/mesh/tank3-new/tank3-new-6.trpa')
-mesh_convert_2d_3_2_6('d:/work/Qt/QFEM/mesh/tank3-new/tank3-new.trpa', 'd:/work/Qt/QFEM/mesh/tank3-new/tank3-new-6.trpa')
+# mesh_convert_2d_3_2_6('d:/work/Qt/QFEM/mesh/tank3-new/tank3-new.trpa', 'd:/work/Qt/QFEM/mesh/tank3-new/tank3-new-6.trpa')
 
 # convert_msh_2_3d_trpa('/home/serg/work/Qt/QFEM/mesh/tank3-new/tank3-new.msh', '/home/serg/work/Qt/QFEM/mesh/tank3-new/tank3-new.trpa')
-# convert_msh_2_3d_trpa('d:/work/Qt/QFEM/mesh/tank3-new/tank3-new.msh', 'd:/work/Qt/QFEM/mesh/tank3-new/tank3-new.trpa')
+convert_msh_2_3d_trpa('d:/work/Qt/QFEM/mesh/tank3-new/tank3-new.msh', 'd:/work/Qt/QFEM/mesh/tank3-new/tank3-new.trpa')
 
 
 
