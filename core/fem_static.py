@@ -236,7 +236,7 @@ class TFEMStatic(TFEM):
             r.name = self.params.names[self.__index_result(i)]
             r.results = res[i]
             r.t = t
-            self._result.append(r)
+            self.results.append(r)
 
     # Задание граничных условий
     def _set_boundary_condition(self, i, j, val):

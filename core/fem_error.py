@@ -4,6 +4,10 @@
 #                   Реализация обработки ошибок
 ###################################################################
 
+# Вывод сообщения об ошибке
+def print_error(err_msg):
+    print('\033[1;31m%s\033[1;m' % err_msg)
+
 
 class TFEMException(Exception):
     def __init__(self, e):
@@ -33,4 +37,4 @@ class TFEMException(Exception):
             err_msg += 'calculation expression error'
         else:
             err_msg += self.error
-        print('\033[1;31m%s\033[1;m' % err_msg)
+        print_error(err_msg)

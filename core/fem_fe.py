@@ -663,7 +663,8 @@ class TFE2D3(TFE2D):
 
 
 # Квадратичный (шестиузловой) треугольный КЭ
-class TFE2D6(TFE2D3, TFE2D):
+#class TFE2D6(TFE2D3, TFE2D):
+class TFE2D6(TFE2D3):
     def __init__(self):
         super().__init__()
         self.size = 6
@@ -823,7 +824,7 @@ class TFE3D4(TFE3D):
 
 
 # Квадратичный (десятиузловой) тетраэдральный КЭ
-class TFE3D10(TFE3D4, TFE3D):
+class TFE3D10(TFE3D4):
     def __init__(self):
         super().__init__()
         self.size = 10

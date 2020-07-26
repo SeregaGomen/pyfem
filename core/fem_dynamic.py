@@ -130,8 +130,8 @@ class TFEMDynamic(TFEMStatic):
                 u0[i * self.mesh.freedom + j] = u_1
                 ut0[i * self.mesh.freedom + j] = u_t_1
                 utt0[i * self.mesh.freedom + j] = u_t_t_1
-                self._result[len(self._result) - 2 * self.mesh.freedom + j].results[i] = u_t_1
-                self._result[len(self._result) - self.mesh.freedom + j].results[i] = u_t_t_1
+                self.results[len(self.results) - 2 * self.mesh.freedom + j].results[i] = u_t_1
+                self.results[len(self.results) - self.mesh.freedom + j].results[i] = u_t_t_1
         return u0, ut0, utt0
 
     # Добавление ЛМЖ, ЛММ и ЛМД к ГМЖ

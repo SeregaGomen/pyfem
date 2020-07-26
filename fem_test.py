@@ -990,7 +990,7 @@ def tank3ds(res_name):
 
 if __name__ == '__main__':
     # -------------- 1d -----------------
-    body1d('body1d')
+    # body1d('body1d')
 
     # -------------- 2d -----------------
     # quad4('quad-4')
@@ -1002,7 +1002,7 @@ if __name__ == '__main__':
 
     # -------------- 3d -----------------
     # cube('cube')
-    # cube10('cube-10')
+    cube10('cube-10')
     # cube4('cube-4')
 
     # beam('beam')

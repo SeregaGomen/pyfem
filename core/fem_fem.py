@@ -17,10 +17,10 @@ from core.fem_error import TFEMException
 # Абстрактный базовый класс, реализующий МКЭ
 class TFEM:
     def __init__(self):
-        self.mesh = TMesh()                                     # Дискретная модель объекта
-        self.params = TFEMParams()                          # Параметры расчета
-        self._progress = TProgress()                         # Индикатор прогресса расчета
-        self._result = []                                    # Список результатов расчета
+        self.mesh = TMesh()             # Дискретная модель объекта
+        self.params = TFEMParams()      # Параметры расчета
+        self.results = []               # Список результатов расчета
+        self._progress = TProgress()    # Индикатор прогресса расчета
 
     @abstractmethod
     def _calc_problem(self):
@@ -116,5 +116,7 @@ class TFEM:
         self.params = params
 
     # Возврат результатов расчета
-    def get_result(self):
-        return self._result
+    def get_results(self, *params):
+        if not len(params):
+            return self.results
+        return self.results[params[0]]

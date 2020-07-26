@@ -15,19 +15,14 @@ from core.fem_fem import TFEM
 from core.fem_params import TFEMParams
 from core.fem_static import TFEMStatic
 from core.fem_dynamic import TFEMDynamic
-from core.fem_error import TFEMException
-
-
-# Вывод сообщения об ошибке
-def print_error(err_msg):
-    print('\033[1;31m%s\033[1;m' % err_msg)
+from core.fem_error import TFEMException, print_error
 
 
 class TObject:
     def __init__(self):
-        self.__params = TFEMParams()          # Параметры расчета
-        self.__mesh = TMesh()                 # КЭ-модель
-        self.__results = []                   # Список результатов расчета для перемещений, деформаций, ...
+        self.__fem = TFEM()             # Метод расчета
+        self.__params = TFEMParams()    # Параметры расчета
+        self.__mesh = TMesh()           # КЭ-модель
 
     def set_mesh(self, name):
         try:
@@ -115,17 +110,15 @@ class TObject:
     def calc(self):
         ret = False
         start = timer()
-        fem = TFEM()
         if self.__params.problem_type == 'static':
-            fem = TFEMStatic()
+            self.__fem = TFEMStatic()
         elif self.__params.problem_type == 'dynamic':
-            fem = TFEMDynamic()
-        fem.set_mesh(self.__mesh)
-        fem.set_params(self.__params)
+            self.__fem = TFEMDynamic()
+        self.__fem.set_mesh(self.__mesh)
+        self.__fem.set_params(self.__params)
         try:
-            ret = fem.calc()
+            ret = self.__fem.calc()
             if ret:
-                self.__results = fem.get_result()
                 print('Lead time %f sec' % (timer() - start))
         except TFEMException as err:
             err.print_error()
@@ -164,7 +157,7 @@ class TObject:
         # Формирование структуры файла
         header = dict()
         header['name'] = self.__mesh.mesh_file[self.__mesh.mesh_file.rfind('/') + 1:
-                                                 self.__mesh.mesh_file.rfind('.')]
+                                                self.__mesh.mesh_file.rfind('.')]
         header['type'] = self.__params.problem_type
         header['date_time'] = dt + " " + tm
 
@@ -175,11 +168,11 @@ class TObject:
         mesh['be'] = self.__mesh.be
 
         results = list()
-        for i in range(0, len(self.__results)):
+        for i in range(0, len(self.__fem.get_results())):
             res = dict()
-            res['function'] = self.__results[i].name
-            res['t'] = self.__results[i].t
-            res['results'] = self.__results[i].results
+            res['function'] = self.__fem.get_results(i).name
+            res['t'] = self.__fem.get_results(i).t
+            res['results'] = self.__fem.get_results(i).results
             results.append(res)
 
         data = dict()
@@ -203,9 +196,9 @@ class TObject:
             if i < self.__mesh.dimension - 1:
                 file.write(',')
         file.write(') |')
-        for i in range(0, len(self.__results)):
-            if self.__results[i].t == t:
-                file.write(' %*s |' % (len1, self.__results[i].name))
+        for i in range(0, len(self.__fem.get_results())):
+            if self.__fem.get_results(i).t == t:
+                file.write(' %*s |' % (len1, self.__fem.get_results(i).name))
         file.write('\n')
         for i in range(0, len(self.__mesh.x)):
             file.write('| %*d  (' % (len2, i + 1))
@@ -215,10 +208,10 @@ class TObject:
             if self.__mesh.dimension > 2:
                 file.write(', %+*.*E' % (self.__params.width, self.__params.precision, self.__mesh.x[i][2]))
             file.write(') | ')
-            for k in range(0, len(self.__results)):
-                if self.__results[k].t == t:
+            for k in range(0, len(self.__fem.get_results())):
+                if self.__fem.get_results(k).t == t:
                     file.write('%+*.*E' %
-                               (self.__params.width, self.__params.precision, self.__results[k].results[i]))
+                               (self.__params.width, self.__params.precision, self.__fem.get_results(k).results[i]))
                     file.write(' | ')
             file.write('\n')
         file.write('\n')
@@ -229,19 +222,19 @@ class TObject:
             if i < self.__mesh.dimension - 1:
                 file.write(' ')
         file.write('  |')
-        for i in range(0, len(self.__results)):
-            if self.__results[i].t == t:
-                file.write(' %*s |' % (len1, self.__results[i].name))
+        for i in range(0, len(self.__fem.get_results())):
+            if self.__fem.get_results(i).t == t:
+                file.write(' %*s |' % (len1, self.__fem.get_results(i).name))
         file.write('\n')
         file.write('|   %*s  |' % (self.__mesh.dimension * (len1 + 1) + self.__mesh.dimension + len2, 'min:'))
-        for i in range(0, len(self.__results)):
-            if self.__results[i].t == t:
-                file.write(' %+*.*E ' % (self.__params.width, self.__params.precision, self.__results[i].min()))
+        for i in range(0, len(self.__fem.get_results())):
+            if self.__fem.get_results(i).t == t:
+                file.write(' %+*.*E ' % (self.__params.width, self.__params.precision, self.__fem.get_results(i).min()))
                 file.write('|')
         file.write('\n')
         file.write('|   %*s  |' % (self.__mesh.dimension * (len1 + 1) + self.__mesh.dimension + len2, 'max:'))
-        for i in range(0, len(self.__results)):
-            if self.__results[i].t == t:
-                file.write(' %+*.*E ' % (self.__params.width, self.__params.precision, self.__results[i].max()))
+        for i in range(0, len(self.__fem.get_results())):
+            if self.__fem.get_results(i).t == t:
+                file.write(' %+*.*E ' % (self.__params.width, self.__params.precision, self.__fem.get_results(i).max()))
                 file.write('|')
         file.write('\n\n\n')
