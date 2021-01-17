@@ -15,7 +15,7 @@ from core.fem_fem import TFEM
 from core.fem_params import TFEMParams
 from core.fem_static import TFEMStatic
 from core.fem_dynamic import TFEMDynamic
-from core.fem_error import TFEMException, print_error
+from core.fem_error import TException, print_error
 
 
 class TObject:
@@ -35,7 +35,7 @@ class TObject:
             else:
                 print_error('Unknown file extension!')
                 return False
-        except TFEMException as err:
+        except TException as err:
             err.print_error()
             return False
         return True
@@ -120,7 +120,7 @@ class TObject:
             ret = self.__fem.calc()
             if ret:
                 print('Lead time %f sec' % (timer() - start))
-        except TFEMException as err:
+        except TException as err:
             err.print_error()
         return ret
 

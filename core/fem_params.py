@@ -4,7 +4,7 @@
 #              Параметры решения задачи с помощью МКЭ
 ###################################################################
 
-from core.fem_error import TFEMException
+from core.fem_error import TException
 
 
 # Тип задачи: статика или динамика
@@ -142,9 +142,9 @@ class TFEMParams:
 
     def check_params(self):
         if self.solve_method == '':
-            raise TFEMException('solve_method_err')
+            raise TException('solve_method_err')
         if self.problem_type == '':
-            raise TFEMException('problem_type_err')
+            raise TException('problem_type_err')
         is_young_modulus = False
         is_poisson_ratio = False
         for i in range(len(self.bc_list)):
@@ -153,6 +153,6 @@ class TFEMParams:
             if self.bc_list[i].type == 'poisson_ratio':
                 is_poisson_ratio = True
         if not is_young_modulus or not is_poisson_ratio:
-            raise TFEMException('elasticity_err')
+            raise TException('elasticity_err')
         if self.problem_type == 'dynamic' and (self.t0 == self.t1 or self.th <= 0):
-            raise TFEMException('time_err')
+            raise TException('time_err')

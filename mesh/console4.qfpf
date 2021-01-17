@@ -1,6 +1,6 @@
 {
     "Header": {
-        "DateTime": "2020-03-26T13:49:13.945",
+        "DateTime": "2021-01-10T19:56:39.596",
         "Object": "console4",
         "Title": "QFEM problem file"
     },
@@ -12,21 +12,21 @@
         "BoundaryConditions": [
             {
                 "Direct": 0,
-                "Expression": "6.5E+10",
+                "Expression": "203200",
                 "Predicate": "",
-                "Type": 64
+                "Type": 7
             },
             {
                 "Direct": 0,
-                "Expression": "0.3",
+                "Expression": "0.27",
                 "Predicate": "",
-                "Type": 128
+                "Type": 8
             },
             {
                 "Direct": 0,
                 "Expression": "1",
                 "Predicate": "",
-                "Type": 256
+                "Type": 9
             },
             {
                 "Direct": 1,
@@ -84,20 +84,14 @@
             },
             {
                 "Direct": 2,
-                "Expression": "-1.0E+5",
+                "Expression": "-1",
                 "Predicate": "",
-                "Type": 4
-            },
-            {
-                "Direct": 0,
-                "Expression": "0.3",
-                "Predicate": "",
-                "Type": 8
+                "Type": 3
             },
             {
                 "Direct": 3,
                 "Expression": "0",
-                "Predicate": "x==0",
+                "Predicate": "x == 0",
                 "Type": 2
             }
         ],
@@ -143,11 +137,11 @@
         },
         "OutputParameters": {
             "Precision": 5,
-            "Width": 15
+            "Width": 12
         },
         "ProblemType": "Static",
         "Variables": [
-            "eps 1e-06"
+            "eps 1e-10"
         ]
     }
 }

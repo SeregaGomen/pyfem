@@ -11,7 +11,7 @@ from core.fem_progress import TProgress
 from core.fem_fe import TFE, TFE1D2, TFE2D3, TFE2D3P, TFE2D3S, TFE2D4, TFE2D6, TFE2D6P, TFE2D6S, TFE2D4P, TFE2D4S, \
     TFE3D4, TFE3D8, TFE3D10
 from core.fem_parser import TParser
-from core.fem_error import TFEMException
+from core.fem_error import TException
 
 
 # Абстрактный базовый класс, реализующий МКЭ
@@ -102,7 +102,7 @@ class TFEM:
             # Проверка наличия и соответствия необходимых параметров расчета
             self.params.check_params()
             ret = self._calc_problem()
-        except TFEMException as err:
+        except TException as err:
             ret = False
             err.print_error()
         return ret

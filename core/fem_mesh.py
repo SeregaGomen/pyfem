@@ -8,7 +8,7 @@ from abc import abstractmethod
 from math import sqrt
 from numpy import array
 from numpy.linalg import det
-from core.fem_error import TFEMException
+from core.fem_error import TException
 
 
 # Типы конечных элементов
@@ -69,7 +69,7 @@ class TMesh:
         elif t == 225:
             return 'fe_3d_6_s', 0, 6, 6, 3
         else:
-            raise TFEMException('unknown_fe_err')
+            raise TException('unknown_fe_err')
 
     @abstractmethod
     def load(self, name):
@@ -295,7 +295,7 @@ class TMeshTRPA(TMesh):
             lines = file.readlines()
             file.close()
         except IOError:
-            raise TFEMException('read_file_err')
+            raise TException('read_file_err')
         self.fe_type, size_surface, size_fe, self.freedom, self.dimension = self.get_fe_data(int(lines[0]))
         # Кол-во узлов
         n = int(lines[1])

@@ -8,7 +8,7 @@ from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve, bicgstab
 from numpy import array
 from core.fem_fem import TFEM
-from core.fem_defs import DIR_1, DIR_2, DIR_3
+from core.fem_defs import DIR_X, DIR_Y, DIR_Z
 from core.fem_result import TResult
 from core.fem_progress import TThreadProgress
 
@@ -88,11 +88,11 @@ class TFEMStatic(TFEM):
                         continue
                 parser.set_code(self.params.bc_list[i].expression)
                 load = parser.run()
-                if self.params.bc_list[i].direct & DIR_1:
+                if self.params.bc_list[i].direct & DIR_X:
                     self._global_load[j * self.mesh.freedom + 0] += load
-                if self.params.bc_list[i].direct & DIR_2:
+                if self.params.bc_list[i].direct & DIR_Y:
                     self._global_load[j * self.mesh.freedom + 1] += load
-                if self.params.bc_list[i].direct & DIR_3:
+                if self.params.bc_list[i].direct & DIR_Z:
                     self._global_load[j * self.mesh.freedom + 2] += load
 
     # Вычисление поверхностных нагрузок
@@ -121,11 +121,11 @@ class TFEMStatic(TFEM):
                 parser.set_code(self.params.bc_list[i].expression)
                 load = parser.run()
                 for k in range(0, len(self.mesh.be[j])):
-                    if self.params.bc_list[i].direct & DIR_1:
+                    if self.params.bc_list[i].direct & DIR_X:
                         self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += load * share[k]
-                    if self.params.bc_list[i].direct & DIR_2:
+                    if self.params.bc_list[i].direct & DIR_Y:
                         self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 1] += load * share[k]
-                    if self.params.bc_list[i].direct & DIR_3:
+                    if self.params.bc_list[i].direct & DIR_Z:
                         self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 2] += load * share[k]
 
     # Вычисление объемных нагрузок
@@ -151,11 +151,11 @@ class TFEMStatic(TFEM):
                 parser.set_code(self.params.bc_list[i].expression)
                 load = parser.run()
                 for k in range(0, len(self.mesh.fe[j])):
-                    if self.params.bc_list[i].direct & DIR_1:
+                    if self.params.bc_list[i].direct & DIR_X:
                         self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 0] += load * share[k]
-                    if self.params.bc_list[i].direct & DIR_2:
+                    if self.params.bc_list[i].direct & DIR_Y:
                         self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 1] += load * share[k]
-                    if self.params.bc_list[i].direct & DIR_3:
+                    if self.params.bc_list[i].direct & DIR_Z:
                         self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 2] += load * share[k]
 
     # Вычисление нагрузок поверхностного давления
@@ -267,11 +267,11 @@ class TFEMStatic(TFEM):
                     parser.set_code(self.params.bc_list[i].expression)
                     val = parser.run()
                     direct = self.params.bc_list[i].direct
-                    if direct & DIR_1:
+                    if direct & DIR_X:
                         self._set_boundary_condition(j, 0, val)
-                    if direct & DIR_2:
+                    if direct & DIR_Y:
                         self._set_boundary_condition(j, 1, val)
-                    if direct & DIR_3:
+                    if direct & DIR_Z:
                         self._set_boundary_condition(j, 2, val)
 
     # Прямое решение СЛАУ

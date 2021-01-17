@@ -1,105 +1,224 @@
-QFEM results file
-34
-4
-0 
-0.25 
-0.75 
-1 
-3
-0 1 
-1 2 
-2 3 
-2
-0 
-3 
-19 0 119 18 55 59
-3
-U
-0
-4
-0
-6.151574803149605e-07
-1.845472440944882e-06
-2.460629921259842e-06
-Exx
-0
-4
-2.460629921259842e-06
-2.460629921259842e-06
-2.460629921259843e-06
-2.460629921259843e-06
-Sxx
-0
-4
-0.4999999999999999
-0.4999999999999999
-0.5
-0.5000000000000001
-0
-0
-0
-1e-10
-1
-12 5
-203200 0
-0.01
-0
-0 0
-0 0 0
-25
-x
-y
-z
-t
-U
-V
-W
-Exx
-Eyy
-Ezz
-Exy
-Exz
-Eyz
-Sxx
-Syy
-Szz
-Sxy
-Sxz
-Syz
-Ut
-Vt
-Wt
-Utt
-Vtt
-Wtt
-5
-1
-1
-1
-0
-0
-1
-8
-1
-0
-0
-1
-64
-1
-0
-0
-4
-1
-3
-0.5
-5
-x = 1
-2
-1
-1
-0
-3
-x=0
-1
-eps 1e-06
-0 0
+{
+    "Header": {
+        "DateTime": "Fri Jan 1 16:46:07 2021",
+        "Object": "body1d",
+        "Title": "QFEM results file"
+    },
+    "Mesh": {
+        "BE": [
+            [
+                0
+            ],
+            [
+                3
+            ]
+        ],
+        "Coordinates": [
+            [
+                0
+            ],
+            [
+                1
+            ],
+            [
+                2
+            ],
+            [
+                3
+            ]
+        ],
+        "FE": [
+            [
+                0,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                2,
+                3
+            ]
+        ],
+        "FEType": 1
+    },
+    "Notes": [
+        "Lead time: 00:00:00"
+    ],
+    "Parameters": {
+        "Accuracy": 1e-10,
+        "BoundaryConditions": [
+            {
+                "Direct": 0,
+                "Expression": "203200",
+                "Predicate": "",
+                "Type": 7
+            },
+            {
+                "Direct": 0,
+                "Expression": "1",
+                "Predicate": "",
+                "Type": 9
+            },
+            {
+                "Direct": 1,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 8,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 64,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 2,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 16,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 128,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 4,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 32,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 256,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 0,
+                "Expression": "-0.5",
+                "Predicate": "",
+                "Type": 3
+            },
+            {
+                "Direct": 0,
+                "Expression": "0.5",
+                "Predicate": "x == 1",
+                "Type": 4
+            },
+            {
+                "Direct": 1,
+                "Expression": "1",
+                "Predicate": "x == 3",
+                "Type": 5
+            },
+            {
+                "Direct": 1,
+                "Expression": "0",
+                "Predicate": "x == 0",
+                "Type": 2
+            }
+        ],
+        "DynamicParameters": {
+            "T0": 0,
+            "T1": 0,
+            "TH": 0,
+            "WilsonTheta": 1.37
+        },
+        "Names": [
+            "x",
+            "y",
+            "z",
+            "t",
+            "U",
+            "V",
+            "W",
+            "Tx",
+            "Ty",
+            "Tz",
+            "Exx",
+            "Eyy",
+            "Ezz",
+            "Exy",
+            "Exz",
+            "Eyz",
+            "Sxx",
+            "Syy",
+            "Szz",
+            "Sxy",
+            "Sxz",
+            "Syz",
+            "Ut",
+            "Vt",
+            "Wt",
+            "Utt",
+            "Vtt",
+            "Wtt"
+        ],
+        "Nonlinearity": {
+            "CalculationMethod": 0,
+            "LoadStep": 1
+        },
+        "OutputParameters": {
+            "Precision": 5,
+            "Width": 12
+        },
+        "ProblemType": "Static",
+        "Variables": [
+            "eps 1e-10"
+        ]
+    },
+    "Results": [
+        {
+            "Function": "U",
+            "Time": 0,
+            "Values": [
+                0,
+                7.874015747992126e-05,
+                0.0001574803149598425,
+                0.00023622047243976375
+            ]
+        },
+        {
+            "Function": "Exx",
+            "Time": 0,
+            "Values": [
+                7.874015747992126e-05,
+                7.874015747992127e-05,
+                7.874015747992126e-05,
+                7.874015747992124e-05
+            ]
+        },
+        {
+            "Function": "Sxx",
+            "Time": 0,
+            "Values": [
+                15.99999999992,
+                15.99999999992,
+                15.99999999992,
+                15.999999999919996
+            ]
+        }
+    ]
+}

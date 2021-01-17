@@ -7,7 +7,7 @@
 import math
 from scipy.sparse import lil_matrix, coo_matrix
 from numpy import zeros, savez, load
-from core.fem_defs import INIT_U, INIT_V, INIT_W, INIT_U_T, INIT_V_T, INIT_W_T, INIT_U_T_T, INIT_V_T_T, INIT_W_T_T
+from core.fem_defs import INIT_U, INIT_V, INIT_W, INIT_UT, INIT_VT, INIT_WT, INIT_UTT, INIT_VTT, INIT_WTT
 from core.fem_static import TFEMStatic
 from core.fem_parser import TParser
 
@@ -100,17 +100,17 @@ class TFEMDynamic(TFEMStatic):
                         u0[j * self.mesh.freedom + 1] = value
                     if direct & INIT_W:
                         u0[j * self.mesh.freedom + 2] = value
-                    if direct & INIT_U_T:
+                    if direct & INIT_UT:
                         ut0[j * self.mesh.freedom + 0] = value
-                    if direct & INIT_V_T:
+                    if direct & INIT_VT:
                         ut0[j * self.mesh.freedom + 1] = value
-                    if direct & INIT_W_T:
+                    if direct & INIT_WT:
                         ut0[j * self.mesh.freedom + 2] = value
-                    if direct & INIT_U_T_T:
+                    if direct & INIT_UTT:
                         utt0[j * self.mesh.freedom + 0] = value
-                    if direct & INIT_V_T_T:
+                    if direct & INIT_VTT:
                         utt0[j * self.mesh.freedom + 1] = value
-                    if direct & INIT_W_T_T:
+                    if direct & INIT_WTT:
                         utt0[j * self.mesh.freedom + 2] = value
         return u0, ut0, utt0
 

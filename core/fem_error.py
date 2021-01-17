@@ -9,7 +9,7 @@ def print_error(err_msg):
     print('\033[1;31m%s\033[1;m' % err_msg)
 
 
-class TFEMException(Exception):
+class TException(Exception):
     def __init__(self, e):
         self.error = e
 

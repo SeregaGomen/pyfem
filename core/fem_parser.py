@@ -4,7 +4,7 @@
 #        Обработка арифметических и логических выражений
 ###################################################################
 
-from core.fem_error import TFEMException
+from core.fem_error import TException
 
 
 # Класс, реализующий разбор и выполнение арифметических и логических выражений
@@ -34,5 +34,5 @@ class TParser:
             res = eval(self.code)
         except Exception:
             self.error = 'calc_err'
-            raise TFEMException('calc_err')
+            raise TException('calc_err')
         return res

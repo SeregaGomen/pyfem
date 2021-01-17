@@ -89,6 +89,8 @@ class TMainWindow(QMainWindow):
             ret = self.__load_file_json()
         elif ext == '.qres':
             ret = self.__load_file_qres()
+        elif ext == '.res':
+            ret = self.__load_file_res()
         return ret
 
     # Загрузка данных из json-файла
@@ -229,6 +231,115 @@ class TMainWindow(QMainWindow):
             self.results.append(res)
         return True
 
+    # Загрузка данных из res-файла
+    def __load_file_res(self):
+        # Проверка наличия файла
+        if not os.path.exists(self.file_name):
+            print_error('Unable open file ' + self.file_name)
+            self.statusBar().showMessage('Error read data from file ' + self.file_name)
+            self.setWindowTitle('PyFEM results viewer')
+            return False
+        self.setWindowTitle('PyFEM results viewer - ' + self.file_name)
+        self.statusBar().showMessage('Success load file ' + self.file_name)
+        # Чтение файла
+        try:
+            file = open(self.file_name)
+            lines = file.readlines()
+            file.close()
+        except IOError:
+            print_error('Unable read file ' + self.file_name)
+            return False
+        # Обработка данных
+        if lines[0].split('\n')[0] != 'FEM Solver Results File':
+            print_error('Wrong file format: ' + self.file_name)
+            return False
+        if lines[1].split('\n')[0] != 'Mesh':
+            print_error('Wrong file format: ' + self.file_name)
+            return False
+        # Тип КЭ
+        type = lines[2].split('\n')[0]
+        if type == 'fe1d2':
+            self.fe_type = 'fe_1d_2'
+        elif type == 'fe2d3':
+            self.fe_type = 'fe_2d_3'
+        elif type == 'fe2d4':
+            self.fe_type = 'fe_2d_4'
+        elif type == 'fe2d6':
+            self.fe_type = 'fe_2d_6'
+        elif type == 'fe2d3p':
+            self.fe_type = 'fe_2d_3_p'
+        elif type == 'fe2d4p':
+            self.fe_type = 'fe_2d_4_p'
+        elif type == 'fe2d6p':
+            self.fe_type = 'fe_2d_6_p'
+        elif type == 'fe3d4':
+            self.fe_type = 'fe_3d_4'
+        elif type == 'fe3d8':
+            self.fe_type = 'fe_3d_8'
+        elif type == 'fe3d10':
+            self.fe_type = 'fe_3d_10'
+        elif type == 'fe3d3s':
+            self.fe_type = 'fe_2d_3_s'
+        elif type == 'fe3d4s':
+            self.fe_type = 'fe_2d_4_s'
+        elif type == 'fe3d6s':
+            self.fe_type = 'fe_2d_6_s'
+        else:
+            print_error('Wrong file format: ' + self.file_name)
+            return False
+        # Кол-во узлов
+        n = int(lines[3])
+        # Считываем узлы
+        index = 4
+        for i in range(n):
+            row = list()
+            coord = lines[4 + i].split()
+            for j in range(len(coord)):
+                row.append(float(coord[j]))
+            self.x.append(row)
+            index += 1
+        # Кол-во КЭ
+        n = int(lines[index])
+        index += 1
+        # Считываем КЭ
+        for i in range(n):
+            row = []
+            fe = lines[index].split()
+            for j in range(len(fe)):
+                row.append(int(fe[j]))
+            self.fe.append(row)
+            index += 1
+        # Кол-во ГЭ
+        n = int(lines[index])
+        index += 1
+        # Считываем ГЭ
+        for i in range(n):
+            row = []
+            be = lines[index].split()
+            for j in range(len(be)):
+                row.append(int(be[j]))
+            self.be.append(row)
+            index += 1
+        if self.fe_type == 'fe_2d_3_p' or self.fe_type == 'fe_2d_6_p' or self.fe_type == 'fe_2d_3_s' or \
+                self.fe_type == 'fe_2d_4_p' or self.fe_type == 'fe_2d_6_s' or self.fe_type == 'fe_2d_4_s':
+            self.be = self.fe
+        # Пропускаем время расчета и заголовок
+        index += 2
+        # Считываем кол-во функций
+        n = int(lines[index])
+        index += 1
+        for i in range(n):
+            res = TResult()
+            res.name = lines[index].split('\n')[0]
+            res.t = float(lines[index + 1])
+            m = int(lines[index + 2])
+            index += 3
+            for j in range(m):
+                res.results.append(float(lines[index]))
+                index += 1
+            self.results.append(res)
+        return True
+
     def __init_main_menu(self):
         # Пункты главного меню
         file_menu = self.menuBar().addMenu('&File')
@@ -347,7 +458,7 @@ class TMainWindow(QMainWindow):
             self.__gl_widget.set_fun_index(self.current_index)
 
     def __open_action(self):
-        dlg = QFileDialog(self, 'Open data file', '', 'JSON data files (*.json);;QFEM results file (*.qres)')
+        dlg = QFileDialog(self, 'Open data file', '', 'JSON data files (*.json);;QFEM results file (*.qres);;FEM Solver results file (*.res)')
         if dlg.exec_():
             if len(self.x):
                 self.__close_action()

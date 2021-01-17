@@ -13,7 +13,7 @@ from numpy.linalg import det
 from numpy.linalg import inv
 from numpy.linalg import norm
 from numpy import cross
-from core.fem_error import TFEMException
+from core.fem_error import TException
 from core.fem_defs import eps
 
 
@@ -106,7 +106,7 @@ class TFE:
     # Проверка корректности параметров КЭ
     def _check(self):
         if not len(self.e):
-            raise TFEMException('elasticity_err')
+            raise TException('elasticity_err')
 
     # Вычисление функций форм КЭ
     @abstractmethod
@@ -162,7 +162,7 @@ class TFE1D(TFE):
         for i in range(len(self._w)):
             # Якобиан
             jacobian = (self.x[1][0] - self.x[0][0]) / 2
-            inv_jacobi = jacobian
+            inv_jacobi = 1.0 / jacobian
             shape_dx = inv_jacobi * self._shape_dxi(i)
             # Матрицы градиентов и функций форм
             b = zeros((1, self.freedom * self.size))
@@ -602,7 +602,7 @@ class TFE1D2(TFE1D):
 
     def _create(self):
         if abs(self.x[1][0] - self.x[0][0]) == 0.0:
-            raise TFEMException('incorrect_fe_err')
+            raise TException('incorrect_fe_err')
         self.a = zeros((self.size, self.size))
         self.a[0][0] = self.x[1][0]/(self.x[1][0] - self.x[0][0])
         self.a[0][1] = -1.0/(self.x[1][0] - self.x[0][0])
@@ -633,7 +633,7 @@ class TFE2D3(TFE2D):
         det0 = self.x[2][1] * self.x[1][0] - self.x[2][1] * self.x[0][0] - self.x[0][1] * self.x[1][0] - \
                self.x[1][1] * self.x[2][0] + self.x[1][1] * self.x[0][0] + self.x[0][1] * self.x[2][0]
         if math.fabs(det0) < eps:
-            raise TFEMException('incorrect_fe_err')
+            raise TException('incorrect_fe_err')
         index = [[2, 1], [0, 2], [1, 0]]
         self.a = zeros((self.size, self.size))
         for i in range(self.size):
@@ -688,7 +688,7 @@ class TFE2D6(TFE2D3):
             try:
                 x = solve(a, b)
             except LinAlgError:
-                raise TFEMException('incorrect_fe_err')
+                raise TException('incorrect_fe_err')
             self.a[j] = list(x)
 
     # Производные от функций форм
@@ -736,7 +736,7 @@ class TFE2D4(TFE2D):
             try:
                 x = solve(a, b)
             except LinAlgError:
-                raise TFEMException('incorrect_fe_err')
+                raise TException('incorrect_fe_err')
             self.a[j] = list(x)
 
     # Производные от функций форм
@@ -796,7 +796,7 @@ class TFE3D4(TFE3D):
             try:
                 x = solve(a, b)
             except LinAlgError:
-                raise TFEMException('incorrect_fe_err')
+                raise TException('incorrect_fe_err')
             self.a[j] = list(x)
 
     # Производные от функций форм
@@ -848,7 +848,7 @@ class TFE3D10(TFE3D4):
             try:
                 x = solve(a, b)
             except LinAlgError:
-                raise TFEMException('incorrect_fe_err')
+                raise TException('incorrect_fe_err')
             self.a[j] = list(x)
 
     # Производные от функций форм
@@ -915,7 +915,7 @@ class TFE3D8(TFE3D):
             try:
                 x = solve(a, b)
             except LinAlgError:
-                raise TFEMException('incorrect_fe_err')
+                raise TException('incorrect_fe_err')
             self.a[j] = list(x)
 
     # Производные от функций форм
