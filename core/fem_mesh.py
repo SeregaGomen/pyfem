@@ -42,31 +42,31 @@ class TMesh:
 
     @staticmethod
     def get_fe_data(t):
-        if t == 3:
+        if t == '3' or t == 'fe2d3':
             return 'fe_2d_3', 2, 3, 2, 2
-        elif t == 4:
+        elif t == '4' or t == 'fe2d34':
             return 'fe_3d_4', 3, 4, 3, 3
-        elif t == 6:
+        elif t == '6' or t == 'fe2d6':
             return 'fe_2d_6', 3, 6, 2, 2
-        elif t == 8:
+        elif t == '8' or t == 'fe3d8':
             return 'fe_3d_8', 4, 8, 3, 3
-        elif t == 10:
+        elif t == '10' or t == 'fe3d10':
             return 'fe_3d_10', 6, 10, 3, 3
-        elif t == 24:
+        elif t == '24' or t == 'fe2d4':
             return 'fe_2d_4', 2, 4, 2, 2
-        elif t == 34:
+        elif t == '34' or t == 'fe1d2':
             return 'fe_1d_2', 1, 2, 1, 1
-        elif t == 123:
+        elif t == '123' or t == 'fe2d3p':
             return 'fe_2d_3_p', 0, 3, 3, 2
-        elif t == 124:
+        elif t == '124' or t == 'fe2d4p':
             return 'fe_2d_4_p', 0, 4, 3, 2
-        elif t == 125:
+        elif t == '125' or t == 'fe2d6p':
             return 'fe_2d_6_p', 0, 6, 3, 2
-        elif t == 223:
+        elif t == '223' or t == 'fe3d3s':
             return 'fe_3d_3_s', 0, 3, 6, 3
-        elif t == 224:
+        elif t == '224' or t == 'fe3d4s':
             return 'fe_3d_4_s', 0, 4, 6, 3
-        elif t == 225:
+        elif t == '225' or t == 'fe3d6s':
             return 'fe_3d_6_s', 0, 6, 6, 3
         else:
             raise TException('unknown_fe_err')
@@ -296,7 +296,7 @@ class TMeshTRPA(TMesh):
             file.close()
         except IOError:
             raise TException('read_file_err')
-        self.fe_type, size_surface, size_fe, self.freedom, self.dimension = self.get_fe_data(int(lines[0]))
+        self.fe_type, size_surface, size_fe, self.freedom, self.dimension = self.get_fe_data(lines[0].strip())
         # Кол-во узлов
         n = int(lines[1])
         # Считываем узлы
