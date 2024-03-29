@@ -852,7 +852,7 @@ def quad4(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
-            TPlot(res_name)
+            #TPlot(res_name)
             return True
         return False
 
@@ -1017,35 +1017,12 @@ def tank3ds(res_name):
 #             return True
 #         return False
 
-
-def body3(res_name):
-    obj = TObject()
-    if obj.set_mesh('mesh/body3.trpa'):
-        obj.set_problem_type('static')
-        obj.set_solve_method('direct')
-
-        obj.add_young_modulus(lambda x: [3.86E+10, 8.27E+9])
-        obj.add_poisson_ratio(lambda x: [0.26, 1.21])
-        #obj.add_shear_modulus(lambda x: [5.72E+9])
-        obj.add_boundary_condition(DIR_X | DIR_Y, lambda x: 0, lambda x: True if x[0] == -50 or x[0] == 50 else False)
-        obj.add_volume_load(DIR_Y, lambda x: -1.0E+5)
-        obj.add_surface_load(DIR_Y, lambda x: -1/(x[0]**2 + 1), lambda x: True if x[1] == 0 else False)
-        obj.add_surface_load(DIR_Y, lambda x: 1/(x[0]**2 + 1), lambda x: True if x[1] == -10 else False)
-        if obj.calc():
-            obj.print_result()
-            obj.save_result(res_name)
-            #TPlot(res_name)
-            return True
-        return False
-
-
 if __name__ == '__main__':
     # -------------- 1d -----------------
     # body1d('body1d')
 
     # -------------- 2d -----------------
-    body3('body3')
-    # quad4('quad-4')
+    quad4('quad-4')
     # quad3('quad-3')
     # quad6('quad-6')
     # console('console')
