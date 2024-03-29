@@ -65,43 +65,46 @@ class TObject:
         self.__params.t1 = t1
         self.__params.th = th
 
-    def add_density(self, e, p=''):
+    def add_density(self, e, p=None):
         self.__params.add_density(e, p)
 
-    def add_damping(self, e, p=''):
+    def add_damping(self, e, p=None):
         self.__params.add_damping(e, p)
 
-    def add_temperature(self, e, p=''):
+    def add_temperature(self, e, p=None):
         self.__params.add_temperature(e, p)
 
-    def add_alpha(self, e, p=''):
+    def add_alpha(self, e, p=None):
         self.__params.add_alpha(e, p)
 
-    def add_young_modulus(self, e, p=''):
+    def add_young_modulus(self, e, p=None):
         self.__params.add_young_modulus(e, p)
 
-    def add_poisson_ratio(self, e, p=''):
+    def add_shear_modulus(self, e, p=None):
+        self.__params.add_shear_modulus(e, p)
+
+    def add_poisson_ratio(self, e, p=None):
         self.__params.add_poisson_ratio(e, p)
 
-    def add_thickness(self, e, p=''):
+    def add_thickness(self, e, p=None):
         self.__params.add_thickness(e, p)
 
-    def add_boundary_condition(self, d, e, p=''):
+    def add_boundary_condition(self, d, e, p=None):
         self.__params.add_boundary_condition(e, p, d)
 
     def add_initial_condition(self, d, e):
-        self.__params.add_initial_condition(e, '', d)
+        self.__params.add_initial_condition(e, None, d)
 
-    def add_volume_load(self, d, e, p=''):
+    def add_volume_load(self, d, e, p=None):
         self.__params.add_volume_load(e, p, d)
 
-    def add_concentrated_load(self, d, e, p=''):
+    def add_concentrated_load(self, d, e, p=None):
         self.__params.add_concentrated_load(e, p, d)
 
-    def add_surface_load(self, d, e, p=''):
+    def add_surface_load(self, d, e, p=None):
         self.__params.add_surface_load(e, p, d)
 
-    def add_pressure_load(self, e, p=''):
+    def add_pressure_load(self, e, p=None):
         self.__params.add_pressure_load(e, p)
 
     def add_variable(self, var, val):
@@ -190,24 +193,24 @@ class TObject:
         len1 = len('%+*.*E' % (self.__params.width, self.__params.precision, 3.14159))
         len2 = len('%d' % len(self.__mesh.x))
         # Вывод заголовка
-        file.write('| %*s  (' % (len2, 'N'))
+        file.write('| %*s  |' % (len2, 'N'))
         for i in range(0, self.__mesh.dimension):
             file.write(' %*s' % (len1, self.__params.names[i]))
             if i < self.__mesh.dimension - 1:
-                file.write(',')
-        file.write(') |')
+                file.write('|')
+        file.write(' |')
         for i in range(0, len(self.__fem.get_results())):
             if self.__fem.get_results(i).t == t:
                 file.write(' %*s |' % (len1, self.__fem.get_results(i).name))
         file.write('\n')
         for i in range(0, len(self.__mesh.x)):
-            file.write('| %*d  (' % (len2, i + 1))
+            file.write('| %*d  |' % (len2, i + 1))
             file.write(' %+*.*E' % (self.__params.width, self.__params.precision, self.__mesh.x[i][0]))
             if self.__mesh.dimension > 1:
-                file.write(', %+*.*E' % (self.__params.width, self.__params.precision, self.__mesh.x[i][1]))
+                file.write('| %+*.*E' % (self.__params.width, self.__params.precision, self.__mesh.x[i][1]))
             if self.__mesh.dimension > 2:
-                file.write(', %+*.*E' % (self.__params.width, self.__params.precision, self.__mesh.x[i][2]))
-            file.write(') | ')
+                file.write('| %+*.*E' % (self.__params.width, self.__params.precision, self.__mesh.x[i][2]))
+            file.write(' | ')
             for k in range(0, len(self.__fem.get_results())):
                 if self.__fem.get_results(k).t == t:
                     file.write('%+*.*E' %

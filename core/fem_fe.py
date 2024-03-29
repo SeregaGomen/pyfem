@@ -53,6 +53,7 @@ class TFE:
         self.size = 0               # Размерность КЭ
         self.freedom = 0            # Количество степеней свободы
         self.e = []                 # Модуль Юнга
+        self.g = []                 # Модуль сдвига
         self.m = []                 # Коэффициент Пуассона
         self.thickness = 1          # Площадь сечения (для 1d) или толщина КЭ (для 2d)
         self.alpha = 0              # Параметр температурного расширения
@@ -73,6 +74,10 @@ class TFE:
     # Задание модуля Юнга
     def set_young_modulus(self, e):
         self.e = e
+
+    # Задание модуля сдвига
+    def set_shear_modulus(self, g):
+        self.g = g
 
     # Коэффициента Пуассона
     def set_poisson_ratio(self, m):
@@ -203,12 +208,21 @@ class TFE2D(TFE1D):
         self.freedom = 2
 
     def _elastic_matrix(self):
+        # https://help.solidworks.com/2012/russian/solidworks/cworks/Linear_Elastic_Orthotropic_Model.htm
         # Матрица упругих свойст
-        d = array([
-            [1.0, self.m[0], 0.0],
-            [self.m[0], 1.0, 0.0],
-            [0.0, 0.0, 0.5 * (1.0 - self.m[0])]
-        ]) * self.e[0]/(1.0 - self.m[0]**2)
+        if len(self.e) == 1:
+            d = array([
+                [1.0, self.m[0], 0.0],
+                [self.m[0], 1.0, 0.0],
+                [0.0, 0.0, 0.5 * (1.0 - self.m[0])]
+            ]) * self.e[0]/(1.0 - self.m[0]**2)
+        else:
+            g = self.g[0] if len(self.g) > 0 else self.e[0]*self.e[1]/(self.e[0] + self.e[1] + 2*self.e[1]*self.m[0])
+            d = array([
+                [self.e[0]/(1.0 - self.m[0]*self.m[1]), self.m[0]*self.e[1]/(1.0 - self.m[0]*self.m[1]), 0.0],
+                [self.m[0]*self.e[1]/(1.0 - self.m[0]*self.m[1]), self.e[1]/(1.0 - self.m[0]*self.m[1]), 0.0],
+                [0.0, 0.0, g]
+            ])
         return d
 
     # Формирование локальной матрицы жесткости
@@ -287,7 +301,7 @@ class TFE3D(TFE2D):
         self.freedom = 3
 
     def _elastic_matrix(self):
-        # Матрица упругих свойст
+        # Матрица упругих свойств
         d = array([
             [1.0, self.m[0]/(1.0 - self.m[0]), self.m[0]/(1.0 - self.m[0]), 0.0, 0.0, 0.0],
             [self.m[0]/(1.0 - self.m[0]), 1.0, self.m[0]/(1.0 - self.m[0]), 0.0, 0.0, 0.0],

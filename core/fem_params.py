@@ -58,6 +58,7 @@ type_condition = [
     'pressure',
     'thickness',
     'young_modulus',
+    'shear_modulus',
     'poisson_ratio',
     'temperature',
     'alpha',
@@ -127,6 +128,9 @@ class TFEMParams:
 
     def add_young_modulus(self, e, p):
         self.__add_parameter('young_modulus', e, p)
+
+    def add_shear_modulus(self, e, p):
+        self.__add_parameter('shear_modulus', e, p)
 
     def add_poisson_ratio(self, e, p):
         self.__add_parameter('poisson_ratio', e, p)

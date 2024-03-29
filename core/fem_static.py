@@ -81,13 +81,13 @@ class TFEMStatic(TFEM):
             for j in range(0, len(self.mesh.x)):
                 self._progress.set_progress(counter)
                 counter += 1
-                parser = self.create_parser(self.mesh.get_coord(j), t)
-                if len(self.params.bc_list[i].predicate):
-                    parser.set_code(self.params.bc_list[i].predicate)
-                    if not parser.run():
+                x = self.mesh.get_coord(j)
+                if t != 0:
+                    x.append(t)
+                if self.params.bc_list[i].predicate is not None:
+                    if not self.params.bc_list[i].predicate(x):
                         continue
-                parser.set_code(self.params.bc_list[i].expression)
-                load = parser.run()
+                load = self.params.bc_list[i].expression(x)
                 if self.params.bc_list[i].direct & DIR_X:
                     self._global_load[j * self.mesh.freedom + 0] += load
                 if self.params.bc_list[i].direct & DIR_Y:
@@ -117,9 +117,10 @@ class TFEMStatic(TFEM):
                     continue
 
                 share = self.__surface_load_share(j)
-                parser = self.create_parser(self.mesh.get_be_center(j), t)
-                parser.set_code(self.params.bc_list[i].expression)
-                load = parser.run()
+                x = self.mesh.get_be_center(j)
+                if t != 0:
+                    x.append(t)
+                load = self.params.bc_list[i].expression(x)
                 for k in range(0, len(self.mesh.be[j])):
                     if self.params.bc_list[i].direct & DIR_X:
                         self._global_load[self.mesh.be[j][k] * self.mesh.freedom + 0] += load * share[k]
@@ -146,10 +147,11 @@ class TFEMStatic(TFEM):
                 counter += 1
                 if not self.__check_fe(j, self.params.bc_list[i].predicate):
                     continue
+                x = self.mesh.get_fe_center(j)
+                if t != 0:
+                    x.append(t)
                 share = self.__volume_load_share(j)
-                parser = self.create_parser(self.mesh.get_fe_center(j), t)
-                parser.set_code(self.params.bc_list[i].expression)
-                load = parser.run()
+                load = self.params.bc_list[i].expression(x)
                 for k in range(0, len(self.mesh.fe[j])):
                     if self.params.bc_list[i].direct & DIR_X:
                         self._global_load[self.mesh.fe[j][k] * self.mesh.freedom + 0] += load * share[k]
@@ -177,10 +179,9 @@ class TFEMStatic(TFEM):
                 if not self.__check_be(j, self.params.bc_list[i].predicate):
                     continue
 
+                x = self.mesh.get_be_center(j)
                 share = self.__surface_load_share(j)
-                parser = self.create_parser(self.mesh.get_be_center(j), t)
-                parser.set_code(self.params.bc_list[i].expression)
-                load = parser.run()
+                load = self.params.bc_list[i].expression(x)
                 # Вычисление нормали к ГЭ
                 v = self.mesh.be_normal(j)
                 for k in range(0, len(self.mesh.be[j])):
@@ -259,13 +260,13 @@ class TFEMStatic(TFEM):
                 for j in range(0, len(self.mesh.x)):
                     self._progress.set_progress(counter)
                     counter += 1
-                    parser = self.create_parser(self.mesh.get_coord(j))
-                    if len(self.params.bc_list[i].predicate):
-                        parser.set_code(self.params.bc_list[i].predicate)
-                        if not parser.run():
+                    x = self.mesh.get_coord(j)
+                    if self.params.bc_list[i].predicate is not None:
+                        val = self.params.bc_list[i].predicate(x)
+                        if not val:
                             continue
-                    parser.set_code(self.params.bc_list[i].expression)
-                    val = parser.run()
+
+                    val = self.params.bc_list[i].expression(x)
                     direct = self.params.bc_list[i].direct
                     if direct & DIR_X:
                         self._set_boundary_condition(j, 0, val)
@@ -302,23 +303,21 @@ class TFEMStatic(TFEM):
 
     # Проверка соответствия граничного элемента предикату отбора (всех его вершин)
     def __check_be(self, i, predicate):
-        if not len(predicate):
+        if predicate is None:
             return True
         for k in range(self.mesh.base_be_size()):
-            parser = self.create_parser(self.mesh.get_coord(self.mesh.be[i][k]))
-            parser.set_code(predicate)
-            if not parser.run():
+            x = self.mesh.get_coord(self.mesh.be[i][k])
+            if not predicate(x):
                 return False
         return True
 
     # Проверка соответствия элемента предикату отбора (всех его вершин)
     def __check_fe(self, i, predicate):
-        if not len(predicate):
+        if predicate is None:
             return True
         for k in range(self.mesh.base_fe_size()):
-            parser = self.create_parser(self.mesh.get_coord(self.mesh.fe[i][k]))
-            parser.set_code(predicate)
-            if not parser.run():
+            x = self.mesh.get_coord(self.mesh.fe[i][k])
+            if not predicate(x):
                 return False
         return True
 
@@ -402,33 +401,34 @@ class TFEMStatic(TFEM):
 
     # Настройка параметров КЭ
     def _set_fe(self, fe, fe_index):
-        x = self.mesh.get_fe_coord(fe_index)
-        c_x = self._fe_center(x)
-        fe.set_coord(x)
-
+        coord = self.mesh.get_fe_coord(fe_index)
+        fe.set_coord(coord)
+        x = self._fe_center(coord)
         # Определение переменных параметров КЭ
-        parser = self.create_parser(c_x)
         for i in range(len(self.params.bc_list)):
             if self.params.bc_list[i].type == 'thickness' or self.params.bc_list[i].type == 'young_modulus' or \
                     self.params.bc_list[i].type == 'poisson_ratio' or self.params.bc_list[i].type == 'temperature' or \
                     self.params.bc_list[i].type == 'alpha' or self.params.bc_list[i].type == 'density' or \
-                    self.params.bc_list[i].type == 'damping':
+                    self.params.bc_list[i].type == 'damping' or self.params.bc_list[i].type == 'shear_modulus':
                 param = self.params.bc_list[i].type
             else:
                 continue
-            if len(self.params.bc_list[i].predicate):
-                parser.set_code(self.params.bc_list[i].predicate)
-                if not parser.run():
+
+            if self.params.bc_list[i].predicate is not None:
+                val = self.params.bc_list[i].predicate(x)
+                if not val:
                     continue
-            parser.set_code(self.params.bc_list[i].expression)
-            val = parser.run()
+
+            val = self.params.bc_list[i].expression(x)
             if param == 'thickness':
                 fe.set_thickness(val)
                 self._fe_thickness.append(val)
             elif param == 'young_modulus':
-                fe.set_young_modulus([val])
+                fe.set_young_modulus(val)
+            elif param == 'shear_modulus':
+                fe.set_shear_modulus(val)
             elif param == 'poisson_ratio':
-                fe.set_poisson_ratio([val])
+                fe.set_poisson_ratio(val)
             elif param == 'temperature':
                 fe.set_temperature(val)
             elif param == 'alpha':
