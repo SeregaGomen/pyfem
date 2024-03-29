@@ -1034,7 +1034,7 @@ def body3(res_name):
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
-            TPlot(res_name)
+            #TPlot(res_name)
             return True
         return False
 
