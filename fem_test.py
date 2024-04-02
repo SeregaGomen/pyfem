@@ -841,7 +841,7 @@ def quad4(res_name):
         obj.set_problem_type('static')
         obj.set_solve_method('direct')
         obj.add_young_modulus(lambda x: [203200])
-        obj.add_poisson_ratio(lambda x: [0.27])
+        obj.add_poisson_ratio(lambda x: [0.270])
         obj.add_boundary_condition(DIR_X | DIR_Y, lambda x: 0, lambda x: True if x[1] == -0.5 else False)
         # obj.add_temperature('100')
         # obj.add_alpha('1.25E-5')
