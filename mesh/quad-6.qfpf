@@ -5,7 +5,7 @@
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "D:/Work/python/pyfem/mesh/quad-6.trpa"
+        "File": "quad-6.trpa"
     },
     "Parameters": {
         "Accuracy": "1e-10",

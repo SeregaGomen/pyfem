@@ -1,15 +1,99 @@
 {
     "Header": {
-        "DateTime": "2020-04-27T14:39:59.939",
+        "DateTime": "2025-06-13T06:24:04.932",
         "Object": "plate3",
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "D:/Work/python/pyfem/mesh/plate3.trpa"
+        "File": "/home/serhii/work/python/pyfem/mesh/plate3.trpa"
     },
     "Parameters": {
         "Accuracy": 1e-10,
         "BoundaryConditions": [
+            {
+                "Direct": 0,
+                "Expression": "203200",
+                "Predicate": "",
+                "Type": 7
+            },
+            {
+                "Direct": 0,
+                "Expression": "0.27",
+                "Predicate": "",
+                "Type": 8
+            },
+            {
+                "Direct": 0,
+                "Expression": "0.01",
+                "Predicate": "",
+                "Type": 9
+            },
+            {
+                "Direct": 1,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 8,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 64,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 2,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 16,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 128,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 4,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 32,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 256,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 4,
+                "Expression": "0.05",
+                "Predicate": "",
+                "Type": 4
+            },
+            {
+                "Direct": 7,
+                "Expression": "x == -0.5 or x == 0.5 or y == -0.5 or y == 0.5",
+                "Predicate": "",
+                "Type": 2
+            }
         ],
         "DynamicParameters": {
             "T0": 0,

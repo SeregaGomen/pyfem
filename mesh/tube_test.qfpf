@@ -1,96 +1,105 @@
 {
     "Header": {
-        "DateTime": "2019-06-01T19:20:30.062",
+        "DateTime": "2025-06-12T12:33:46.225",
         "Object": "tube-solid-test",
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "tube-solid-test-10.trpa"
+        "File": "/home/serhii/work/python/pyfem/mesh/tube-solid-test.trpa"
     },
     "Parameters": {
-        "Accuracy": "1e-10",
+        "Accuracy": 1e-10,
         "BoundaryConditions": [
             {
-                "Direct": "1",
-                "Expression": "0",
+                "Direct": 0,
+                "Expression": "203200",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 7
             },
             {
-                "Direct": "8",
-                "Expression": "0",
+                "Direct": 0,
+                "Expression": "0.27",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 8
             },
             {
-                "Direct": "64",
+                "Direct": 1,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "2",
+                "Direct": 8,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "16",
+                "Direct": 64,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "128",
+                "Direct": 2,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "4",
+                "Direct": 16,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "32",
+                "Direct": 128,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "256",
+                "Direct": 4,
                 "Expression": "0",
                 "Predicate": "",
-                "Type": "1"
+                "Type": 1
             },
             {
-                "Direct": "1",
+                "Direct": 32,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 256,
+                "Expression": "0",
+                "Predicate": "",
+                "Type": 1
+            },
+            {
+                "Direct": 1,
                 "Expression": "0.05*cos(atan2(y,x))",
                 "Predicate": "(abs(x**2 + y**2 - 1.99**2) <= 1.0e-3)",
-                "Type": "4"
+                "Type": 4
             },
             {
-                "Direct": "2",
+                "Direct": 2,
                 "Expression": "0.05*sin(atan2(y,x))",
                 "Predicate": "(abs(x**2 + y**2 - 1.99**2) <= 1.0e-3)",
-                "Type": "4"
+                "Type": 4
             },
             {
-                "Direct": "7",
+                "Direct": 7,
                 "Expression": "0",
                 "Predicate": "z == 0 or z == 4.014",
-                "Type": "2"
+                "Type": 2
             }
         ],
         "DynamicParameters": {
-            "T0": "0",
-            "T1": "0",
-            "TH": "0",
-            "WilsonTheta": "1.37"
-        },
-        "GeometricalParameters": {
-            "Thickness": "1"
+            "T0": 0,
+            "T1": 0,
+            "TH": 0,
+            "WilsonTheta": 1.37
         },
         "Names": [
             "x",
@@ -124,25 +133,13 @@
         ],
         "Nonlinearity": {
             "CalculationMethod": 0,
-            "ForceStep": "0.01",
-            "MechanicalProperty": [
-            ]
+            "LoadStep": 0
         },
         "OutputParameters": {
-            "Precision": "5",
-            "Width": "12"
-        },
-        "PhysicalParameters": {
-            "Damping": "0",
-            "Density": "0",
-            "PoissonsRatio": "0.27",
-            "YoungsModulus": "203200"
+            "Precision": 5,
+            "Width": 12
         },
         "ProblemType": "Static",
-        "ThermalParameters": {
-            "Alpha": "0",
-            "dT": "0"
-        },
         "Variables": [
             "eps 0.001"
         ]

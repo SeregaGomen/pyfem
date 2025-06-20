@@ -5,7 +5,7 @@
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "D:/Work/python/pyfem/mesh/console4.trpa"
+        "File": "console4.trpa"
     },
     "Parameters": {
         "Accuracy": 1e-10,

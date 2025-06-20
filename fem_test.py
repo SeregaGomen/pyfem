@@ -7,25 +7,25 @@ from core.fem_object import TObject
 from plot.plot3d import TPlot
 
 
-# def body1d(res_name):
-#     obj = TObject()
-#     if obj.set_mesh('mesh/body1d.trpa'):
-#         obj.set_problem_type('static')
-#         obj.set_solve_method('direct')
-#         obj.add_young_modulus('203200')
-#         obj.add_poisson_ratio('0')
-#         obj.add_boundary_condition(DIR_X, '0', 'x == 0')
-#         # obj.add_temperature('100')
-#         # obj.add_alpha('1.25E-5')
-#         # obj.add_volume_load(DIR_1, '-0.5')
-#         obj.add_surface_load(DIR_X, '0.5', 'x == 3')
-#         # obj.add_concentrated_load(DIR_1, '0.5', 'x == 3')
-#         if obj.calc():
-#             obj.print_result()
-#             obj.save_result(res_name)
-#             TPlot(res_name)
-#             return True
-#         return False
+def body1d(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/body1d.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.add_young_modulus(lambda x: [203200])
+        obj.add_poisson_ratio(lambda x: [0])
+        obj.add_boundary_condition(DIR_X, lambda x: 0, lambda x: True if x[0] == 0 else False)
+        # obj.add_temperature('100')
+        # obj.add_alpha('1.25E-5')
+        # obj.add_volume_load(DIR_X, lambda x: -0.5)
+        # obj.add_surface_load(DIR_X, lambda x: 0.5, lambda x: True if x[0] == 3 else False)
+        obj.add_concentrated_load(DIR_X, lambda x: 0.5, lambda x: True if x[0] == 3 else False)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
 #
 #
 # def cube(res_name):
@@ -382,25 +382,25 @@ from plot.plot3d import TPlot
 #         return False
 #
 #
-# def plate3(res_name):
-#     obj = TObject()
-#     if obj.set_mesh('mesh/plate3_1.trpa'):
-#         obj.set_problem_type('static')
-#         obj.set_solve_method('direct')
-#         obj.add_young_modulus('2E+6')
-#         obj.add_poisson_ratio('0.3')
-#         obj.add_thickness('0.01')
-#         obj.add_boundary_condition(DIR_X | DIR_Y | DIR_Z, '0', 'x == -0.1 or x == 0.1 or y == -0.1 or y == 0.1')
-# #        obj.add_boundary_condition(DIR_1, '0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1')
-# #        obj.add_concentrated_load(DIR_1, '-1.0E+5', 'x = 0 and y = 0')
-#         obj.add_surface_load(DIR_X, '-2000')
-#         if obj.calc():
-#             obj.print_result()
-#             obj.save_result(res_name)
-#             TPlot(res_name)
-#             return True
-#         return False
-#
+def plate3(res_name):
+    obj = TObject()
+    if obj.set_mesh('mesh/plate3_1.trpa'):
+        obj.set_problem_type('static')
+        obj.set_solve_method('direct')
+        obj.add_young_modulus(lambda x: [2E+6])
+        obj.add_poisson_ratio(lambda x: [0.3])
+        obj.add_thickness(lambda x: 0.01)
+        obj.add_boundary_condition(DIR_X | DIR_Y | DIR_Z, lambda x: 0, lambda x: True if x[0] == -0.1 or x[0] == 0.1 or x[1] == -0.1 or x[1] == 0.1 else False)
+#        obj.add_boundary_condition(DIR_1, '0', 'x = -0.1 or x = 0.1 or y = -0.1 or y = 0.1')
+#        obj.add_concentrated_load(DIR_1, '-1.0E+5', 'x = 0 and y = 0')
+        obj.add_surface_load(DIR_X, lambda x: -2000)
+        if obj.calc():
+            obj.print_result()
+            obj.save_result(res_name)
+            TPlot(res_name)
+            return True
+        return False
+
 #
 # def shell3(res_name):
 #     obj = TObject()
@@ -843,19 +843,20 @@ def quad4(res_name):
         obj.add_young_modulus(lambda x: [203200])
         obj.add_poisson_ratio(lambda x: [0.270])
         obj.add_boundary_condition(DIR_X | DIR_Y, lambda x: 0, lambda x: True if x[1] == -0.5 else False)
-        # obj.add_temperature('100')
-        # obj.add_alpha('1.25E-5')
-        # obj.add_volume_load(DIR_2, '-0.05')
-        # obj.add_surface_load(DIR_2, '-0.05', 'y == 0.5')
-        obj.add_concentrated_load(DIR_Y, lambda x: -0.05,
-                                  lambda x: True if x[1] == 0.5 and (x[0] == -0.5 or x[0] == 0.5) else False)
+        obj.add_temperature(lambda x: 100)
+        obj.add_alpha(lambda x: 1.25E-5)
+        # obj.add_volume_load(DIR_Y, lambda x: -0.05)
+        # obj.add_surface_load(DIR_Y, lambda x: -0.05, lambda x: True if x[1] == 0.5 else False)
+        # obj.add_concentrated_load(DIR_Y, lambda x: -0.05,
+        #                           lambda x: True if x[1] == 0.5 and (x[0] == -0.5 or x[0] == 0.5) else False)
+        obj.add_pressure_load(lambda x: -0.05, lambda x: True if x[1] == 0.5 else False)
         if obj.calc():
             obj.print_result()
             obj.save_result(res_name)
             #
-            #TPlot(res_name)
+            TPlot(res_name)
             return True
-        return False
+    return False
 
 
 def quad3(res_name):

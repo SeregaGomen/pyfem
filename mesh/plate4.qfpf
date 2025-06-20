@@ -1,11 +1,11 @@
 {
     "Header": {
         "DateTime": "2020-03-08T21:13:34.500",
-        "Object": "plate4",
+        "Object": "plate4_1",
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "D:/Work/python/pyfem/mesh/plate4.trpa"
+        "File": "plate4.trpa"
     },
     "Parameters": {
         "Accuracy": "1e-10",

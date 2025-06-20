@@ -1,11 +1,11 @@
 {
     "Header": {
-        "DateTime": "2020-04-27T11:46:46.506",
+        "DateTime": "2025-06-20T07:06:03.739",
         "Object": "quad-4",
         "Title": "QFEM problem file"
     },
     "Mesh": {
-        "File": "D:/Work/python/pyfem/mesh/quad-4.trpa"
+        "File": "/home/serhii/work/python/pyfem/mesh/quad-4.trpa"
     },
     "Parameters": {
         "Accuracy": 1e-10,
@@ -97,8 +97,26 @@
             {
                 "Direct": 0,
                 "Expression": "-0.05",
+                "Predicate": "",
+                "Type": 3
+            },
+            {
+                "Direct": 0,
+                "Expression": "-0.05",
                 "Predicate": "y == 0.5",
                 "Type": 4
+            },
+            {
+                "Direct": 0,
+                "Expression": "-0.05",
+                "Predicate": "y == 0.5 and (x == -0.5 or x == 0.5)",
+                "Type": 5
+            },
+            {
+                "Direct": 0,
+                "Expression": "-0.05",
+                "Predicate": "y == 0.5",
+                "Type": 6
             },
             {
                 "Direct": 3,
